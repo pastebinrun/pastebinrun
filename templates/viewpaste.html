@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+    {% for p in pastes %}
+        {% let selected_language = p.language_id %}
+        {% let paste = p.paste.as_str() %}
+        {% include "paste.html" %}
+    {% endfor %}
+{% endblock content %}

@@ -1,0 +1,15 @@
+[package]
+name = "pastebinrun"
+version = "0.1.0"
+authors = ["Konrad Borowski <konrad@borowski.pw>"]
+edition = "2018"
+
+[dependencies]
+actix-diesel = "0.3.0"
+actix-web = "0.7.10"
+askama = { version = "0.8.0", features = ["with-actix-web"] }
+diesel = { version = "1.4.1", features = ["postgres"] }
+env_logger = "0.6.0"
+futures = "0.1.25"
+rand = "0.6.5"
+serde = { version = "1.0.88", features = ["derive"] }
