@@ -3,6 +3,7 @@ name = "pastebinrun"
 version = "0.1.0"
 authors = ["Konrad Borowski <konrad@borowski.pw>"]
 edition = "2018"
+license = "AGPL-3.0-or-later"
 
 [dependencies]
 actix-diesel = "0.3.0"
