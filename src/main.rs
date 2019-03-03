@@ -14,7 +14,9 @@ use actix_web::{server, App, AsyncResponder, Form, HttpResponse, Path, State};
 use askama::actix_web::TemplateIntoResponse;
 use askama::Template;
 use chrono::{DateTime, Duration, Utc};
+use diesel::dsl::sql;
 use diesel::prelude::*;
+use diesel::sql_types::Text;
 use futures::future::{self, Either};
 use futures::prelude::*;
 use rand::prelude::*;
@@ -148,20 +150,19 @@ fn display_paste(
         .filter(pastes::delete_at.lt(Utc::now()))
         .execute_async(&db)
         .and_then(|_| {
-            pastes::table
-                .inner_join(paste_revisions::table.inner_join(paste_contents::table))
+            paste_contents::table
+                .inner_join(paste_revisions::table.inner_join(pastes::table))
                 .select((
                     paste_contents::paste,
                     paste_contents::language_id,
                     pastes::delete_at,
                 ))
                 .filter(
-                    paste_revisions::table
-                        .filter(pastes::identifier.eq(requested_identifier.into_inner()))
-                        .order(paste_revisions::created_at.desc())
-                        .select(paste_revisions::paste_revision_id)
-                        .single_value()
-                        .eq(paste_contents::paste_revision_id.nullable()),
+                    sql("(SELECT paste_revision_id FROM pastes ")
+                        .sql("NATURAL JOIN paste_revisions WHERE identifier =")
+                        .bind::<Text, _>(requested_identifier.into_inner())
+                        .sql("ORDER BY created_at DESC FETCH FIRST ROW ONLY)")
+                        .eq(paste_revisions::paste_revision_id),
                 )
                 .load_async(&db)
                 .map(|pastes| (db, pastes))
