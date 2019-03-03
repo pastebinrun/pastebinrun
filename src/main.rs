@@ -19,6 +19,7 @@ use futures::future::{self, Either};
 use futures::prelude::*;
 use rand::prelude::*;
 use schema::{languages, paste_contents, paste_revisions, pastes};
+use serde::de::IgnoredAny;
 use serde::Deserialize;
 use std::{env, io};
 
@@ -63,14 +64,7 @@ fn fetch_languages(
 struct PasteForm {
     language: i32,
     code: String,
-    autodelete: Checkbox,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "lowercase")]
-enum Checkbox {
-    On,
-    Off,
+    autodelete: Option<IgnoredAny>,
 }
 
 #[derive(Insertable)]
@@ -101,10 +95,7 @@ fn insert_paste(db: State<Database<PgConnection>>, Form(form): Form<PasteForm>) 
     let identifier: String = (0..24)
         .map(|_| char::from(*CHARACTERS.choose(&mut rng).expect("a random character")))
         .collect();
-    let delete_at = match form.autodelete {
-        Checkbox::On => Some(Utc::now() + Duration::hours(24)),
-        Checkbox::Off => None,
-    };
+    let delete_at = form.autodelete.map(|_| Utc::now() + Duration::hours(24));
     let cloned_identifier = identifier.clone();
     db.transaction(move |c| {
         let paste_id = diesel::insert_into(pastes::table)

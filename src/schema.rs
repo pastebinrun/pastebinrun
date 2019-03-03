@@ -37,9 +37,4 @@ joinable!(paste_contents -> languages (language_id));
 joinable!(paste_contents -> paste_revisions (paste_revision_id));
 joinable!(paste_revisions -> pastes (paste_id));
 
-allow_tables_to_appear_in_same_query!(
-    languages,
-    paste_contents,
-    paste_revisions,
-    pastes,
-);
+allow_tables_to_appear_in_same_query!(languages, paste_contents, paste_revisions, pastes,);
