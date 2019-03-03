@@ -1,8 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
     {% for p in pastes %}
-        {% let selected_language = p.language_id %}
-        {% let paste = p.paste.as_str() %}
-        {% include "paste.html" %}
+        <form method="post" action="/">
+            <p>
+                {% let selected_language = p.language_id %}
+                {% include "language_selector.html" %}
+                {% match p.delete_at %}
+                    {% when Some with (delete_at) %}
+                        <span data-delete-on-modify>
+                            This paste will be automatically deleted on {{delete_at.format("%Y-%m-%d %H:%M")}} UTC.
+                        </span>
+                    {% when None %}
+                {% endmatch %}
+                <label data-autohide>
+                    <input type=checkbox name=autodelete> Automatically delete after 24 hours
+                </label>
+            </p>
+            <p><textarea id=code name=code>{{ p.paste }}</textarea></p>
+            <p>
+                <input type=submit value=Share data-autodisable>
+        </form>
     {% endfor %}
 {% endblock content %}

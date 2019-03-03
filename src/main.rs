@@ -13,6 +13,7 @@ use actix_web::middleware::Logger;
 use actix_web::{server, App, AsyncResponder, Form, HttpResponse, Path, State};
 use askama::actix_web::TemplateIntoResponse;
 use askama::Template;
+use chrono::{DateTime, Duration, Utc};
 use diesel::prelude::*;
 use futures::future::{self, Either};
 use futures::prelude::*;
@@ -62,12 +63,21 @@ fn fetch_languages(
 struct PasteForm {
     language: i32,
     code: String,
+    autodelete: Checkbox,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum Checkbox {
+    On,
+    Off,
 }
 
 #[derive(Insertable)]
 #[table_name = "pastes"]
 struct NewPaste {
     identifier: String,
+    delete_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable)]
@@ -91,10 +101,17 @@ fn insert_paste(db: State<Database<PgConnection>>, Form(form): Form<PasteForm>) 
     let identifier: String = (0..24)
         .map(|_| char::from(*CHARACTERS.choose(&mut rng).expect("a random character")))
         .collect();
+    let delete_at = match form.autodelete {
+        Checkbox::On => Some(Utc::now() + Duration::hours(24)),
+        Checkbox::Off => None,
+    };
     let cloned_identifier = identifier.clone();
-    db.transaction(|c| {
+    db.transaction(move |c| {
         let paste_id = diesel::insert_into(pastes::table)
-            .values(NewPaste { identifier })
+            .values(NewPaste {
+                identifier,
+                delete_at,
+            })
             .returning(schema::pastes::columns::paste_id)
             .get_result(c)?;
         let paste_revision_id = diesel::insert_into(paste_revisions::table)
@@ -129,26 +146,37 @@ struct DisplayPastes {
 struct DisplayPaste {
     paste: String,
     language_id: i32,
+    delete_at: Option<DateTime<Utc>>,
 }
 
 fn display_paste(
     db: State<Database<PgConnection>>,
     requested_identifier: Path<String>,
 ) -> AsyncResponse {
-    paste_contents::table
-        .select((paste_contents::paste, paste_contents::language_id))
-        .filter(
-            paste_revisions::table
-                .inner_join(pastes::table)
-                .filter(pastes::identifier.eq(requested_identifier.into_inner()))
-                .order(paste_revisions::created_at.desc())
-                .select(paste_revisions::paste_revision_id)
-                .single_value()
-                .eq(paste_contents::paste_revision_id.nullable()),
-        )
-        .load_async(&db)
+    diesel::delete(pastes::table)
+        .filter(pastes::delete_at.lt(Utc::now()))
+        .execute_async(&db)
+        .and_then(|_| {
+            pastes::table
+                .inner_join(paste_revisions::table.inner_join(paste_contents::table))
+                .select((
+                    paste_contents::paste,
+                    paste_contents::language_id,
+                    pastes::delete_at,
+                ))
+                .filter(
+                    paste_revisions::table
+                        .filter(pastes::identifier.eq(requested_identifier.into_inner()))
+                        .order(paste_revisions::created_at.desc())
+                        .select(paste_revisions::paste_revision_id)
+                        .single_value()
+                        .eq(paste_contents::paste_revision_id.nullable()),
+                )
+                .load_async(&db)
+                .map(|pastes| (db, pastes))
+        })
         .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
-        .and_then(move |pastes| {
+        .and_then(|(db, pastes)| {
             if pastes.is_empty() {
                 Either::A(future::ok(HttpResponse::NotFound().finish()))
             } else {
