@@ -7,9 +7,9 @@ use actix_diesel::dsl::AsyncRunQueryDsl;
 use actix_diesel::Database;
 use actix_web::error::InternalError;
 use actix_web::fs::{NamedFile, StaticFiles};
-use actix_web::http::header::LOCATION;
+use actix_web::http::header::{LOCATION, X_FRAME_OPTIONS};
 use actix_web::http::{Method, StatusCode};
-use actix_web::middleware::Logger;
+use actix_web::middleware::{DefaultHeaders, Logger};
 use actix_web::{server, App, AsyncResponder, Form, HttpResponse, Path, State};
 use askama::actix_web::TemplateIntoResponse;
 use askama::Template;
@@ -191,6 +191,7 @@ fn main() -> io::Result<()> {
     server::new(move || {
         App::with_state(db.clone())
             .middleware(Logger::default())
+            .middleware(DefaultHeaders::new().header(X_FRAME_OPTIONS, "DENY"))
             .resource("/", |r| {
                 r.method(Method::GET).with(index);
                 r.method(Method::POST).with(insert_paste);
