@@ -8,7 +8,7 @@ use actix_diesel::Database;
 use actix_web::error::InternalError;
 use actix_web::fs::{NamedFile, StaticFiles};
 use actix_web::http::header::{
-    CONTENT_SECURITY_POLICY, LOCATION, X_FRAME_OPTIONS, X_XSS_PROTECTION,
+    CONTENT_SECURITY_POLICY, LOCATION, REFERRER_POLICY, X_FRAME_OPTIONS, X_XSS_PROTECTION,
 };
 use actix_web::http::{Method, StatusCode};
 use actix_web::middleware::{DefaultHeaders, Logger};
@@ -209,7 +209,8 @@ fn main() -> io::Result<()> {
                         ),
                     )
                     .header(X_FRAME_OPTIONS, "DENY")
-                    .header(X_XSS_PROTECTION, "1; mode=block"),
+                    .header(X_XSS_PROTECTION, "1; mode=block")
+                    .header(REFERRER_POLICY, "no-referrer"),
             )
             .resource("/", |r| {
                 r.method(Method::GET).with(index);
