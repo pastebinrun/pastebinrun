@@ -199,7 +199,7 @@ fn main() -> io::Result<()> {
                         CONTENT_SECURITY_POLICY,
                         concat!(
                             "default-src 'none'; ",
-                            "script-src 'self'; ",
+                            "script-src 'self' ajax.cloudflare.com; ",
                             "style-src 'self'; ",
                             "img-src 'self'; ",
                             "object-src 'none'; ",
