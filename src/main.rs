@@ -195,7 +195,16 @@ fn main() -> io::Result<()> {
                 DefaultHeaders::new()
                     .header(
                         CONTENT_SECURITY_POLICY,
-                        "default-src 'self'; object-src 'none'",
+                        concat!(
+                            "default-src 'none'; ",
+                            "script-src 'self'; ",
+                            "style-src 'self'; ",
+                            "img-src 'self'; ",
+                            "object-src 'none'; ",
+                            "base-uri 'none'; ",
+                            "form-action 'self'; ",
+                            "frame-ancestors 'none'",
+                        ),
                     )
                     .header(X_FRAME_OPTIONS, "DENY"),
             )
