@@ -7,7 +7,9 @@ use actix_diesel::dsl::AsyncRunQueryDsl;
 use actix_diesel::Database;
 use actix_web::error::InternalError;
 use actix_web::fs::{NamedFile, StaticFiles};
-use actix_web::http::header::{CONTENT_SECURITY_POLICY, LOCATION, X_FRAME_OPTIONS};
+use actix_web::http::header::{
+    CONTENT_SECURITY_POLICY, LOCATION, X_FRAME_OPTIONS, X_XSS_PROTECTION,
+};
 use actix_web::http::{Method, StatusCode};
 use actix_web::middleware::{DefaultHeaders, Logger};
 use actix_web::{server, App, AsyncResponder, Form, HttpResponse, Path, State};
@@ -206,7 +208,8 @@ fn main() -> io::Result<()> {
                             "frame-ancestors 'none'",
                         ),
                     )
-                    .header(X_FRAME_OPTIONS, "DENY"),
+                    .header(X_FRAME_OPTIONS, "DENY")
+                    .header(X_XSS_PROTECTION, "1; mode=block"),
             )
             .resource("/", |r| {
                 r.method(Method::GET).with(index);
