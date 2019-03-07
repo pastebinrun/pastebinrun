@@ -48,6 +48,7 @@ textarea {
 table {
     overflow: auto;
     border-collapse: collapse;
+    display: block;
 }
 td, th {
     border: 1px solid #dfe2e5;
