@@ -8,10 +8,12 @@ license = "AGPL-3.0-or-later"
 [dependencies]
 actix-diesel = "0.3.0"
 actix-web = "0.7.10"
+ammonia = "2.0.0"
 askama = { version = "0.8.0", features = ["with-actix-web"] }
 chrono = "0.4.6"
 diesel = { version = "1.4.1", features = ["chrono", "postgres"] }
 env_logger = "0.6.0"
 futures = "0.1.25"
+pulldown-cmark = "0.2.0"
 rand = "0.6.5"
 serde = { version = "1.0.88", features = ["derive"] }

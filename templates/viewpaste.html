@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     {% for p in pastes %}
+        {{ p.markdown|safe }}
         <form method="post" action="/">
             <p>
                 {% let selected_language = p.language_id %}

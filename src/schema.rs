@@ -5,6 +5,7 @@ table! {
         name -> Text,
         highlighter_mode -> Nullable<Text>,
         mime -> Text,
+        is_markdown -> Bool,
     }
 }
 

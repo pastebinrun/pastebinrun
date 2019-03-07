@@ -26,7 +26,7 @@ article {
     padding: 0 1em;
     max-width: 980px;
 }
-h1, h2 {
+h1, h2, h3, h4, h5, h6 {
     line-height: 1.2;
 }
 textarea {
@@ -44,4 +44,24 @@ textarea {
 }
 .CodeMirror-scroll {
     min-height: 372px;
+}
+table {
+    overflow: auto;
+    border-collapse: collapse;
+}
+td, th {
+    border: 1px solid #dfe2e5;
+    padding: 6px 13px;
+}
+tr:nth-child(2n) {
+    background: #f6f8fa;
+}
+pre {
+    padding: 16px;
+}
+pre, code {
+    background: #f6f8fa;
+}
+img {
+    max-width: 100%;
 }

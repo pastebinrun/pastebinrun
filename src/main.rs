@@ -21,6 +21,7 @@ use diesel::prelude::*;
 use diesel::sql_types::Text;
 use futures::future::{self, Either};
 use futures::prelude::*;
+use pulldown_cmark::{html, Options, Parser};
 use rand::prelude::*;
 use schema::{languages, paste_contents, paste_revisions, pastes};
 use serde::de::IgnoredAny;
@@ -138,10 +139,18 @@ struct DisplayPastes {
 }
 
 #[derive(Queryable)]
+struct QueryPaste {
+    paste: String,
+    language_id: i32,
+    delete_at: Option<DateTime<Utc>>,
+    is_markdown: bool,
+}
+
 struct DisplayPaste {
     paste: String,
     language_id: i32,
     delete_at: Option<DateTime<Utc>>,
+    markdown: String,
 }
 
 fn display_paste(
@@ -153,11 +162,13 @@ fn display_paste(
         .execute_async(&db)
         .and_then(|_| {
             paste_contents::table
+                .inner_join(languages::table)
                 .inner_join(paste_revisions::table.inner_join(pastes::table))
                 .select((
                     paste_contents::paste,
                     paste_contents::language_id,
                     pastes::delete_at,
+                    languages::is_markdown,
                 ))
                 .filter(
                     sql("(SELECT paste_revision_id FROM pastes ")
@@ -174,13 +185,51 @@ fn display_paste(
             if pastes.is_empty() {
                 Either::A(future::ok(HttpResponse::NotFound().finish()))
             } else {
-                Either::B(
-                    fetch_languages(&db)
-                        .and_then(|languages| DisplayPastes { languages, pastes }.into_response()),
-                )
+                Either::B(fetch_languages(&db).and_then(|languages| {
+                    DisplayPastes {
+                        languages,
+                        pastes: get_display_paste_vec(pastes),
+                    }
+                    .into_response()
+                }))
             }
         })
         .responder()
+}
+
+fn get_display_paste_vec(pastes: Vec<QueryPaste>) -> Vec<DisplayPaste> {
+    pastes
+        .into_iter()
+        .map(
+            |QueryPaste {
+                 paste,
+                 language_id,
+                 delete_at,
+                 is_markdown,
+             }| {
+                let markdown = if is_markdown {
+                    render_markdown(&paste)
+                } else {
+                    String::new()
+                };
+                DisplayPaste {
+                    paste,
+                    language_id,
+                    delete_at,
+                    markdown,
+                }
+            },
+        )
+        .collect()
+}
+
+fn render_markdown(markdown: &str) -> String {
+    let mut output = String::new();
+    html::push_html(
+        &mut output,
+        Parser::new_ext(markdown, Options::ENABLE_TABLES),
+    );
+    ammonia::clean(&output)
 }
 
 fn favicon(_: ()) -> io::Result<NamedFile> {
@@ -201,7 +250,7 @@ fn main() -> io::Result<()> {
                             "default-src 'none'; ",
                             "script-src 'self'; ",
                             "style-src 'self'; ",
-                            "img-src 'self'; ",
+                            "img-src *; ",
                             "object-src 'none'; ",
                             "base-uri 'none'; ",
                             "form-action 'self'; ",
