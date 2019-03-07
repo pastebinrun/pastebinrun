@@ -59,6 +59,7 @@ tr:nth-child(2n) {
 }
 pre {
     padding: 16px;
+    overflow: auto;
 }
 pre, code {
     background: #f6f8fa;
