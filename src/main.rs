@@ -16,14 +16,12 @@ use actix_web::{server, App, AsyncResponder, Form, HttpResponse, Path, State};
 use askama::actix_web::TemplateIntoResponse;
 use askama::Template;
 use chrono::{DateTime, Duration, Utc};
-use diesel::dsl::sql;
 use diesel::prelude::*;
-use diesel::sql_types::Text;
 use futures::future::{self, Either};
 use futures::prelude::*;
 use pulldown_cmark::{html, Options, Parser};
 use rand::prelude::*;
-use schema::{languages, paste_contents, paste_revisions, pastes};
+use schema::{languages, pastes};
 use serde::de::IgnoredAny;
 use serde::Deserialize;
 use std::{env, io};
@@ -77,18 +75,6 @@ struct PasteForm {
 struct NewPaste {
     identifier: String,
     delete_at: Option<DateTime<Utc>>,
-}
-
-#[derive(Insertable)]
-#[table_name = "paste_revisions"]
-struct NewPasteRevision {
-    paste_id: i32,
-}
-
-#[derive(Insertable)]
-#[table_name = "paste_contents"]
-struct NewPasteContent {
-    paste_revision_id: i32,
     language_id: i32,
     paste: String,
 }
@@ -102,40 +88,28 @@ fn insert_paste(db: State<Database<PgConnection>>, Form(form): Form<PasteForm>) 
         .collect();
     let delete_at = form.autodelete.map(|_| Utc::now() + Duration::hours(24));
     let cloned_identifier = identifier.clone();
-    db.transaction(move |c| {
-        let paste_id = diesel::insert_into(pastes::table)
-            .values(NewPaste {
-                identifier,
-                delete_at,
-            })
-            .returning(schema::pastes::columns::paste_id)
-            .get_result(c)?;
-        let paste_revision_id = diesel::insert_into(paste_revisions::table)
-            .values(NewPasteRevision { paste_id })
-            .returning(schema::paste_revisions::columns::paste_revision_id)
-            .get_result(c)?;
-        diesel::insert_into(paste_contents::table)
-            .values(NewPasteContent {
-                paste_revision_id,
-                language_id: form.language,
-                paste: form.code,
-            })
-            .execute(c)
-    })
-    .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
-    .map(move |_| {
-        HttpResponse::Found()
-            .header(LOCATION, format!("/{}", cloned_identifier))
-            .finish()
-    })
-    .responder()
+    diesel::insert_into(pastes::table)
+        .values(NewPaste {
+            identifier,
+            delete_at,
+            language_id: form.language,
+            paste: form.code,
+        })
+        .execute_async(&db)
+        .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
+        .map(move |_| {
+            HttpResponse::Found()
+                .header(LOCATION, format!("/{}", cloned_identifier))
+                .finish()
+        })
+        .responder()
 }
 
 #[derive(Template)]
 #[template(path = "viewpaste.html")]
-struct DisplayPastes {
+struct DisplayPaste {
     languages: Vec<Language>,
-    pastes: Vec<DisplayPaste>,
+    paste: Paste,
 }
 
 #[derive(Queryable)]
@@ -146,7 +120,29 @@ struct QueryPaste {
     is_markdown: bool,
 }
 
-struct DisplayPaste {
+impl QueryPaste {
+    fn into_paste(self) -> Paste {
+        let QueryPaste {
+            paste,
+            language_id,
+            delete_at,
+            is_markdown,
+        } = self;
+        let markdown = if is_markdown {
+            render_markdown(&paste)
+        } else {
+            String::new()
+        };
+        Paste {
+            paste,
+            language_id,
+            delete_at,
+            markdown,
+        }
+    }
+}
+
+struct Paste {
     paste: String,
     language_id: i32,
     delete_at: Option<DateTime<Utc>>,
@@ -161,66 +157,30 @@ fn display_paste(
         .filter(pastes::delete_at.lt(Utc::now()))
         .execute_async(&db)
         .and_then(|_| {
-            paste_contents::table
+            pastes::table
                 .inner_join(languages::table)
-                .inner_join(paste_revisions::table.inner_join(pastes::table))
                 .select((
-                    paste_contents::paste,
-                    paste_contents::language_id,
+                    pastes::paste,
+                    pastes::language_id,
                     pastes::delete_at,
                     languages::is_markdown,
                 ))
-                .filter(
-                    sql("(SELECT paste_revision_id FROM pastes ")
-                        .sql("NATURAL JOIN paste_revisions WHERE identifier =")
-                        .bind::<Text, _>(requested_identifier.into_inner())
-                        .sql("ORDER BY created_at DESC FETCH FIRST ROW ONLY)")
-                        .eq(paste_revisions::paste_revision_id),
-                )
-                .load_async(&db)
-                .map(|pastes| (db, pastes))
+                .filter(pastes::identifier.eq(requested_identifier.into_inner()))
+                .get_optional_result_async::<QueryPaste>(&db)
+                .map(|paste| (db, paste))
         })
         .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
-        .and_then(|(db, pastes)| {
-            if pastes.is_empty() {
-                Either::A(future::ok(HttpResponse::NotFound().finish()))
-            } else {
-                Either::B(fetch_languages(&db).and_then(|languages| {
-                    DisplayPastes {
-                        languages,
-                        pastes: get_display_paste_vec(pastes),
-                    }
-                    .into_response()
-                }))
-            }
+        .and_then(|(db, paste)| match paste {
+            None => Either::A(future::ok(HttpResponse::NotFound().finish())),
+            Some(paste) => Either::B(fetch_languages(&db).and_then(|languages| {
+                DisplayPaste {
+                    languages,
+                    paste: paste.into_paste(),
+                }
+                .into_response()
+            })),
         })
         .responder()
-}
-
-fn get_display_paste_vec(pastes: Vec<QueryPaste>) -> Vec<DisplayPaste> {
-    pastes
-        .into_iter()
-        .map(
-            |QueryPaste {
-                 paste,
-                 language_id,
-                 delete_at,
-                 is_markdown,
-             }| {
-                let markdown = if is_markdown {
-                    render_markdown(&paste)
-                } else {
-                    String::new()
-                };
-                DisplayPaste {
-                    paste,
-                    language_id,
-                    delete_at,
-                    markdown,
-                }
-            },
-        )
-        .collect()
 }
 
 fn render_markdown(markdown: &str) -> String {

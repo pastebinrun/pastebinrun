@@ -10,32 +10,16 @@ table! {
 }
 
 table! {
-    paste_contents (paste_content_id) {
-        paste_content_id -> Int4,
-        paste_revision_id -> Int4,
+    pastes (paste_id) {
+        paste_id -> Int4,
+        identifier -> Text,
+        delete_at -> Nullable<Timestamptz>,
+        created_at -> Timestamptz,
         language_id -> Int4,
         paste -> Text,
     }
 }
 
-table! {
-    paste_revisions (paste_revision_id) {
-        paste_revision_id -> Int4,
-        created_at -> Timestamptz,
-        paste_id -> Int4,
-    }
-}
+joinable!(pastes -> languages (language_id));
 
-table! {
-    pastes (paste_id) {
-        paste_id -> Int4,
-        identifier -> Text,
-        delete_at -> Nullable<Timestamptz>,
-    }
-}
-
-joinable!(paste_contents -> languages (language_id));
-joinable!(paste_contents -> paste_revisions (paste_revision_id));
-joinable!(paste_revisions -> pastes (paste_id));
-
-allow_tables_to_appear_in_same_query!(languages, paste_contents, paste_revisions, pastes,);
+allow_tables_to_appear_in_same_query!(languages, pastes,);
