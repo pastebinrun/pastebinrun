@@ -4,7 +4,7 @@ extern crate diesel;
 mod schema;
 
 use actix_diesel::dsl::AsyncRunQueryDsl;
-use actix_diesel::Database;
+use actix_diesel::{AsyncError, Database};
 use actix_web::error::InternalError;
 use actix_web::fs::{NamedFile, StaticFiles};
 use actix_web::http::header::{
@@ -153,9 +153,7 @@ fn display_paste(
     db: State<Database<PgConnection>>,
     requested_identifier: Path<String>,
 ) -> AsyncResponse {
-    diesel::delete(pastes::table)
-        .filter(pastes::delete_at.lt(Utc::now()))
-        .execute_async(&db)
+    delete_old_pastes(&db)
         .and_then(|_| {
             pastes::table
                 .inner_join(languages::table)
@@ -183,6 +181,15 @@ fn display_paste(
         .responder()
 }
 
+fn delete_old_pastes(
+    db: &Database<PgConnection>,
+) -> impl Future<Item = (), Error = AsyncError<diesel::result::Error>> {
+    diesel::delete(pastes::table)
+        .filter(pastes::delete_at.lt(Utc::now()))
+        .execute_async(&db)
+        .map(|_| ())
+}
+
 fn render_markdown(markdown: &str) -> String {
     let mut output = String::new();
     html::push_html(
@@ -190,6 +197,22 @@ fn render_markdown(markdown: &str) -> String {
         Parser::new_ext(markdown, Options::ENABLE_TABLES),
     );
     ammonia::clean(&output)
+}
+
+fn raw(db: State<Database<PgConnection>>, requested_identifier: Path<String>) -> AsyncResponse {
+    delete_old_pastes(&db)
+        .and_then(move |_| {
+            pastes::table
+                .select(pastes::paste)
+                .filter(pastes::identifier.eq(requested_identifier.into_inner()))
+                .get_optional_result_async::<String>(&db)
+        })
+        .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
+        .map(|paste| match paste {
+            None => HttpResponse::NotFound().finish(),
+            Some(paste) => HttpResponse::Ok().content_type("text/plain").body(paste),
+        })
+        .responder()
 }
 
 fn favicon(_: ()) -> io::Result<NamedFile> {
@@ -230,6 +253,7 @@ fn main() -> io::Result<()> {
             .resource("/{identifier}", |r| {
                 r.method(Method::GET).with(display_paste)
             })
+            .resource("/{identifier}/raw", |r| r.method(Method::GET).with(raw))
     })
     .bind("127.0.0.1:8080")?
     .run();
