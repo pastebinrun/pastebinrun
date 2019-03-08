@@ -97,7 +97,7 @@ const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxzBCDFGHJKLMNPQRSTVWX_-";
 
 fn insert_paste(db: State<Database<PgConnection>>, Form(form): Form<PasteForm>) -> AsyncResponse {
     let mut rng = thread_rng();
-    let identifier: String = (0..24)
+    let identifier: String = (0..10)
         .map(|_| char::from(*CHARACTERS.choose(&mut rng).expect("a random character")))
         .collect();
     let delete_at = form.autodelete.map(|_| Utc::now() + Duration::hours(24));
