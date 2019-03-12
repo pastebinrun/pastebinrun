@@ -19,6 +19,7 @@ use chrono::{DateTime, Duration, Utc};
 use diesel::prelude::*;
 use futures::future::{self, Either};
 use futures::prelude::*;
+use log::info;
 use pulldown_cmark::{html, Options, Parser};
 use rand::prelude::*;
 use schema::{languages, pastes};
@@ -187,7 +188,11 @@ fn delete_old_pastes(
     diesel::delete(pastes::table)
         .filter(pastes::delete_at.lt(Utc::now()))
         .execute_async(&db)
-        .map(|_| ())
+        .map(|pastes| {
+            if pastes > 0 {
+                info!("Deleted {} paste(s)", pastes);
+            }
+        })
 }
 
 fn render_markdown(markdown: &str) -> String {
