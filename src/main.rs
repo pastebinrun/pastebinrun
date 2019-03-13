@@ -13,12 +13,14 @@ use actix_web::http::header::{
 use actix_web::http::{Method, StatusCode};
 use actix_web::middleware::{DefaultHeaders, Logger};
 use actix_web::{server, App, AsyncResponder, Form, HttpResponse, Path, State};
+use ammonia::Builder;
 use askama::actix_web::TemplateIntoResponse;
 use askama::Template;
 use chrono::{DateTime, Duration, Utc};
 use diesel::prelude::*;
 use futures::future::{self, Either};
 use futures::prelude::*;
+use lazy_static::lazy_static;
 use log::info;
 use pulldown_cmark::{html, Options, Parser};
 use rand::prelude::*;
@@ -196,12 +198,19 @@ fn delete_old_pastes(
 }
 
 fn render_markdown(markdown: &str) -> String {
+    lazy_static! {
+        static ref FILTER: Builder<'static> = {
+            let mut builder = Builder::new();
+            builder.link_rel(Some("noopener noreferrer nofollow"));
+            builder
+        };
+    }
     let mut output = String::new();
     html::push_html(
         &mut output,
         Parser::new_ext(markdown, Options::ENABLE_TABLES),
     );
-    ammonia::clean(&output)
+    FILTER.clean(&output).to_string()
 }
 
 fn raw(db: State<Database<PgConnection>>, requested_identifier: Path<String>) -> AsyncResponse {
