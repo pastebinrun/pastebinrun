@@ -5,6 +5,7 @@ body {
     text-align: justify;
     hyphens: auto;
     font-family: sans-serif;
+    word-break: break-all;
 }
 header {
     background: #dd6;
