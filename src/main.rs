@@ -121,6 +121,7 @@ struct QueryPaste {
     language_id: i32,
     delete_at: Option<DateTime<Utc>>,
     is_markdown: bool,
+    no_follow: bool,
 }
 
 impl QueryPaste {
@@ -130,9 +131,10 @@ impl QueryPaste {
             language_id,
             delete_at,
             is_markdown,
+            no_follow,
         } = self;
         let markdown = if is_markdown {
-            render_markdown(&paste)
+            render_markdown(&paste, no_follow)
         } else {
             String::new()
         };
@@ -165,6 +167,7 @@ fn display_paste(
                     pastes::language_id,
                     pastes::delete_at,
                     languages::is_markdown,
+                    pastes::no_follow,
                 ))
                 .filter(pastes::identifier.eq(requested_identifier.into_inner()))
                 .get_optional_result_async::<QueryPaste>(&db)
@@ -197,7 +200,7 @@ fn delete_old_pastes(
         })
 }
 
-fn render_markdown(markdown: &str) -> String {
+fn render_markdown(markdown: &str, no_follow: bool) -> String {
     lazy_static! {
         static ref FILTER: Builder<'static> = {
             let mut builder = Builder::new();
@@ -210,7 +213,11 @@ fn render_markdown(markdown: &str) -> String {
         &mut output,
         Parser::new_ext(markdown, Options::ENABLE_TABLES),
     );
-    FILTER.clean(&output).to_string()
+    if no_follow {
+        FILTER.clean(&output).to_string()
+    } else {
+        ammonia::clean(&output)
+    }
 }
 
 fn raw(db: State<Database<PgConnection>>, requested_identifier: Path<String>) -> AsyncResponse {

@@ -17,6 +17,7 @@ table! {
         created_at -> Timestamptz,
         language_id -> Int4,
         paste -> Text,
+        no_follow -> Bool,
     }
 }
 
