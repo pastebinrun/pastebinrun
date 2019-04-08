@@ -124,6 +124,10 @@ struct QueryPaste {
     no_follow: bool,
 }
 
+#[derive(Template)]
+#[template(path = "404.html")]
+struct PasteNotFound;
+
 impl QueryPaste {
     fn into_paste(self) -> Paste {
         let QueryPaste {
@@ -175,7 +179,9 @@ fn display_paste(
         })
         .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
         .and_then(|(db, paste)| match paste {
-            None => Either::A(future::ok(HttpResponse::NotFound().finish())),
+            None => Either::A(future::ok(
+                HttpResponse::NotFound().body(PasteNotFound.render().unwrap()),
+            )),
             Some(paste) => Either::B(fetch_languages(&db).and_then(|languages| {
                 DisplayPaste {
                     languages,
