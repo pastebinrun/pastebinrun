@@ -8,7 +8,8 @@ use actix_diesel::{AsyncError, Database};
 use actix_web::error::InternalError;
 use actix_web::fs::{NamedFile, StaticFiles};
 use actix_web::http::header::{
-    CONTENT_SECURITY_POLICY, LOCATION, REFERRER_POLICY, X_FRAME_OPTIONS, X_XSS_PROTECTION,
+    CACHE_CONTROL, CONTENT_SECURITY_POLICY, LOCATION, REFERRER_POLICY, X_FRAME_OPTIONS,
+    X_XSS_PROTECTION,
 };
 use actix_web::http::{Method, StatusCode};
 use actix_web::middleware::{DefaultHeaders, Logger};
@@ -18,7 +19,7 @@ use askama::actix_web::TemplateIntoResponse;
 use askama::Template;
 use chrono::{DateTime, Duration, Utc};
 use diesel::prelude::*;
-use futures::future::{self, Either};
+use futures::future;
 use futures::prelude::*;
 use lazy_static::lazy_static;
 use log::info;
@@ -26,7 +27,7 @@ use pulldown_cmark::{html, Options, Parser};
 use rand::prelude::*;
 use schema::{languages, pastes};
 use serde::de::IgnoredAny;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{env, io};
 
 type AsyncResponse = Box<dyn Future<Item = HttpResponse, Error = actix_web::Error>>;
@@ -41,8 +42,6 @@ struct Index {
 struct Language {
     id: i32,
     name: String,
-    highlighter_mode: Option<String>,
-    mime: String,
 }
 
 fn index(db: State<Database<PgConnection>>) -> AsyncResponse {
@@ -55,12 +54,7 @@ fn fetch_languages(
     db: &Database<PgConnection>,
 ) -> impl Future<Item = Vec<Language>, Error = actix_web::Error> {
     languages::table
-        .select((
-            languages::language_id,
-            languages::name,
-            languages::highlighter_mode,
-            languages::mime,
-        ))
+        .select((languages::language_id, languages::name))
         .order((languages::priority.asc(), languages::name.asc()))
         .load_async(&db)
         .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
@@ -179,10 +173,10 @@ fn display_paste(
         })
         .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
         .and_then(|(db, paste)| match paste {
-            None => Either::A(future::ok(
+            None => future::Either::A(future::ok(
                 HttpResponse::NotFound().body(PasteNotFound.render().unwrap()),
             )),
-            Some(paste) => Either::B(fetch_languages(&db).and_then(|languages| {
+            Some(paste) => future::Either::B(fetch_languages(&db).and_then(|languages| {
                 DisplayPaste {
                     languages,
                     paste: paste.into_paste(),
@@ -246,6 +240,28 @@ fn favicon(_: ()) -> io::Result<NamedFile> {
     NamedFile::open("static/favicon.ico")
 }
 
+#[derive(Serialize, Queryable)]
+#[serde(rename_all = "camelCase")]
+struct ApiLanguage {
+    mode: Option<String>,
+    mime: String,
+}
+
+fn api_language(db: State<Database<PgConnection>>, id: Path<i32>) -> AsyncResponse {
+    languages::table
+        .find(id.into_inner())
+        .select((languages::highlighter_mode, languages::mime))
+        .get_optional_result_async(&db)
+        .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
+        .map(|json: Option<ApiLanguage>| match json {
+            Some(json) => HttpResponse::Ok()
+                .header(CACHE_CONTROL, "public, max-age=14400")
+                .json(json),
+            None => HttpResponse::NotFound().finish(),
+        })
+        .responder()
+}
+
 fn main() -> io::Result<()> {
     env_logger::init();
     let db = Database::open(env::var("DATABASE_URL").expect("DATABASE_URL required"));
@@ -257,13 +273,10 @@ fn main() -> io::Result<()> {
                     .header(
                         CONTENT_SECURITY_POLICY,
                         concat!(
-                            "default-src 'none'; ",
-                            "script-src 'self'; ",
-                            "style-src 'self'; ",
+                            "default-src 'self'; ",
                             "img-src *; ",
                             "object-src 'none'; ",
                             "base-uri 'none'; ",
-                            "form-action 'self'; ",
                             "frame-ancestors 'none'",
                         ),
                     )
@@ -281,6 +294,9 @@ fn main() -> io::Result<()> {
                 r.method(Method::GET).with(display_paste)
             })
             .resource("/{identifier}/raw", |r| r.method(Method::GET).with(raw))
+            .resource("/api/v0/language/{id}", |r| {
+                r.method(Method::GET).with(api_language)
+            })
     })
     .bind("127.0.0.1:8080")?
     .run();

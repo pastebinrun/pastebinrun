@@ -17,10 +17,23 @@ const editor = CodeMirror.fromTextArea(document.getElementById('code'), {
     minLines: 40,
 })
 const language = document.getElementById('language')
-function updateHighlighters() {
+const futures = new Map()
+function fetchLanguage(id) {
+    if (futures.has(id)) {
+        return futures.get(id)
+    }
+    const future = fetch(`/api/v0/language/${id}`).then(x => x.json())
+    futures.set(id, future)
+    return future
+}
+async function updateHighlighters() {
     const option = language.selectedOptions[0]
-    editor.setOption('mode', option.getAttribute('data-mime'))
-    CodeMirror.autoLoadMode(editor, option.getAttribute('data-highlighter-mode'))
+    const initialValue = option.value
+    const { mime, mode } = await fetchLanguage(initialValue)
+    if (initialValue === option.value) {
+        editor.setOption('mode', mime)
+        CodeMirror.autoLoadMode(editor, mode)
+    }
 }
 language.addEventListener('change', updateHighlighters)
 updateHighlighters()
