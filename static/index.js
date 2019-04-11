@@ -27,10 +27,9 @@ function fetchLanguage(id) {
     return future
 }
 async function updateHighlighters() {
-    const option = language.selectedOptions[0]
-    const initialValue = option.value
+    const initialValue = language.selectedOptions[0].value
     const { mime, mode } = await fetchLanguage(initialValue)
-    if (initialValue === option.value) {
+    if (initialValue === language.selectedOptions[0].value) {
         editor.setOption('mode', mime)
         CodeMirror.autoLoadMode(editor, mode)
     }
