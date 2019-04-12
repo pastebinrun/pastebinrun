@@ -255,7 +255,7 @@ fn api_language(db: State<Database<PgConnection>>, id: Path<i32>) -> AsyncRespon
         .map_err(|e| InternalError::new(e, StatusCode::INTERNAL_SERVER_ERROR).into())
         .map(|json: Option<ApiLanguage>| match json {
             Some(json) => HttpResponse::Ok()
-                .header(CACHE_CONTROL, "public, max-age=14400")
+                .header(CACHE_CONTROL, "max-age=14400")
                 .json(json),
             None => HttpResponse::NotFound().finish(),
         })
