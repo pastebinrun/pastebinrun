@@ -58,10 +58,14 @@ pub fn routes() -> impl Filter<Extract = (impl Reply,)> {
     headers.insert(
         CONTENT_SECURITY_POLICY,
         HeaderValue::from_static(concat!(
-            "default-src 'self'; ",
+            "default-src 'none'; ",
+            "script-src 'self'; ",
+            "style-src 'self'; ",
+            "connect-src 'self'; ",
             "img-src *; ",
             "object-src 'none'; ",
             "base-uri 'none'; ",
+            "form-action 'self'; ",
             "frame-ancestors 'none'",
         )),
     );
