@@ -1,4 +1,4 @@
-use crate::models::Paste;
+use crate::models::paste::Paste;
 use crate::schema::pastes::dsl::*;
 use crate::Connection;
 use diesel::prelude::*;

@@ -1,0 +1,14 @@
+@use crate::models::language::Selection;
+
+@(selection: Selection)
+
+<select id=language name=language>
+    @for language in selection.languages {
+        <option
+            value="@language.id"
+            @if Some(language.id) == selection.selected_language {
+                selected
+            }
+        >@language.name</option>
+    }
+</select>

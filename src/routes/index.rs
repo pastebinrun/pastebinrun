@@ -1,15 +1,18 @@
-use crate::models::Language;
-use crate::{render, Connection};
-use askama::Template;
-use warp::Reply;
+use crate::models::language::{Language, Selection};
+use crate::templates::RenderRucte;
+use crate::{templates, Connection};
+use warp::http::Response;
+use warp::{Rejection, Reply};
 
-#[derive(Template)]
-#[template(path = "index.html")]
-struct Index {
-    languages: Vec<Language>,
-}
-
-pub fn index(connection: Connection) -> impl Reply {
+pub fn index(connection: Connection) -> Result<impl Reply, Rejection> {
     let languages = Language::fetch(&connection);
-    render(Index { languages })
+    Response::builder().html(|o| {
+        templates::index(
+            o,
+            Selection {
+                languages,
+                selected_language: None,
+            },
+        )
+    })
 }

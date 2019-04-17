@@ -4,20 +4,15 @@ mod index;
 mod insert_paste;
 mod raw_paste;
 
-use crate::render;
-use askama::Template;
+use crate::templates::{self, RenderRucte};
 use diesel::r2d2::{ConnectionManager, Pool};
 use std::env;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_FRAME_OPTIONS,
     X_XSS_PROTECTION,
 };
-use warp::http::StatusCode;
+use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
-
-#[derive(Template)]
-#[template(path = "404.html")]
-struct NotFound;
 
 pub fn routes() -> impl Filter<Extract = (impl Reply,)> {
     let pool = Pool::new(ConnectionManager::new(
@@ -28,7 +23,7 @@ pub fn routes() -> impl Filter<Extract = (impl Reply,)> {
     let index = warp::path::end()
         .and(warp::get2())
         .and(db.clone())
-        .map(index::index);
+        .and_then(index::index);
     let display_paste = warp::path::param()
         .and(warp::path::end())
         .and(warp::get2())
@@ -86,10 +81,9 @@ pub fn routes() -> impl Filter<Extract = (impl Reply,)> {
 
 fn not_found(rejection: Rejection) -> Result<impl Reply, Rejection> {
     if rejection.is_not_found() {
-        Ok(warp::reply::with_status(
-            render(NotFound),
-            StatusCode::NOT_FOUND,
-        ))
+        Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .html(|o| templates::not_found(o))
     } else {
         Err(rejection)
     }

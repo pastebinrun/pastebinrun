@@ -1,0 +1,18 @@
+@use crate::models::language::Selection;
+@use crate::templates::{header, footer, language_selection};
+
+@(selection: Selection)
+
+@:header()
+<form method="post" action="/">
+    <p>
+        @:language_selection(selection)
+        <label>
+            <input type=checkbox name=autodelete checked> Automatically delete after 24 hours
+        </label>
+    </p>
+    <p><textarea id=code name=code></textarea></p>
+    <p>
+        <input type=submit value=Share>
+</form>
+@:footer()

@@ -17,3 +17,8 @@ impl Language {
             .unwrap()
     }
 }
+
+pub struct Selection {
+    pub languages: Vec<Language>,
+    pub selected_language: Option<i32>,
+}

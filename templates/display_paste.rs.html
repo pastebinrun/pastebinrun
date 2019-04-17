@@ -1,0 +1,25 @@
+@use crate::models::language::Selection;
+@use crate::models::paste::ExternPaste;
+@use crate::templates::{header, footer, language_selection};
+@(paste: ExternPaste, selection: Selection)
+
+@:header()
+
+@Html(paste.markdown)
+<form method="post" action="/">
+    <p>
+        @:language_selection(selection)
+        @if let Some(delete_at) = paste.delete_at {
+            <span data-delete-on-modify>
+                This paste will be automatically deleted on @delete_at.format("%Y-%m-%d %H:%M") UTC.
+            </span>
+        }
+        <label data-autohide>
+            <input type=checkbox name=autodelete checked> Automatically delete after 24 hours
+        </label>
+    </p>
+    <p><textarea id=code name=code>@('\n')@paste.paste</textarea></p>
+    <p>
+        <input type=submit value=Share data-autodisable>
+</form>
+@:footer()

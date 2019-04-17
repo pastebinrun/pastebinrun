@@ -4,16 +4,20 @@ version = "0.1.0"
 authors = ["Konrad Borowski <konrad@borowski.pw>"]
 edition = "2018"
 license = "AGPL-3.0-or-later"
+build = "src/build.rs"
 
 [dependencies]
 ammonia = "2.0.0"
-askama = { version = "0.8.0" }
 chrono = "0.4.6"
 diesel = { version = "1.4.1", features = ["chrono", "postgres", "r2d2"] }
 env_logger = { version = "0.6.0", default-features = false }
 lazy_static = "1.3.0"
 log = "0.4.6"
+mime = "0.3.13"
 pulldown-cmark = "0.4.0"
 rand = "0.6.5"
 serde = { version = "1.0.88", features = ["derive"] }
 warp = "0.1.15"
+
+[build-dependencies]
+ructe = { version = "0.6.2", features = ["mime03", "warp"] }
