@@ -7,6 +7,8 @@ mod raw_paste;
 use crate::templates::{self, RenderRucte};
 use diesel::r2d2::{ConnectionManager, Pool};
 use std::env;
+use std::ffi::OsStr;
+use std::path::PathBuf;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_FRAME_OPTIONS,
     X_XSS_PROTECTION,
@@ -29,8 +31,7 @@ pub fn routes() -> impl Filter<Extract = (impl Reply,)> {
         .and(warp::get2())
         .and(db.clone())
         .and_then(display_paste::display_paste);
-    let raw_paste = path!(String / "raw")
-        .and(warp::path::end())
+    let raw_paste = with_ext("txt")
         .and(warp::get2())
         .and(db.clone())
         .and_then(raw_paste::raw_paste);
@@ -69,14 +70,27 @@ pub fn routes() -> impl Filter<Extract = (impl Reply,)> {
     headers.insert(REFERRER_POLICY, HeaderValue::from_static("no-referrer"));
     index
         .or(favicon)
-        .or(display_paste)
         .or(raw_paste)
+        .or(display_paste)
         .or(insert_paste)
         .or(api_language)
         .or(static_dir)
         .recover(not_found)
         .with(warp::reply::with::headers(headers))
         .with(warp::log("pastebinrun"))
+}
+
+fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejection> + Clone {
+    warp::path::param()
+        .and(warp::path::end())
+        .and_then(move |path: PathBuf| {
+            match (path.extension(), path.file_stem().and_then(OsStr::to_str)) {
+                (Some(received_ext), Some(file_stem)) if ext == received_ext => {
+                    Ok(file_stem.to_string())
+                }
+                _ => Err(warp::reject::not_found()),
+            }
+        })
 }
 
 fn not_found(rejection: Rejection) -> Result<impl Reply, Rejection> {
