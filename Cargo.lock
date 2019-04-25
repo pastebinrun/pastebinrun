@@ -657,7 +657,7 @@ dependencies = [
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "mime 0.3.13 (registry+https://github.com/rust-lang/crates.io-index)",
- "pulldown-cmark 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pulldown-cmark 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "ructe 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.90 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -727,7 +727,7 @@ dependencies = [
 
 [[package]]
 name = "pulldown-cmark"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1506,7 +1506,7 @@ dependencies = [
 "checksum pq-sys 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)" = "6ac25eee5a0582f45a67e837e350d784e7003bd29a5f460796772061ca49ffda"
 "checksum precomputed-hash 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "925383efa346730478fb4838dbe9137d2a47675ad789c546d150a6e1dd4ab31c"
 "checksum proc-macro2 0.4.27 (registry+https://github.com/rust-lang/crates.io-index)" = "4d317f9caece796be1980837fd5cb3dfec5613ebdb04ad0956deea83ce168915"
-"checksum pulldown-cmark 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d1b74cc784b038a9921fd1a48310cc2e238101aa8ae0b94201e2d85121dd68b5"
+"checksum pulldown-cmark 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "157737d41407de9c5e0563a991d085117d60ae729af2cc1bf28d6dfbc97bcc1f"
 "checksum quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)" = "faf4799c5d274f3868a4aae320a0a182cbd2baee377b378f080e16a23e9d80db"
 "checksum r2d2 0.8.4 (registry+https://github.com/rust-lang/crates.io-index)" = "9dd8a293251281a4d02848925fcdbbc9f466ddb4965981bb06680359b3d12091"
 "checksum rand 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)" = "c618c47cd3ebd209790115ab837de41425723956ad3ce2e6a7f09890947cacb9"
