@@ -6,7 +6,6 @@ mod raw_paste;
 
 use crate::templates::{self, RenderRucte};
 use diesel::r2d2::{ConnectionManager, Pool};
-use std::env;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use warp::http::header::{
@@ -16,11 +15,9 @@ use warp::http::header::{
 use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
 
-pub fn routes() -> impl Filter<Extract = (impl Reply,)> {
-    let pool = Pool::new(ConnectionManager::new(
-        env::var("DATABASE_URL").expect("DATABASE_URL required"),
-    ))
-    .expect("Couldn't create a connection pool");
+pub fn routes(database_url: &str) -> impl Filter<Extract = (impl Reply,)> {
+    let pool =
+        Pool::new(ConnectionManager::new(database_url)).expect("Couldn't create a connection pool");
     let db = warp::any().map(move || pool.get().unwrap());
     let index = warp::path::end()
         .and(warp::get2())
