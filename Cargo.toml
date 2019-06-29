@@ -10,6 +10,7 @@ build = "src/build.rs"
 ammonia = "2.1.0"
 chrono = "0.4.6"
 diesel = { version = "1.4.1", features = ["chrono", "postgres", "r2d2"] }
+diesel_migrations = "1.4.0"
 env_logger = { version = "0.6.0", default-features = false }
 lazy_static = "1.3.0"
 log = "0.4.6"
