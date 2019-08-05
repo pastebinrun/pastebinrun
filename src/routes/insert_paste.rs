@@ -8,7 +8,7 @@ use serde::Deserialize;
 use warp::http::Uri;
 use warp::Reply;
 
-const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxzBCDFGHJKLMNPQRSTVWX_-";
+const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxzBCDFGHJKLMNPQRSTVWX-";
 
 #[derive(Deserialize)]
 pub struct PasteForm {
