@@ -1,0 +1,8 @@
+build:
+  image: rust:1.36
+  script:
+  - rustc --version && cargo --version
+  - cargo build --release --verbose
+  artifacts:
+    paths:
+    - target/release/pastebinrun
