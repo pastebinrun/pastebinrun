@@ -24,7 +24,6 @@ pub fn display_paste(
                     pastes::language_id,
                     pastes::delete_at,
                     languages::is_markdown,
-                    pastes::no_follow,
                 ))
                 .filter(pastes::identifier.eq(requested_identifier))
                 .get_result_async(pool)

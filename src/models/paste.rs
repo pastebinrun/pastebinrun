@@ -16,7 +16,6 @@ pub struct Paste {
     pub language_id: i32,
     pub delete_at: Option<DateTime<Utc>>,
     pub is_markdown: bool,
-    pub no_follow: bool,
 }
 
 impl Paste {
@@ -47,10 +46,9 @@ impl ExternPaste {
             language_id,
             delete_at,
             is_markdown,
-            no_follow,
         } = paste;
         let markdown = if is_markdown {
-            render_markdown(&paste, no_follow)
+            render_markdown(&paste)
         } else {
             String::new()
         };
@@ -63,7 +61,7 @@ impl ExternPaste {
     }
 }
 
-fn render_markdown(markdown: &str, no_follow: bool) -> String {
+fn render_markdown(markdown: &str) -> String {
     lazy_static! {
         static ref FILTER: Builder<'static> = {
             let mut builder = Builder::new();
@@ -76,9 +74,5 @@ fn render_markdown(markdown: &str, no_follow: bool) -> String {
         &mut output,
         Parser::new_ext(markdown, Options::ENABLE_TABLES),
     );
-    if no_follow {
-        FILTER.clean(&output).to_string()
-    } else {
-        ammonia::clean(&output)
-    }
+    FILTER.clean(&output).to_string()
 }
