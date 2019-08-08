@@ -1,6 +1,9 @@
 use crate::schema::languages::dsl::*;
-use crate::PgConnection;
+use crate::PgPool;
 use diesel::prelude::*;
+use futures::Future;
+use futures03::TryFutureExt;
+use tokio_diesel::{AsyncError, AsyncRunQueryDsl};
 
 #[derive(Queryable)]
 pub struct Language {
@@ -9,12 +12,12 @@ pub struct Language {
 }
 
 impl Language {
-    pub fn fetch(db: &PgConnection) -> Vec<Language> {
+    pub fn fetch(pool: &'static PgPool) -> impl Future<Item = Vec<Language>, Error = AsyncError> {
         languages
             .select((language_id, name))
             .order((priority.asc(), name.asc()))
-            .load(db)
-            .unwrap()
+            .load_async(pool)
+            .compat()
     }
 }
 

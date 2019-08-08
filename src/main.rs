@@ -6,12 +6,11 @@ mod routes;
 mod schema;
 
 use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, PooledConnection};
-use diesel::Connection as _;
+use diesel::r2d2::{ConnectionManager, Pool};
 use std::env;
 use std::error::Error;
 
-type Connection = PooledConnection<ConnectionManager<PgConnection>>;
+type PgPool = Pool<ConnectionManager<PgConnection>>;
 
 fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();

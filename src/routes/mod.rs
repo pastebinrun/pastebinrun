@@ -16,32 +16,33 @@ use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
 
 pub fn routes(database_url: &str) -> impl Filter<Extract = (impl Reply,)> {
-    let pool =
-        Pool::new(ConnectionManager::new(database_url)).expect("Couldn't create a connection pool");
-    let db = warp::any().map(move || pool.get().unwrap());
+    let pool = &*Box::leak(Box::new(
+        Pool::new(ConnectionManager::new(database_url)).expect("Couldn't create a connection pool"),
+    ));
+    let pool = warp::any().map(move || pool);
     let index = warp::path::end()
         .and(warp::get2())
-        .and(db.clone())
+        .and(pool)
         .and_then(index::index);
     let display_paste = warp::path::param()
         .and(warp::path::end())
         .and(warp::get2())
-        .and(db.clone())
+        .and(pool)
         .and_then(display_paste::display_paste);
     let raw_paste = with_ext("txt")
         .and(warp::get2())
-        .and(db.clone())
+        .and(pool)
         .and_then(raw_paste::raw_paste);
     let insert_paste = warp::path::end()
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
-        .and(db.clone())
-        .map(insert_paste::insert_paste);
+        .and(pool)
+        .and_then(insert_paste::insert_paste);
     let api_language = path!("api" / "v0" / "language" / i32)
         .and(warp::path::end())
         .and(warp::get2())
-        .and(db)
+        .and(pool)
         .and_then(api_language::api_language);
     let static_dir = warp::path("static").and(warp::fs::dir("static"));
     let favicon = warp::path("favicon.ico")
