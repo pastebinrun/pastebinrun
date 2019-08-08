@@ -10,7 +10,6 @@ use std::ffi::OsStr;
 use std::path::PathBuf;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_FRAME_OPTIONS,
-    X_XSS_PROTECTION,
 };
 use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
@@ -64,7 +63,6 @@ pub fn routes(database_url: &str) -> impl Filter<Extract = (impl Reply,)> {
         )),
     );
     headers.insert(X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
-    headers.insert(X_XSS_PROTECTION, HeaderValue::from_static("1; mode=block"));
     headers.insert(REFERRER_POLICY, HeaderValue::from_static("no-referrer"));
     index
         .or(favicon)
