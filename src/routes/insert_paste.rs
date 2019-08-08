@@ -1,12 +1,14 @@
 use crate::schema::pastes;
-use crate::Connection;
+use crate::PgPool;
 use chrono::{DateTime, Duration, Utc};
-use diesel::prelude::*;
+use futures::Future;
+use futures03::TryFutureExt;
 use rand::prelude::*;
 use serde::de::IgnoredAny;
 use serde::Deserialize;
+use tokio_diesel::AsyncRunQueryDsl;
 use warp::http::Uri;
-use warp::Reply;
+use warp::{Rejection, Reply};
 
 const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxzBCDFGHJKLMNPQRSTVWX-";
 
@@ -26,7 +28,10 @@ struct NewPaste {
     paste: String,
 }
 
-pub fn insert_paste(form: PasteForm, db: Connection) -> impl Reply {
+pub fn insert_paste(
+    form: PasteForm,
+    pool: &'static PgPool,
+) -> impl Future<Item = impl Reply, Error = Rejection> {
     let mut rng = thread_rng();
     let identifier: String = (0..10)
         .map(|_| char::from(*CHARACTERS.choose(&mut rng).expect("a random character")))
@@ -40,7 +45,13 @@ pub fn insert_paste(form: PasteForm, db: Connection) -> impl Reply {
             language_id: form.language,
             paste: form.code,
         })
-        .execute(&db)
-        .unwrap();
-    warp::redirect(format!("/{}", cloned_identifier).parse::<Uri>().unwrap())
+        .execute_async(&pool)
+        .compat()
+        .map_err(warp::reject::custom)
+        .and_then(move |_| {
+            format!("/{}", cloned_identifier)
+                .parse::<Uri>()
+                .map_err(warp::reject::custom)
+        })
+        .map(warp::redirect)
 }
