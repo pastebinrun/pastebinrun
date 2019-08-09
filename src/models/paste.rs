@@ -76,3 +76,16 @@ fn render_markdown(markdown: &str) -> String {
     );
     FILTER.clean(&output).to_string()
 }
+
+#[cfg(test)]
+mod test {
+    use super::render_markdown;
+
+    #[test]
+    fn markdown_works() {
+        assert_eq!(
+            render_markdown("**bold**"),
+            "<p><strong>bold</strong></p>\n"
+        );
+    }
+}
