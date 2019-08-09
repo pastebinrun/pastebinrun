@@ -95,3 +95,57 @@ fn not_found(rejection: Rejection) -> Result<impl Reply, Rejection> {
         Err(rejection)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::routes;
+    use crate::PgPool;
+    use diesel::r2d2::{ConnectionManager, Pool};
+    use lazy_static::lazy_static;
+    use scraper::{Html, Selector};
+    use serde::Deserialize;
+    use std::env;
+    use std::str;
+
+    lazy_static! {
+        static ref POOL: PgPool = {
+            let pool = Pool::new(ConnectionManager::new(
+                env::var("DATABASE_URL")
+                    .expect("Setting DATABASE_URL environment variable required to run tests"),
+            ))
+            .expect("Couldn't create a connection pool");
+            diesel_migrations::run_pending_migrations(&pool.get().unwrap()).unwrap();
+            pool
+        };
+    }
+
+    #[test]
+    fn test_language_api() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        #[serde(rename_all = "camelCase")]
+        pub struct ApiLanguage<'a> {
+            mode: &'a str,
+            mime: &'a str,
+        }
+        let routes = routes(&POOL);
+        let response = warp::test::request().reply(&routes);
+        let document = Html::parse_document(str::from_utf8(response.body()).unwrap());
+        let id = document
+            .select(&Selector::parse("#language option").unwrap())
+            .find(|element| element.text().next() == Some("HTML"))
+            .expect("a language called HTML to exist")
+            .value()
+            .attr("value")
+            .expect("an ID");
+        let response = warp::test::request()
+            .path(&format!("/api/v0/language/{}", id))
+            .reply(&routes);
+        assert_eq!(
+            serde_json::from_slice::<ApiLanguage>(response.body()).unwrap(),
+            ApiLanguage {
+                mode: "htmlmixed",
+                mime: "text/html"
+            },
+        );
+    }
+}
