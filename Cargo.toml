@@ -25,3 +25,7 @@ warp = "0.1.15"
 
 [build-dependencies]
 ructe = { version = "0.6.2", features = ["mime03", "warp"] }
+
+[dev-dependencies]
+scraper = "0.10.1"
+serde_json = "1.0.40"

@@ -7,16 +7,22 @@ build:
     paths:
     - target/release/pastebinrun
 
-test:1.36:
+test:1.36: &test
+  services:
+  - postgres
+  variables:
+    POSTGRES_DB: db
+    POSTGRES_USER: user
+    POSTGRES_PASSWORD: password
   image: rust:1.36
-  script: &test_script
+  script:
   - *print_version
-  - cargo test --verbose
+  - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose
 
 test:stable:
-  script: *test_script
+  <<: *test
   image: rust:latest
 
 test:nightly:
-  script: *test_script
+  <<: *test
   image: rustlang/rust:nightly
