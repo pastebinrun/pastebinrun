@@ -5,7 +5,7 @@ mod insert_paste;
 mod raw_paste;
 
 use crate::templates::{self, RenderRucte};
-use diesel::r2d2::{ConnectionManager, Pool};
+use crate::PgPool;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use warp::http::header::{
@@ -14,10 +14,7 @@ use warp::http::header::{
 use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
 
-pub fn routes(database_url: &str) -> impl Filter<Extract = (impl Reply,)> {
-    let pool = &*Box::leak(Box::new(
-        Pool::new(ConnectionManager::new(database_url)).expect("Couldn't create a connection pool"),
-    ));
+pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,)> {
     let pool = warp::any().map(move || pool);
     let index = warp::path::end()
         .and(warp::get2())
