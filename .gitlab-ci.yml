@@ -1,8 +1,22 @@
 build:
   image: rust:1.36
   script:
-  - rustc --version && cargo --version
+  - &print_version rustc --version && cargo --version
   - cargo build --release --verbose
   artifacts:
     paths:
     - target/release/pastebinrun
+
+test:1.36:
+  image: rust:1.36
+  script: &test_script
+  - *print_version
+  - cargo test --verbose
+
+test:stable:
+  script: *test_script
+  image: rust:latest
+
+test:nightly:
+  script: *test_script
+  image: rustlang/rust:nightly
