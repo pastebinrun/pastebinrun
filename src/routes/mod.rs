@@ -3,6 +3,7 @@ mod display_paste;
 mod index;
 mod insert_paste;
 mod raw_paste;
+mod run;
 
 use crate::templates::{self, RenderRucte};
 use crate::PgPool;
@@ -40,6 +41,13 @@ pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Err
         .and(warp::get2())
         .and(pool)
         .and_then(api_language::api_language);
+    let run = path!("api" / "v0" / "run" / i32)
+        .and(warp::path::end())
+        .and(warp::post2())
+        .and(warp::body::content_length_limit(1_000_000))
+        .and(warp::body::form())
+        .and(pool)
+        .and_then(run::run);
     let static_dir = warp::path("static").and(warp::fs::dir("static"));
     let favicon = warp::path("favicon.ico")
         .and(warp::path::end())
@@ -67,6 +75,7 @@ pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Err
         .or(display_paste)
         .or(insert_paste)
         .or(api_language)
+        .or(run)
         .or(static_dir)
         .recover(not_found)
         .with(warp::reply::with::headers(headers))

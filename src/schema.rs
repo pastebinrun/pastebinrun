@@ -20,6 +20,17 @@ table! {
     }
 }
 
-joinable!(pastes -> languages (language_id));
+table! {
+    wrappers (wrapper_id) {
+        wrapper_id -> Int4,
+        language_id -> Int4,
+        label -> Text,
+        code -> Text,
+        ordering -> Int4,
+    }
+}
 
-allow_tables_to_appear_in_same_query!(languages, pastes,);
+joinable!(pastes -> languages (language_id));
+joinable!(wrappers -> languages (language_id));
+
+allow_tables_to_appear_in_same_query!(languages, pastes, wrappers,);

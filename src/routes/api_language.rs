@@ -1,4 +1,4 @@
-use crate::schema::languages::dsl::*;
+use crate::schema::{languages, wrappers};
 use crate::PgPool;
 use diesel::prelude::*;
 use futures::Future;
@@ -8,27 +8,57 @@ use tokio_diesel::{AsyncRunQueryDsl, OptionalExtension};
 use warp::http::header::CACHE_CONTROL;
 use warp::{Rejection, Reply};
 
-#[derive(Serialize, Queryable)]
+#[derive(Queryable)]
+struct QueryLanguage {
+    mode: Option<String>,
+    mime: String,
+}
+
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ApiLanguage {
     mode: Option<String>,
     mime: String,
+    wrappers: Vec<Wrapper>,
+}
+
+#[derive(Serialize, Queryable)]
+struct Wrapper {
+    id: i32,
+    label: String,
 }
 
 pub fn api_language(
     id: i32,
     pool: &'static PgPool,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
-    languages
+    languages::table
         .find(id)
-        .select((highlighter_mode, mime))
+        .select((languages::highlighter_mode, languages::mime))
         .get_result_async(pool)
         .compat()
         .then(|result| result.optional())
-        .map(|paste_contents| paste_contents.ok_or_else(warp::reject::not_found))
+        .map(|language| language.ok_or_else(warp::reject::not_found))
         .map_err(warp::reject::custom)
         .flatten()
-        .map(|json: ApiLanguage| {
-            warp::reply::with_header(warp::reply::json(&json), CACHE_CONTROL, "max-age=14400")
+        .join(
+            wrappers::table
+                .filter(wrappers::language_id.eq(id))
+                .select((wrappers::wrapper_id, wrappers::label))
+                .order(wrappers::ordering)
+                .load_async(pool)
+                .compat()
+                .map_err(warp::reject::custom),
+        )
+        .map(|(language, wrappers): (QueryLanguage, _)| {
+            warp::reply::with_header(
+                warp::reply::json(&ApiLanguage {
+                    mode: language.mode,
+                    mime: language.mime,
+                    wrappers,
+                }),
+                CACHE_CONTROL,
+                "max-age=14400",
+            )
         })
 }
