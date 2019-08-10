@@ -1,5 +1,5 @@
 @use crate::models::language::Selection;
-@use crate::templates::{header, footer, language_selection};
+@use crate::templates::{buttons, header, footer, language_selection};
 
 @(selection: Selection)
 
@@ -12,9 +12,6 @@
         </label>
     </p>
     <p><textarea id=code name=code></textarea></p>
-    <p id="buttons">
-        <span id="wrapper-buttons"></span>
-        <input type=submit value=Share data-autodisable>
-    <div id="output"></div>
+    @:buttons()
 </form>
 @:footer()
