@@ -1,6 +1,6 @@
 @use crate::models::language::Selection;
 @use crate::models::paste::ExternPaste;
-@use crate::templates::{header, footer, language_selection};
+@use crate::templates::{buttons, header, footer, language_selection};
 @(paste: ExternPaste, selection: Selection)
 
 @:header()
@@ -19,9 +19,6 @@
         </label>
     </p>
     <p><textarea id=code name=code>@('\n')@paste.paste</textarea></p>
-    <p id="buttons">
-        <span id="wrapper-buttons"></span>
-        <input type=submit value=Share data-autodisable>
-    <div id="output"></div>
+    @:buttons()
 </form>
 @:footer()
