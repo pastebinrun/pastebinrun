@@ -27,6 +27,7 @@ table! {
         label -> Text,
         code -> Text,
         ordering -> Int4,
+        is_formatter -> Bool,
     }
 }
 
