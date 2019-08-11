@@ -37,7 +37,7 @@ async function updateLanguage() {
         CodeMirror.autoLoadMode(editor, mode)
         const buttons = document.getElementById('wrapper-buttons')
         buttons.textContent = ''
-        for (const { id, label } of wrappers) {
+        for (const { id, label, isFormatter } of wrappers) {
             const button = document.createElement('button')
             button.textContent = label
             button.addEventListener('click', e => {
@@ -66,20 +66,24 @@ async function updateLanguage() {
                             stderrElement.textContent = stderr
                             output.append(stderrHeader, stderrElement)
                         }
-                        const stdoutHeader = document.createElement('h2')
-                        stdoutHeader.textContent = 'Standard output'
-                        if (status) {
-                            stdoutHeader.textContent += ` (exit code ${status})`
-                        }
-                        const stdoutElement = document.createElement('pre')
-                        if (stdout) {
-                            stdoutElement.textContent = stdout
+                        if (isFormatter) {
+                            editor.setValue(stdout)
                         } else {
-                            const italic = document.createElement('i')
-                            italic.textContent = '(no output)'
-                            stdoutElement.append(italic)
+                            const stdoutHeader = document.createElement('h2')
+                            stdoutHeader.textContent = 'Standard output'
+                            if (status) {
+                                stdoutHeader.textContent += ` (exit code ${status})`
+                            }
+                            const stdoutElement = document.createElement('pre')
+                            if (stdout) {
+                                stdoutElement.textContent = stdout
+                            } else {
+                                const italic = document.createElement('i')
+                                italic.textContent = '(no output)'
+                                stdoutElement.append(italic)
+                            }
+                            output.append(stdoutHeader, stdoutElement)
                         }
-                        output.append(stdoutHeader, stdoutElement)
                     })
                     .catch(e => {
                         if (e.name != 'AbortError')

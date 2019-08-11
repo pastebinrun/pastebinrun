@@ -23,9 +23,11 @@ struct ApiLanguage {
 }
 
 #[derive(Serialize, Queryable)]
+#[serde(rename_all = "camelCase")]
 struct Wrapper {
     id: i32,
     label: String,
+    is_formatter: bool,
 }
 
 pub fn api_language(
@@ -44,7 +46,11 @@ pub fn api_language(
         .join(
             wrappers::table
                 .filter(wrappers::language_id.eq(id))
-                .select((wrappers::wrapper_id, wrappers::label))
+                .select((
+                    wrappers::wrapper_id,
+                    wrappers::label,
+                    wrappers::is_formatter,
+                ))
                 .order(wrappers::ordering)
                 .load_async(pool)
                 .compat()
