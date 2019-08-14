@@ -27,6 +27,7 @@ struct ApiLanguage {
 struct Wrapper {
     id: i32,
     label: String,
+    is_asm: bool,
     is_formatter: bool,
 }
 
@@ -49,6 +50,7 @@ pub fn api_language(
                 .select((
                     wrappers::wrapper_id,
                     wrappers::label,
+                    wrappers::is_asm,
                     wrappers::is_formatter,
                 ))
                 .order(wrappers::ordering)

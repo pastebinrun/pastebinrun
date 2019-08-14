@@ -16,8 +16,10 @@ lazy_static! {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Form {
     code: String,
+    compiler_options: String,
 }
 
 #[derive(Serialize)]
@@ -42,7 +44,10 @@ struct Output {
 
 pub fn run(
     id: i32,
-    Form { code }: Form,
+    Form {
+        code,
+        compiler_options,
+    }: Form,
     pool: &'static PgPool,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     wrappers::table
@@ -54,7 +59,7 @@ pub fn run(
         .map(|wrapper| wrapper.ok_or_else(warp::reject::not_found))
         .map_err(warp::reject::custom)
         .flatten()
-        .and_then(|language_code| {
+        .and_then(move |language_code: String| {
             CLIENT
                 .post(SANDBOX_URL.as_str())
                 .json(&Request {
@@ -63,7 +68,7 @@ pub fn run(
                         contents: code,
                     }],
                     stdin: "",
-                    code: language_code,
+                    code: language_code.replace("%s", &compiler_options),
                 })
                 .send()
                 .and_then(|mut r| r.json())

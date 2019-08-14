@@ -28,6 +28,7 @@ table! {
         code -> Text,
         ordering -> Int4,
         is_formatter -> Bool,
+        is_asm -> Bool,
     }
 }
 

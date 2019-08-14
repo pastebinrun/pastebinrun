@@ -79,3 +79,9 @@ pre, code {
 img {
     max-width: 100%;
 }
+.stdout-header h2, .stdout-header label {
+    display: inline-block;
+}
+.stdout-header label {
+    padding-left: 1em;
+}
