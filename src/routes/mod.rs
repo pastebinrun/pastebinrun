@@ -1,4 +1,5 @@
 mod api_language;
+mod api_v1;
 mod display_paste;
 mod index;
 mod insert_paste;
@@ -52,6 +53,12 @@ pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Err
     let favicon = warp::path("favicon.ico")
         .and(warp::path::end())
         .and(warp::fs::file("static/favicon.ico"));
+    let api_v1_languages = path!("api" / "v1")
+        .and(warp::path("languages"))
+        .and(warp::path::end())
+        .and(warp::get2())
+        .and(pool)
+        .and_then(api_v1::languages::languages);
     let mut headers = HeaderMap::new();
     headers.insert(
         CONTENT_SECURITY_POLICY,
@@ -75,6 +82,7 @@ pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Err
         .or(display_paste)
         .or(insert_paste)
         .or(api_language)
+        .or(api_v1_languages)
         .or(run)
         .or(static_dir)
         .recover(not_found)
