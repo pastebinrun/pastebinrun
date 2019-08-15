@@ -6,6 +6,7 @@ table! {
         highlighter_mode -> Nullable<Text>,
         mime -> Text,
         is_markdown -> Bool,
+        identifier -> Text,
     }
 }
 
@@ -29,6 +30,7 @@ table! {
         ordering -> Int4,
         is_formatter -> Bool,
         is_asm -> Bool,
+        identifier -> Text,
     }
 }
 
