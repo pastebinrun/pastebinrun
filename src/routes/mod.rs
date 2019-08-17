@@ -16,49 +16,89 @@ use warp::http::header::{
 use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
 
-pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Error = Rejection> {
-    let pool = warp::any().map(move || pool);
-    let index = warp::path::end()
+fn pool_route(
+    pool: &'static PgPool,
+) -> impl Filter<Extract = (&'static PgPool,), Error = Rejection> + Copy {
+    warp::any().and_then(move || -> Result<_, Rejection> { Ok(pool) })
+}
+
+fn index(pool: &'static PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    warp::path::end()
         .and(warp::get2())
-        .and(pool)
-        .and_then(index::index);
-    let display_paste = warp::path::param()
+        .and(pool_route(pool))
+        .and_then(index::index)
+}
+
+fn display_paste(
+    pool: &'static PgPool,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    warp::path::param()
         .and(warp::path::end())
         .and(warp::get2())
-        .and(pool)
-        .and_then(display_paste::display_paste);
-    let raw_paste = with_ext("txt")
+        .and(pool_route(pool))
+        .and_then(display_paste::display_paste)
+}
+
+fn raw_paste(pool: &'static PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    with_ext("txt")
         .and(warp::get2())
-        .and(pool)
-        .and_then(raw_paste::raw_paste);
-    let insert_paste = warp::path::end()
+        .and(pool_route(pool))
+        .and_then(raw_paste::raw_paste)
+}
+
+fn insert_paste(
+    pool: &'static PgPool,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    warp::path::end()
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
-        .and(pool)
-        .and_then(insert_paste::insert_paste);
-    let api_language = path!("api" / "v0" / "language" / i32)
+        .and(pool_route(pool))
+        .and_then(insert_paste::insert_paste)
+}
+
+fn api_language(
+    pool: &'static PgPool,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    path!("api" / "v0" / "language" / i32)
         .and(warp::path::end())
         .and(warp::get2())
-        .and(pool)
-        .and_then(api_language::api_language);
-    let run = path!("api" / "v0" / "run" / i32)
+        .and(pool_route(pool))
+        .and_then(api_language::api_language)
+}
+
+fn run(pool: &'static PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    path!("api" / "v0" / "run" / i32)
         .and(warp::path::end())
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
-        .and(pool)
-        .and_then(run::run);
-    let static_dir = warp::path("static").and(warp::fs::dir("static"));
-    let favicon = warp::path("favicon.ico")
-        .and(warp::path::end())
-        .and(warp::fs::file("static/favicon.ico"));
-    let api_v1_languages = path!("api" / "v1")
+        .and(pool_route(pool))
+        .and_then(run::run)
+}
+
+fn api_v1_languages(
+    pool: &'static PgPool,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    path!("api" / "v1")
         .and(warp::path("languages"))
         .and(warp::path::end())
         .and(warp::get2())
-        .and(pool)
-        .and_then(api_v1::languages::languages);
+        .and(pool_route(pool))
+        .and_then(api_v1::languages::languages)
+}
+
+fn static_dir() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path("static").and(warp::fs::dir("static"))
+}
+
+fn favicon() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path("favicon.ico")
+        .and(warp::path::end())
+        .and(warp::fs::file("static/favicon.ico"))
+}
+
+pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Error = Rejection> {
     let mut headers = HeaderMap::new();
     headers.insert(
         CONTENT_SECURITY_POLICY,
@@ -76,21 +116,21 @@ pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Err
     );
     headers.insert(X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
     headers.insert(REFERRER_POLICY, HeaderValue::from_static("no-referrer"));
-    index
-        .or(favicon)
-        .or(raw_paste)
-        .or(display_paste)
-        .or(insert_paste)
-        .or(api_language)
-        .or(api_v1_languages)
-        .or(run)
-        .or(static_dir)
+    index(pool)
+        .or(favicon())
+        .or(raw_paste(pool))
+        .or(display_paste(pool))
+        .or(insert_paste(pool))
+        .or(api_language(pool))
+        .or(api_v1_languages(pool))
+        .or(run(pool))
+        .or(static_dir())
         .recover(not_found)
         .with(warp::reply::with::headers(headers))
         .with(warp::log("pastebinrun"))
 }
 
-fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejection> + Clone {
+fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejection> + Copy {
     warp::path::param()
         .and(warp::path::end())
         .and_then(move |path: PathBuf| {
