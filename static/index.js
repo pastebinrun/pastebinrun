@@ -30,6 +30,7 @@ function fetchLanguage(id) {
 const wrapperButtons = document.getElementById('wrapper-buttons')
 const compilerOptions = document.createElement('input')
 compilerOptions.placeholder = 'Compiler options'
+compilerOptions.style.display = 'none'
 const buttons = document.createElement('span')
 wrapperButtons.append(compilerOptions, buttons)
 
