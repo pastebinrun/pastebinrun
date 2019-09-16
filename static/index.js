@@ -28,11 +28,13 @@ function fetchLanguage(id) {
 }
 
 const wrapperButtons = document.getElementById('wrapper-buttons')
+const selector = document.createElement('span')
 const compilerOptions = document.createElement('input')
 compilerOptions.placeholder = 'Compiler options'
 compilerOptions.style.display = 'none'
+const implementationButtons = document.createElement('span')
 const buttons = document.createElement('span')
-wrapperButtons.append(compilerOptions, buttons)
+wrapperButtons.append(selector, compilerOptions, implementationButtons, buttons)
 
 const filterAsm = document.createElement('label')
 const filterAsmCheckbox = document.createElement('input')
@@ -44,85 +46,108 @@ const filterRegex = /(?:\t\.(?:text|file|section|globl|p2align|type|cfi_.*|size|
 let abortEval = new AbortController
 async function updateLanguage() {
     const initialValue = language.selectedOptions[0].value
-    const { mime, mode, wrappers } = await fetchLanguage(initialValue)
+    const { mime, mode, sharedWrappers, implementations } = await fetchLanguage(initialValue)
     if (initialValue === language.selectedOptions[0].value) {
         editor.setOption('mode', mime)
         CodeMirror.autoLoadMode(editor, mode)
-        buttons.textContent = ''
-        compilerOptions.style.display = wrappers.length ? 'inline' : 'none'
-        for (const { id, label, isAsm, isFormatter } of wrappers) {
-            const button = document.createElement('button')
-            button.textContent = label
-            button.addEventListener('click', e => {
-                e.preventDefault()
-                const body = new URLSearchParams
-                body.append('compilerOptions', compilerOptions.value)
-                body.append('code', editor.getValue())
-                abortEval.abort()
-                abortEval = new AbortController
-                const parameters = {
-                    method: 'POST',
-                    body,
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    signal: abortEval.signal,
-                }
-                const output = document.getElementById('output')
-                output.textContent = ''
-                fetch(`/api/v0/run/${id}`, parameters)
-                    .then(x => x.json())
-                    .catch(e => {
-                        if (e.name != 'AbortError')
-                            output.textContent = 'An error occured while running the code. Try again.'
-                    })
-                    .then(({ status, stdout, stderr }) => {
-                        function updateStdout() {
-                            if (stdout) {
-                                if (isAsm && filterAsmCheckbox.checked) {
-                                    stdoutElement.textContent = stdout.replace(filterRegex, "")
-                                } else {
-                                    stdoutElement.textContent = stdout
-                                }
-                            } else {
-                                const italic = document.createElement('i')
-                                italic.textContent = '(no output)'
-                                stdoutElement.append(italic)
-                            }
-                        }
-                        let stdoutElement
-                        if (stderr) {
-                            const stderrHeader = document.createElement('h2')
-                            stderrHeader.textContent = 'Standard error'
-                            const stderrElement = document.createElement('pre')
-                            stderrElement.textContent = stderr
-                            output.append(stderrHeader, stderrElement)
-                        }
-                        if (isFormatter) {
-                            editor.setValue(stdout)
-                        } else {
-                            const stdoutHeader = document.createElement('div')
-                            stdoutHeader.className = 'stdout-header'
-                            const stdoutHeaderH2 = document.createElement('h2')
-                            stdoutHeaderH2.textContent = 'Standard output'
-                            if (status) {
-                                stdoutHeaderH2.textContent += ` (exit code ${status})`
-                            }
-                            stdoutHeader.append(stdoutHeaderH2)
-                            if (isAsm) {
-                                stdoutHeader.append(filterAsm)
-                                filterAsmCheckbox.onchange = updateStdout
-                            }
-                            stdoutElement = document.createElement('pre')
-                            updateStdout()
-                            output.append(stdoutHeader, stdoutElement)
-                        }
-                    })
-            })
-            buttons.appendChild(button)
+        implementationButtons.textContent = ''
+        selector.textContent = ''
+        if (implementations.length) {
+            const select = document.createElement('select')
+            for (const { label, identifier, wrappers } of implementations) {
+                const option = document.createElement('option')
+                option.textContent = label
+                option.showButtons = () => addButtons(wrappers, implementationButtons, `${initialValue}/${identifier}`)
+                select.append(option)
+            }
+            function updateButtons() {
+                select.selectedOptions[0].showButtons()
+            }
+            select.addEventListener('change', updateButtons)
+            updateButtons()
+            selector.append(select, '')
         }
+        compilerOptions.style.display = implementations.length || sharedWrappers.length ? 'inline' : 'none'
+        addButtons(sharedWrappers, buttons, initialValue)
     }
 }
+
+function addButtons(wrappers, buttons, prefix) {
+    buttons.textContent = ''
+    for (const { identifier, label, isAsm, isFormatter } of wrappers) {
+        const button = document.createElement('button')
+        button.textContent = label
+        button.addEventListener('click', async e => {
+            e.preventDefault()
+            const body = new URLSearchParams
+            body.append('compilerOptions', compilerOptions.value)
+            body.append('code', editor.getValue())
+            abortEval.abort()
+            abortEval = new AbortController
+            const parameters = {
+                method: 'POST',
+                body,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                signal: abortEval.signal,
+            }
+            const output = document.getElementById('output')
+            output.textContent = ''
+            let response
+            try {
+                response = await (await fetch(`/api/v0/run/${prefix}/${identifier}`, parameters)).json()
+            } catch (e) {
+                if (e.name != 'AbortError')
+                    output.textContent = 'An error occured while running the code. Try again.'
+                throw e
+            }
+            const { status, stdout, stderr } = response
+            function updateStdout() {
+                if (stdout) {
+                    if (isAsm && filterAsmCheckbox.checked) {
+                        stdoutElement.textContent = stdout.replace(filterRegex, "")
+                    } else {
+                        stdoutElement.textContent = stdout
+                    }
+                } else {
+                    const italic = document.createElement('i')
+                    italic.textContent = '(no output)'
+                    stdoutElement.append(italic)
+                }
+            }
+            let stdoutElement
+            if (stderr) {
+                const stderrHeader = document.createElement('h2')
+                stderrHeader.textContent = 'Standard error'
+                const stderrElement = document.createElement('pre')
+                stderrElement.textContent = stderr
+                output.append(stderrHeader, stderrElement)
+            }
+            if (isFormatter) {
+                editor.setValue(stdout)
+            } else {
+                const stdoutHeader = document.createElement('div')
+                stdoutHeader.className = 'stdout-header'
+                const stdoutHeaderH2 = document.createElement('h2')
+                stdoutHeaderH2.textContent = 'Standard output'
+                if (status) {
+                    stdoutHeaderH2.textContent += ` (exit code ${status})`
+                }
+                stdoutHeader.append(stdoutHeaderH2)
+                if (isAsm) {
+                    stdoutHeader.append(filterAsm)
+                    filterAsmCheckbox.onchange = updateStdout
+                }
+                stdoutElement = document.createElement('pre')
+                updateStdout()
+                output.append(stdoutHeader, stdoutElement)
+            }
+        })
+        buttons.appendChild(button)
+    }
+}
+
 language.addEventListener('change', updateLanguage)
 updateLanguage()
 

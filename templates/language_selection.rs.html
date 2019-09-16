@@ -5,7 +5,7 @@
 <select id=language name=language>
     @for language in selection.languages {
         <option
-            value="@language.id"
+            value="@language.identifier"
             @if Some(language.id) == selection.selected_language {
                 selected
             }

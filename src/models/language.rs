@@ -8,13 +8,14 @@ use tokio_diesel::{AsyncError, AsyncRunQueryDsl};
 #[derive(Queryable)]
 pub struct Language {
     pub id: i32,
+    pub identifier: String,
     pub name: String,
 }
 
 impl Language {
     pub fn fetch(pool: &'static PgPool) -> impl Future<Item = Vec<Language>, Error = AsyncError> {
         languages
-            .select((language_id, name))
+            .select((language_id, identifier, name))
             .order((priority.asc(), name.asc()))
             .load_async(pool)
             .compat()
