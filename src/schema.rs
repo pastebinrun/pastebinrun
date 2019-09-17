@@ -1,4 +1,26 @@
 table! {
+    implementations (implementation_id) {
+        implementation_id -> Int4,
+        language_id -> Int4,
+        identifier -> Text,
+        label -> Text,
+    }
+}
+
+table! {
+    implementation_wrappers (implementation_wrapper_id) {
+        implementation_wrapper_id -> Int4,
+        implementation_id -> Int4,
+        identifier -> Text,
+        label -> Text,
+        code -> Text,
+        ordering -> Int4,
+        is_formatter -> Bool,
+        is_asm -> Bool,
+    }
+}
+
+table! {
     languages (language_id) {
         language_id -> Int4,
         priority -> Int4,
@@ -22,7 +44,7 @@ table! {
 }
 
 table! {
-    wrappers (wrapper_id) {
+    shared_wrappers (wrapper_id) {
         wrapper_id -> Int4,
         language_id -> Int4,
         label -> Text,
@@ -34,7 +56,15 @@ table! {
     }
 }
 
+joinable!(implementation_wrappers -> implementations (implementation_id));
+joinable!(implementations -> languages (language_id));
 joinable!(pastes -> languages (language_id));
-joinable!(wrappers -> languages (language_id));
+joinable!(shared_wrappers -> languages (language_id));
 
-allow_tables_to_appear_in_same_query!(languages, pastes, wrappers,);
+allow_tables_to_appear_in_same_query!(
+    implementations,
+    implementation_wrappers,
+    languages,
+    pastes,
+    shared_wrappers,
+);

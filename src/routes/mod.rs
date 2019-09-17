@@ -8,6 +8,7 @@ mod run;
 
 use crate::templates::{self, RenderRucte};
 use crate::PgPool;
+use futures03::TryFutureExt;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use warp::http::header::{
@@ -60,21 +61,37 @@ fn insert_paste(
 fn api_language(
     pool: &'static PgPool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
-    path!("api" / "v0" / "language" / i32)
+    path!("api" / "v0" / "language" / String)
         .and(warp::path::end())
         .and(warp::get2())
         .and(pool_route(pool))
-        .and_then(api_language::api_language)
+        .and_then(|identifier, pool| {
+            Box::pin(api_language::api_language(identifier, pool)).compat()
+        })
 }
 
-fn run(pool: &'static PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
-    path!("api" / "v0" / "run" / i32)
+fn shared_run(
+    pool: &'static PgPool,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    path!("api" / "v0" / "run" / String / String)
         .and(warp::path::end())
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
         .and(pool_route(pool))
-        .and_then(run::run)
+        .and_then(run::shared)
+}
+
+fn implementation_run(
+    pool: &'static PgPool,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    path!("api" / "v0" / "run" / String / String / String)
+        .and(warp::path::end())
+        .and(warp::post2())
+        .and(warp::body::content_length_limit(1_000_000))
+        .and(warp::body::form())
+        .and(pool_route(pool))
+        .and_then(run::implementation)
 }
 
 fn api_v1_languages(
@@ -123,7 +140,8 @@ pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Err
         .or(insert_paste(pool))
         .or(api_language(pool))
         .or(api_v1_languages(pool))
-        .or(run(pool))
+        .or(shared_run(pool))
+        .or(implementation_run(pool))
         .or(static_dir())
         .recover(not_found)
         .with(warp::reply::with::headers(headers))
