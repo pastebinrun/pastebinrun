@@ -1,5 +1,5 @@
 use crate::schema::{implementation_wrappers, implementations, languages, shared_wrappers};
-use crate::PgPool;
+use crate::Connection;
 use diesel::prelude::*;
 use futures::Future;
 use futures03::TryFutureExt;
@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 use reqwest::r#async::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
-use tokio_diesel::{AsyncRunQueryDsl, OptionalExtension};
+use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
 lazy_static! {
@@ -49,35 +49,36 @@ pub fn shared(
         code,
         compiler_options,
     }: Form,
-    pool: &'static PgPool,
+    connection: Connection,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
-    languages::table
-        .inner_join(shared_wrappers::table)
-        .filter(languages::identifier.eq(language))
-        .filter(shared_wrappers::identifier.eq(identifier))
-        .select(shared_wrappers::code)
-        .get_result_async(pool)
-        .compat()
-        .then(|result| result.optional())
-        .map(|wrapper| wrapper.ok_or_else(warp::reject::not_found))
-        .map_err(warp::reject::custom)
-        .flatten()
-        .and_then(move |language_code: String| {
-            CLIENT
-                .post(SANDBOX_URL.as_str())
-                .json(&Request {
-                    files: vec![File {
-                        name: "code",
-                        contents: code,
-                    }],
-                    stdin: "",
-                    code: language_code.replace("%s", &compiler_options),
-                })
-                .send()
-                .and_then(|mut r| r.json())
-                .map_err(warp::reject::custom)
-        })
-        .map(|output: Output| warp::reply::json(&output))
+    blocking::run(move || {
+        languages::table
+            .inner_join(shared_wrappers::table)
+            .filter(languages::identifier.eq(language))
+            .filter(shared_wrappers::identifier.eq(identifier))
+            .select(shared_wrappers::code)
+            .get_result(&connection)
+            .optional()
+            .map_err(warp::reject::custom)?
+            .ok_or_else(warp::reject::not_found)
+    })
+    .compat()
+    .and_then(move |language_code: String| {
+        CLIENT
+            .post(SANDBOX_URL.as_str())
+            .json(&Request {
+                files: vec![File {
+                    name: "code",
+                    contents: code,
+                }],
+                stdin: "",
+                code: language_code.replace("%s", &compiler_options),
+            })
+            .send()
+            .and_then(|mut r| r.json())
+            .map_err(warp::reject::custom)
+    })
+    .map(|output: Output| warp::reply::json(&output))
 }
 
 pub fn implementation(
@@ -88,35 +89,36 @@ pub fn implementation(
         code,
         compiler_options,
     }: Form,
-    pool: &'static PgPool,
+    connection: Connection,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
-    implementations::table
-        .inner_join(implementation_wrappers::table)
-        .inner_join(languages::table)
-        .filter(languages::identifier.eq(language))
-        .filter(implementations::identifier.eq(implementation))
-        .filter(implementation_wrappers::identifier.eq(identifier))
-        .select(implementation_wrappers::code)
-        .get_result_async(pool)
-        .compat()
-        .then(|result| result.optional())
-        .map(|wrapper| wrapper.ok_or_else(warp::reject::not_found))
-        .map_err(warp::reject::custom)
-        .flatten()
-        .and_then(move |language_code: String| {
-            CLIENT
-                .post(SANDBOX_URL.as_str())
-                .json(&Request {
-                    files: vec![File {
-                        name: "code",
-                        contents: code,
-                    }],
-                    stdin: "",
-                    code: language_code.replace("%s", &compiler_options),
-                })
-                .send()
-                .and_then(|mut r| r.json())
-                .map_err(warp::reject::custom)
-        })
-        .map(|output: Output| warp::reply::json(&output))
+    blocking::run(move || {
+        implementations::table
+            .inner_join(implementation_wrappers::table)
+            .inner_join(languages::table)
+            .filter(languages::identifier.eq(language))
+            .filter(implementations::identifier.eq(implementation))
+            .filter(implementation_wrappers::identifier.eq(identifier))
+            .select(implementation_wrappers::code)
+            .get_result(&connection)
+            .optional()
+            .map_err(warp::reject::custom)?
+            .ok_or_else(warp::reject::not_found)
+    })
+    .compat()
+    .and_then(move |language_code: String| {
+        CLIENT
+            .post(SANDBOX_URL.as_str())
+            .json(&Request {
+                files: vec![File {
+                    name: "code",
+                    contents: code,
+                }],
+                stdin: "",
+                code: language_code.replace("%s", &compiler_options),
+            })
+            .send()
+            .and_then(|mut r| r.json())
+            .map_err(warp::reject::custom)
+    })
+    .map(|json: Output| warp::reply::json(&json))
 }

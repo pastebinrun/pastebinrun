@@ -1,14 +1,12 @@
 use crate::schema::pastes;
-use crate::PgPool;
+use crate::Connection;
 use ammonia::Builder;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
-use futures::Future;
-use futures03::TryFutureExt;
 use lazy_static::lazy_static;
 use log::info;
 use pulldown_cmark::{Options, Parser};
-use tokio_diesel::{AsyncError, AsyncRunQueryDsl};
+use warp::Rejection;
 
 #[derive(Queryable)]
 pub struct Paste {
@@ -19,16 +17,15 @@ pub struct Paste {
 }
 
 impl Paste {
-    pub fn delete_old(pool: &'static PgPool) -> impl Future<Item = (), Error = AsyncError> {
-        diesel::delete(pastes::table)
+    pub fn delete_old(connection: &Connection) -> Result<(), Rejection> {
+        let pastes = diesel::delete(pastes::table)
             .filter(pastes::delete_at.lt(Utc::now()))
-            .execute_async(pool)
-            .compat()
-            .map(|pastes| {
-                if pastes > 0 {
-                    info!("Deleted {} paste(s)", pastes);
-                }
-            })
+            .execute(connection)
+            .map_err(warp::reject::custom)?;
+        if pastes > 0 {
+            info!("Deleted {} paste(s)", pastes);
+        }
+        Ok(())
     }
 }
 

@@ -7,101 +7,95 @@ mod raw_paste;
 mod run;
 
 use crate::templates::{self, RenderRucte};
-use crate::PgPool;
+use crate::Connection;
+use diesel::prelude::*;
+use diesel::r2d2::{ConnectionManager, Pool};
 use futures03::TryFutureExt;
 use std::ffi::OsStr;
 use std::path::PathBuf;
+use tokio_executor::blocking;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_FRAME_OPTIONS,
 };
 use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
 
-fn pool_route(
-    pool: &'static PgPool,
-) -> impl Filter<Extract = (&'static PgPool,), Error = Rejection> + Copy {
-    warp::any().and_then(move || -> Result<_, Rejection> { Ok(pool) })
+type PgPool = Pool<ConnectionManager<PgConnection>>;
+
+fn connection(pool: PgPool) -> impl Filter<Extract = (Connection,), Error = Rejection> + Clone {
+    warp::any().and_then(move || {
+        let pool = pool.clone();
+        blocking::run(move || pool.get().map_err(warp::reject::custom)).compat()
+    })
 }
 
-fn index(pool: &'static PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+fn index(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::end()
         .and(warp::get2())
-        .and(pool_route(pool))
+        .and(connection(pool))
         .and_then(index::index)
 }
 
-fn display_paste(
-    pool: &'static PgPool,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+fn display_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
         .and(warp::path::end())
         .and(warp::get2())
-        .and(pool_route(pool))
+        .and(connection(pool))
         .and_then(display_paste::display_paste)
 }
 
-fn raw_paste(pool: &'static PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+fn raw_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     with_ext("txt")
         .and(warp::get2())
-        .and(pool_route(pool))
+        .and(connection(pool))
         .and_then(raw_paste::raw_paste)
 }
 
-fn insert_paste(
-    pool: &'static PgPool,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+fn insert_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::end()
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
-        .and(pool_route(pool))
+        .and(connection(pool))
         .and_then(insert_paste::insert_paste)
 }
 
-fn api_language(
-    pool: &'static PgPool,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+fn api_language(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("api" / "v0" / "language" / String)
         .and(warp::path::end())
         .and(warp::get2())
-        .and(pool_route(pool))
-        .and_then(|identifier, pool| {
-            Box::pin(api_language::api_language(identifier, pool)).compat()
-        })
+        .and(connection(pool))
+        .and_then(api_language::api_language)
 }
 
-fn shared_run(
-    pool: &'static PgPool,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+fn shared_run(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("api" / "v0" / "run" / String / String)
         .and(warp::path::end())
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
-        .and(pool_route(pool))
+        .and(connection(pool))
         .and_then(run::shared)
 }
 
 fn implementation_run(
-    pool: &'static PgPool,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+    pool: PgPool,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("api" / "v0" / "run" / String / String / String)
         .and(warp::path::end())
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
-        .and(pool_route(pool))
+        .and(connection(pool))
         .and_then(run::implementation)
 }
 
-fn api_v1_languages(
-    pool: &'static PgPool,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Copy {
+fn api_v1_languages(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("api" / "v1")
         .and(warp::path("languages"))
         .and(warp::path::end())
         .and(warp::get2())
-        .and(pool_route(pool))
+        .and(connection(pool))
         .and_then(api_v1::languages::languages)
 }
 
@@ -115,7 +109,9 @@ fn favicon() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         .and(warp::fs::file("static/favicon.ico"))
 }
 
-pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Error = Rejection> {
+pub fn routes(
+    pool: Pool<ConnectionManager<PgConnection>>,
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> {
     let mut headers = HeaderMap::new();
     headers.insert(
         CONTENT_SECURITY_POLICY,
@@ -133,14 +129,14 @@ pub fn routes(pool: &'static PgPool) -> impl Filter<Extract = (impl Reply,), Err
     );
     headers.insert(X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
     headers.insert(REFERRER_POLICY, HeaderValue::from_static("no-referrer"));
-    index(pool)
+    index(pool.clone())
         .or(favicon())
-        .or(raw_paste(pool))
-        .or(display_paste(pool))
-        .or(insert_paste(pool))
-        .or(api_language(pool))
-        .or(api_v1_languages(pool))
-        .or(shared_run(pool))
+        .or(raw_paste(pool.clone()))
+        .or(display_paste(pool.clone()))
+        .or(insert_paste(pool.clone()))
+        .or(api_language(pool.clone()))
+        .or(api_v1_languages(pool.clone()))
+        .or(shared_run(pool.clone()))
         .or(implementation_run(pool))
         .or(static_dir())
         .recover(not_found)
@@ -174,7 +170,6 @@ fn not_found(rejection: Rejection) -> Result<impl Reply, Rejection> {
 #[cfg(test)]
 mod test {
     use super::routes;
-    use crate::PgPool;
     use diesel::r2d2::{ConnectionManager, CustomizeConnection, Pool};
     use diesel::Connection;
     use lazy_static::lazy_static;
@@ -188,19 +183,17 @@ mod test {
     use warp::Filter;
 
     lazy_static! {
-        static ref POOL: PgPool = {
+        static ref ROUTES: BoxedFilter<(Response,)> = {
             let pool = Pool::builder()
                 .connection_customizer(Box::new(ExecuteWithinTransaction))
                 .max_size(1)
                 .build(ConnectionManager::new(env::var("DATABASE_URL").expect(
                     "Setting DATABASE_URL environment variable required to run tests",
                 )))
-                .expect("Couldn't create a connection pool");
+                .expect("Couldn't create a connection connection");
             diesel_migrations::run_pending_migrations(&pool.get().unwrap()).unwrap();
-            pool
+            routes(pool).map(Reply::into_response).boxed()
         };
-        static ref ROUTES: BoxedFilter<(Response,)> =
-            routes(&POOL).map(Reply::into_response).boxed();
     }
 
     #[derive(Debug)]

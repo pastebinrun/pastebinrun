@@ -1,9 +1,9 @@
 use crate::schema::{implementation_wrappers, implementations, languages, shared_wrappers};
-use crate::PgPool;
+use crate::Connection;
 use diesel::prelude::*;
+use futures::Future;
 use futures03::prelude::*;
 use serde::Serialize;
-use tokio_diesel::{AsyncError, AsyncRunQueryDsl, OptionalExtension};
 use tokio_executor::blocking;
 use warp::http::header::CACHE_CONTROL;
 use warp::{Rejection, Reply};
@@ -58,24 +58,23 @@ struct JsonImplementation {
     wrappers: Vec<Wrapper>,
 }
 
-pub async fn api_language(
+pub fn api_language(
     identifier: String,
-    pool: &'static PgPool,
-) -> Result<impl Reply, Rejection> {
-    let Language { id, mode, mime } = languages::table
-        .filter(languages::identifier.eq(identifier))
-        .select((
-            languages::language_id,
-            languages::highlighter_mode,
-            languages::mime,
-        ))
-        .get_result_async(pool)
-        .await
-        .optional()
-        .map_err(warp::reject::custom)?
-        .ok_or_else(warp::reject::not_found)?;
-    let (shared_wrappers, implementations) = future::try_join(
-        shared_wrappers::table
+    connection: Connection,
+) -> impl Future<Item = impl Reply, Error = Rejection> {
+    blocking::run(move || {
+        let Language { id, mode, mime } = languages::table
+            .filter(languages::identifier.eq(identifier))
+            .select((
+                languages::language_id,
+                languages::highlighter_mode,
+                languages::mime,
+            ))
+            .get_result(&connection)
+            .optional()
+            .map_err(warp::reject::custom)?
+            .ok_or_else(warp::reject::not_found)?;
+        let shared_wrappers = shared_wrappers::table
             .filter(shared_wrappers::language_id.eq(id))
             .select((
                 shared_wrappers::identifier,
@@ -84,73 +83,67 @@ pub async fn api_language(
                 shared_wrappers::is_formatter,
             ))
             .order(shared_wrappers::ordering)
-            .load_async(pool),
-        async {
-            let implementations = implementations::table
-                .select((
-                    implementations::implementation_id,
-                    implementations::identifier,
-                    implementations::label,
-                ))
-                .filter(implementations::language_id.eq(id))
-                .load_async(pool)
-                .await?;
-            let (implementations, implementation_wrappers) = blocking::run(move || {
-                let implementation_wrappers = ImplementationWrapper::belonging_to(&implementations)
-                    .select((
-                        implementation_wrappers::implementation_wrapper_id,
-                        implementation_wrappers::implementation_id,
-                        implementation_wrappers::identifier,
-                        implementation_wrappers::label,
-                        implementation_wrappers::is_asm,
-                        implementation_wrappers::is_formatter,
-                    ))
-                    .order(implementation_wrappers::ordering)
-                    .load(&pool.get().map_err(AsyncError::Checkout)?)
-                    .map_err(AsyncError::Error)?;
-                Ok((implementations, implementation_wrappers))
+            .load(&connection)
+            .map_err(warp::reject::custom)?;
+        let implementations = implementations::table
+            .select((
+                implementations::implementation_id,
+                implementations::identifier,
+                implementations::label,
+            ))
+            .filter(implementations::language_id.eq(id))
+            .load(&connection)
+            .map_err(warp::reject::custom)?;
+        let implementation_wrappers = ImplementationWrapper::belonging_to(&implementations)
+            .select((
+                implementation_wrappers::implementation_wrapper_id,
+                implementation_wrappers::implementation_id,
+                implementation_wrappers::identifier,
+                implementation_wrappers::label,
+                implementation_wrappers::is_asm,
+                implementation_wrappers::is_formatter,
+            ))
+            .order(implementation_wrappers::ordering)
+            .load(&connection)
+            .map_err(warp::reject::custom)?;
+        let implementations = implementation_wrappers
+            .grouped_by(&implementations)
+            .into_iter()
+            .zip(implementations)
+            .map(|(wrappers, implementation)| JsonImplementation {
+                identifier: implementation.identifier,
+                label: implementation.label,
+                wrappers: wrappers
+                    .into_iter()
+                    .map(
+                        |ImplementationWrapper {
+                             identifier,
+                             label,
+                             is_asm,
+                             is_formatter,
+                             ..
+                         }| {
+                            Wrapper {
+                                identifier,
+                                label,
+                                is_asm,
+                                is_formatter,
+                            }
+                        },
+                    )
+                    .collect(),
             })
-            .await?;
-            Ok(implementation_wrappers
-                .grouped_by(&implementations)
-                .into_iter()
-                .zip(implementations)
-                .map(|(wrappers, implementation)| JsonImplementation {
-                    identifier: implementation.identifier,
-                    label: implementation.label,
-                    wrappers: wrappers
-                        .into_iter()
-                        .map(
-                            |ImplementationWrapper {
-                                 identifier,
-                                 label,
-                                 is_asm,
-                                 is_formatter,
-                                 ..
-                             }| {
-                                Wrapper {
-                                    identifier,
-                                    label,
-                                    is_asm,
-                                    is_formatter,
-                                }
-                            },
-                        )
-                        .collect(),
-                })
-                .collect())
-        },
-    )
-    .await
-    .map_err(warp::reject::custom)?;
-    Ok(warp::reply::with_header(
-        warp::reply::json(&JsonLanguage {
-            mode,
-            mime,
-            shared_wrappers,
-            implementations,
-        }),
-        CACHE_CONTROL,
-        "max-age=14400",
-    ))
+            .collect();
+        Ok(warp::reply::with_header(
+            warp::reply::json(&JsonLanguage {
+                mode,
+                mime,
+                shared_wrappers,
+                implementations,
+            }),
+            CACHE_CONTROL,
+            "max-age=14400",
+        ))
+    })
+    .compat()
 }
