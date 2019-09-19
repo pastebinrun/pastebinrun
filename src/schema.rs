@@ -44,6 +44,15 @@ table! {
 }
 
 table! {
+    sessions (session_id) {
+        session_id -> Int4,
+        identifier -> Text,
+        user_id -> Int4,
+        start_time -> Timestamptz,
+    }
+}
+
+table! {
     shared_wrappers (wrapper_id) {
         wrapper_id -> Int4,
         language_id -> Int4,
@@ -67,6 +76,7 @@ table! {
 joinable!(implementation_wrappers -> implementations (implementation_id));
 joinable!(implementations -> languages (language_id));
 joinable!(pastes -> languages (language_id));
+joinable!(sessions -> users (user_id));
 joinable!(shared_wrappers -> languages (language_id));
 
 allow_tables_to_appear_in_same_query!(
@@ -74,6 +84,7 @@ allow_tables_to_appear_in_same_query!(
     implementation_wrappers,
     languages,
     pastes,
+    sessions,
     shared_wrappers,
     users,
 );
