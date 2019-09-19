@@ -85,3 +85,10 @@ img {
 .stdout-header label {
     padding-left: 1em;
 }
+#registration-form span {
+    display: inline-block;
+    width: 300px;
+}
+#registration-form [type=submit] {
+    margin-left: 300px;
+}

@@ -1,0 +1,13 @@
+@use crate::models::register::Form;
+@use crate::templates::{header, footer};
+
+@(form: &Form)
+@:header()
+<form method="post" action="/register" id="registration-form">
+    <p>Create your account to edit and delete your pastes.</p>
+    <div><label><span>Nickname: </span><input type=text name=nickname value="@form.nickname"></label></div>
+    <div><label><span>Password (minimum 8 characters): </span><input type=password name=password value="@form.password"></label></div>
+    <div><label><span>Confirm password: </span><input type=password name=confirm_password value="@form.confirm_password"></label></div>
+    <div><input type=submit value=Register></div>
+</form>
+@:footer()

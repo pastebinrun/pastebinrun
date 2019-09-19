@@ -4,6 +4,7 @@ mod display_paste;
 mod index;
 mod insert_paste;
 mod raw_paste;
+mod register;
 mod run;
 
 use crate::templates::{self, RenderRucte};
@@ -42,6 +43,13 @@ fn display_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Reje
         .and(warp::get2())
         .and(connection(pool))
         .and_then(display_paste::display_paste)
+}
+
+fn register() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path!("register")
+        .and(warp::path::end())
+        .and(warp::get2())
+        .and_then(register::register)
 }
 
 fn raw_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -133,6 +141,7 @@ pub fn routes(
         .or(favicon())
         .or(raw_paste(pool.clone()))
         .or(display_paste(pool.clone()))
+        .or(register())
         .or(insert_paste(pool.clone()))
         .or(api_language(pool.clone()))
         .or(api_v1_languages(pool.clone()))
