@@ -67,10 +67,8 @@ fn render_markdown(markdown: &str) -> String {
         };
     }
     let mut output = String::new();
-    pulldown_cmark::html::push_html(
-        &mut output,
-        Parser::new_ext(markdown, Options::ENABLE_TABLES),
-    );
+    let options = Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH;
+    pulldown_cmark::html::push_html(&mut output, Parser::new_ext(markdown, options));
     FILTER.clean(&output).to_string()
 }
 
@@ -84,5 +82,10 @@ mod test {
             render_markdown("**bold**"),
             "<p><strong>bold</strong></p>\n"
         );
+    }
+
+    #[test]
+    fn strikethrough_works() {
+        assert_eq!(render_markdown("~~strike~~"), "<p><del>strike</del></p>\n");
     }
 }
