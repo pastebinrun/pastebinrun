@@ -1,3 +1,5 @@
+@use crate::environment;
+
 @()
 
 <!DOCTYPE html>
@@ -10,7 +12,11 @@
 <header>
     <div>
         <a href="/">
-            <h1>pastebin<small>.run</small></h1>
+            <h1>pastebin<small>.run</small>
+            @if !environment::is_production() {
+                ⚠️ DEVELOPMENT ⚠️
+            }
+            </h1>
         </a>
     </div>
 </header>

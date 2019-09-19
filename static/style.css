@@ -87,8 +87,11 @@ img {
 }
 #registration-form span {
     display: inline-block;
-    width: 300px;
+    width: 250px;
 }
 #registration-form [type=submit] {
-    margin-left: 300px;
+    margin-left: 250px;
+}
+#issues {
+    color: red;
 }

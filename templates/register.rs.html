@@ -1,13 +1,24 @@
-@use crate::models::register::Form;
+@use crate::models::register::{Form, Issue};
 @use crate::templates::{header, footer};
 
-@(form: &Form)
+@(form: &Form, issues: &[Issue])
 @:header()
 <form method="post" action="/register" id="registration-form">
     <p>Create your account to edit and delete your pastes.</p>
+    @if !issues.is_empty() {
+        <div id="issues">
+            <p>Some issues were found.
+            <ul>
+                @for issue in issues {
+                    <li>@issue
+                }
+            </ul>
+        </div>
+    }
     <div><label><span>Nickname: </span><input type=text name=nickname value="@form.nickname"></label></div>
-    <div><label><span>Password (minimum 8 characters): </span><input type=password name=password value="@form.password"></label></div>
-    <div><label><span>Confirm password: </span><input type=password name=confirm_password value="@form.confirm_password"></label></div>
+    <p>Passwords must be 8 or more characters and must not have been previously exposed in data breaches.</p>
+    <div><label><span>Password: </span><input type=password name=password value="@form.password"></label></div>
+    <div><label><span>Retype password: </span><input type=password name=confirm_password value="@form.confirm_password"></label></div>
     <div><input type=submit value=Register></div>
 </form>
 @:footer()

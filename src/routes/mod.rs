@@ -45,11 +45,13 @@ fn display_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Reje
         .and_then(display_paste::display_paste)
 }
 
-fn register() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("register")
-        .and(warp::path::end())
-        .and(warp::get2())
-        .and_then(register::register)
+fn register(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    let get = warp::get2().and_then(register::register);
+    let post = warp::post2()
+        .and(warp::body::form())
+        .and(connection(pool))
+        .and_then(register::post);
+    path!("register").and(warp::path::end()).and(get.or(post))
 }
 
 fn raw_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -141,7 +143,7 @@ pub fn routes(
         .or(favicon())
         .or(raw_paste(pool.clone()))
         .or(display_paste(pool.clone()))
-        .or(register())
+        .or(register(pool.clone()))
         .or(insert_paste(pool.clone()))
         .or(api_language(pool.clone()))
         .or(api_v1_languages(pool.clone()))

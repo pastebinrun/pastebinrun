@@ -8,7 +8,9 @@ build = "src/build.rs"
 
 [dependencies]
 ammonia = "3.0.0"
+bcrypt = "0.5.0"
 chrono = "0.4.6"
+cookie = "0.12.0"
 diesel = { version = "1.4.1", features = ["chrono", "postgres", "r2d2"] }
 diesel_migrations = "1.4.0"
 env_logger = { version = "0.6.0", default-features = false }
@@ -21,6 +23,7 @@ pulldown-cmark = "0.5.0"
 rand = "0.7.0"
 reqwest = "0.9.19"
 serde = { version = "1.0.88", features = ["derive"] }
+time = "0.1.42"
 tokio-executor = { version = "0.2.0-alpha.4", features = ["blocking"] }
 warp = "0.1.15"
 
