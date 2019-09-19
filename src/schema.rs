@@ -56,6 +56,14 @@ table! {
     }
 }
 
+table! {
+    users (user_id) {
+        user_id -> Int4,
+        nickname -> Text,
+        password -> Text,
+    }
+}
+
 joinable!(implementation_wrappers -> implementations (implementation_id));
 joinable!(implementations -> languages (language_id));
 joinable!(pastes -> languages (language_id));
@@ -67,4 +75,5 @@ allow_tables_to_appear_in_same_query!(
     languages,
     pastes,
     shared_wrappers,
+    users,
 );
