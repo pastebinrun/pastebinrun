@@ -34,9 +34,14 @@ fn connection(pool: PgPool) -> BoxedFilter<(Connection,)> {
 
 fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::end()
-        .and(warp::get2())
-        .and(connection(pool))
-        .and_then(index::index)
+        .and(
+            warp::post2()
+                .and(warp::body::content_length_limit(1_000_000))
+                .and(warp::body::form())
+                .and(connection(pool.clone()))
+                .and_then(insert_paste::insert_paste)
+                .or(warp::get2().and(connection(pool)).and_then(index::index)),
+        )
         .boxed()
 }
 
@@ -54,16 +59,6 @@ fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(warp::get2())
         .and(connection(pool))
         .and_then(raw_paste::raw_paste)
-        .boxed()
-}
-
-fn insert_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    warp::path::end()
-        .and(warp::post2())
-        .and(warp::body::content_length_limit(1_000_000))
-        .and(warp::body::form())
-        .and(connection(pool))
-        .and_then(insert_paste::insert_paste)
         .boxed()
 }
 
@@ -143,7 +138,6 @@ pub fn routes(
         .or(favicon())
         .or(raw_paste(pool.clone()))
         .or(display_paste(pool.clone()))
-        .or(insert_paste(pool.clone()))
         .or(api_language(pool.clone()))
         .or(api_v1_languages(pool.clone()))
         .or(shared_run(pool.clone()))
