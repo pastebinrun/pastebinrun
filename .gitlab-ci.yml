@@ -6,6 +6,10 @@ build:
   artifacts:
     paths:
     - target/release/pastebinrun
+  cache:
+    key: release
+    paths:
+    - target/
 
 test:stable: &test
   services:
@@ -18,3 +22,7 @@ test:stable: &test
   script:
   - *print_version
   - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose
+  cache:
+    key: debug
+    paths:
+    - target/
