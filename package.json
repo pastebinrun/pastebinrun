@@ -1,0 +1,11 @@
+{
+    "name": "pastebinrun",
+    "private": true,
+    "dependencies": {
+        "codemirror": "^5.49.0"
+    },
+    "devDependencies": {
+        "webpack": "^4.40.2",
+        "webpack-cli": "^3.3.9"
+    }
+}
