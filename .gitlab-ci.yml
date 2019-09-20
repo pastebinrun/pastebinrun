@@ -1,5 +1,5 @@
 build:
-  image: rustlang/rust:nightly
+  image: rust:latest
   script:
   - &print_version rustc --version && cargo --version
   - cargo build --release --verbose
@@ -7,14 +7,14 @@ build:
     paths:
     - target/release/pastebinrun
 
-test:nightly: &test
+test:stable: &test
   services:
   - postgres
   variables:
     POSTGRES_DB: db
     POSTGRES_USER: user
     POSTGRES_PASSWORD: password
-  image: rustlang/rust:nightly
+  image: rust:latest
   script:
   - *print_version
   - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose
