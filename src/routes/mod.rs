@@ -71,25 +71,16 @@ fn api_language(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .boxed()
 }
 
-fn shared_run(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    path!("api" / "v0" / "run" / String / String)
-        .and(warp::path::end())
+fn run(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
+    let base = path!("api" / "v0" / "run" / String / String)
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
-        .and(connection(pool))
+        .and(connection(pool));
+    base.clone()
+        .and(warp::path::end())
         .and_then(run::shared)
-        .boxed()
-}
-
-fn implementation_run(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    path!("api" / "v0" / "run" / String / String / String)
-        .and(warp::path::end())
-        .and(warp::post2())
-        .and(warp::body::content_length_limit(1_000_000))
-        .and(warp::body::form())
-        .and(connection(pool))
-        .and_then(run::implementation)
+        .or(base.and(path!(String)).and_then(run::implementation))
         .boxed()
 }
 
@@ -140,8 +131,7 @@ pub fn routes(
         .or(display_paste(pool.clone()))
         .or(api_language(pool.clone()))
         .or(api_v1_languages(pool.clone()))
-        .or(shared_run(pool.clone()))
-        .or(implementation_run(pool))
+        .or(run(pool))
         .or(static_dir())
         .recover(not_found)
         .with(warp::reply::with::headers(headers))
