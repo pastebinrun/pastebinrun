@@ -61,7 +61,7 @@ pub fn post(
             })
             .execute(&connection)
             .map_err(warp::reject::custom)?;
-        let mut cookie = Cookie::build("sessionid", identifier)
+        let cookie = Cookie::build("sessionid", identifier)
             .secure(environment::is_production())
             .max_age(Duration::days(365))
             .http_only(true)
