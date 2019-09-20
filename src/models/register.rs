@@ -75,12 +75,31 @@ impl Display for Issue {
 mod test {
     use super::{Form, Issue};
     use crate::test::POOL;
+    use rand::distributions::Alphanumeric;
+    use rand::prelude::*;
 
     #[test]
     fn empty_everything_report() {
         assert_eq!(
             Form::default().validate(&POOL.get().unwrap()).unwrap(),
             &[Issue::MissingNickname, Issue::MissingPassword],
+        );
+    }
+
+    #[test]
+    fn different_passwords() {
+        let mut rng = thread_rng();
+        let random_username = (0..22).map(|_| rng.sample(Alphanumeric)).collect();
+        let random_password: String = (0..22).map(|_| rng.sample(Alphanumeric)).collect();
+        assert_eq!(
+            Form {
+                nickname: random_username,
+                password: random_password.clone(),
+                confirm_password: random_password + "a",
+            }
+            .validate(&POOL.get().unwrap())
+            .unwrap(),
+            &[Issue::PasswordsNotTheSame],
         );
     }
 }
