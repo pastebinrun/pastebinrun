@@ -62,25 +62,25 @@ fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .boxed()
 }
 
-fn api_language(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    path!("api" / "v0" / "language" / String)
+fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
+    let root = path!("api" / "v0").and(connection(pool));
+    let language = root
+        .clone()
+        .and(path!("language" / String))
         .and(warp::path::end())
         .and(warp::get2())
-        .and(connection(pool))
-        .and_then(api_language::api_language)
-        .boxed()
-}
-
-fn run(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    let base = path!("api" / "v0" / "run" / String / String)
+        .and_then(api_language::api_language);
+    let run_base = root
+        .and(path!("run" / String / String))
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
-        .and(warp::body::form())
-        .and(connection(pool));
-    base.clone()
+        .and(warp::body::form());
+    run_base
+        .clone()
         .and(warp::path::end())
         .and_then(run::shared)
-        .or(base.and(path!(String)).and_then(run::implementation))
+        .or(run_base.and(path!(String)).and_then(run::implementation))
+        .or(language)
         .boxed()
 }
 
@@ -129,9 +129,8 @@ pub fn routes(
         .or(favicon())
         .or(raw_paste(pool.clone()))
         .or(display_paste(pool.clone()))
-        .or(api_language(pool.clone()))
+        .or(api_v0(pool.clone()))
         .or(api_v1_languages(pool.clone()))
-        .or(run(pool))
         .or(static_dir())
         .recover(not_found)
         .with(warp::reply::with::headers(headers))
