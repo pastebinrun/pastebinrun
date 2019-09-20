@@ -1,5 +1,30 @@
-use ructe::{Result, Ructe};
+use ructe::Ructe;
+use std::error::Error;
+use std::fs;
+use std::process::{Command, Stdio};
 
-fn main() -> Result<()> {
-    Ructe::from_env()?.compile_templates("templates")
+fn run_command(command: &str, if_fails: &str) {
+    if !Command::new("sh")
+        .args(&["-c", &format!("{} 1>&2", command)])
+        .stdout(Stdio::null())
+        .status()
+        .unwrap()
+        .success()
+    {
+        panic!("{}", if_fails);
+    }
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    println!("cargo:rerun-if-changed=js");
+    for file in fs::read_dir("js")? {
+        println!("cargo:rerun-if-changed={}", file?.path().display());
+    }
+    run_command("npm install", "Installing npm modules failed");
+    run_command("node_modules/.bin/webpack", "Webpack failed");
+    Ructe::from_env()
+        .unwrap()
+        .compile_templates("templates")
+        .unwrap();
+    Ok(())
 }
