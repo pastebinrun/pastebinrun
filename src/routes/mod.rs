@@ -14,6 +14,7 @@ use futures03::TryFutureExt;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use tokio_executor::blocking;
+use warp::filters::BoxedFilter;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_FRAME_OPTIONS,
 };
@@ -22,53 +23,60 @@ use warp::{path, Filter, Rejection, Reply};
 
 type PgPool = Pool<ConnectionManager<PgConnection>>;
 
-fn connection(pool: PgPool) -> impl Filter<Extract = (Connection,), Error = Rejection> + Clone {
-    warp::any().and_then(move || {
-        let pool = pool.clone();
-        blocking::run(move || pool.get().map_err(warp::reject::custom)).compat()
-    })
+fn connection(pool: PgPool) -> BoxedFilter<(Connection,)> {
+    warp::any()
+        .and_then(move || {
+            let pool = pool.clone();
+            blocking::run(move || pool.get().map_err(warp::reject::custom)).compat()
+        })
+        .boxed()
 }
 
-fn index(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::end()
         .and(warp::get2())
         .and(connection(pool))
         .and_then(index::index)
+        .boxed()
 }
 
-fn display_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn display_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::param()
         .and(warp::path::end())
         .and(warp::get2())
         .and(connection(pool))
         .and_then(display_paste::display_paste)
+        .boxed()
 }
 
-fn raw_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     with_ext("txt")
         .and(warp::get2())
         .and(connection(pool))
         .and_then(raw_paste::raw_paste)
+        .boxed()
 }
 
-fn insert_paste(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn insert_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::end()
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
         .and(connection(pool))
         .and_then(insert_paste::insert_paste)
+        .boxed()
 }
 
-fn api_language(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn api_language(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     path!("api" / "v0" / "language" / String)
         .and(warp::path::end())
         .and(warp::get2())
         .and(connection(pool))
         .and_then(api_language::api_language)
+        .boxed()
 }
 
-fn shared_run(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn shared_run(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     path!("api" / "v0" / "run" / String / String)
         .and(warp::path::end())
         .and(warp::post2())
@@ -76,11 +84,10 @@ fn shared_run(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .and(warp::body::form())
         .and(connection(pool))
         .and_then(run::shared)
+        .boxed()
 }
 
-fn implementation_run(
-    pool: PgPool,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn implementation_run(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     path!("api" / "v0" / "run" / String / String / String)
         .and(warp::path::end())
         .and(warp::post2())
@@ -88,25 +95,28 @@ fn implementation_run(
         .and(warp::body::form())
         .and(connection(pool))
         .and_then(run::implementation)
+        .boxed()
 }
 
-fn api_v1_languages(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn api_v1_languages(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     path!("api" / "v1")
         .and(warp::path("languages"))
         .and(warp::path::end())
         .and(warp::get2())
         .and(connection(pool))
         .and_then(api_v1::languages::languages)
+        .boxed()
 }
 
-fn static_dir() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::path("static").and(warp::fs::dir("static"))
+fn static_dir() -> BoxedFilter<(impl Reply,)> {
+    warp::path("static").and(warp::fs::dir("static")).boxed()
 }
 
-fn favicon() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn favicon() -> BoxedFilter<(impl Reply,)> {
     warp::path("favicon.ico")
         .and(warp::path::end())
         .and(warp::fs::file("static/favicon.ico"))
+        .boxed()
 }
 
 pub fn routes(
