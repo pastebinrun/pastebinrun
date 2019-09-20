@@ -74,15 +74,13 @@ impl Display for Issue {
 #[cfg(test)]
 mod test {
     use super::{Form, Issue};
-    use diesel::prelude::*;
-    use std::env;
+    use crate::test::POOL;
 
     #[test]
     fn empty_everything_report() {
-        let connection = PgConnection::establish(&env::var("DATABASE_URL").unwrap()).unwrap();
         assert_eq!(
-            Form::default().validate(&connection).unwrap(),
+            Form::default().validate(&POOL.get().unwrap()).unwrap(),
             &[Issue::MissingNickname, Issue::MissingPassword],
-        )
+        );
     }
 }

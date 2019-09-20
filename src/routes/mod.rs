@@ -181,12 +181,10 @@ fn not_found(rejection: Rejection) -> Result<impl Reply, Rejection> {
 #[cfg(test)]
 mod test {
     use super::routes;
-    use diesel::r2d2::{ConnectionManager, CustomizeConnection, Pool};
-    use diesel::Connection;
+    use crate::test::POOL;
     use lazy_static::lazy_static;
     use scraper::{Html, Selector};
     use serde::Deserialize;
-    use std::env;
     use std::str;
     use warp::filters::BoxedFilter;
     use warp::http::header::{CONTENT_LENGTH, LOCATION};
@@ -194,30 +192,8 @@ mod test {
     use warp::Filter;
 
     lazy_static! {
-        static ref ROUTES: BoxedFilter<(Response,)> = {
-            let pool = Pool::builder()
-                .connection_customizer(Box::new(ExecuteWithinTransaction))
-                .max_size(1)
-                .build(ConnectionManager::new(env::var("DATABASE_URL").expect(
-                    "Setting DATABASE_URL environment variable required to run tests",
-                )))
-                .expect("Couldn't create a connection connection");
-            diesel_migrations::run_pending_migrations(&pool.get().unwrap()).unwrap();
-            routes(pool).map(Reply::into_response).boxed()
-        };
-    }
-
-    #[derive(Debug)]
-    struct ExecuteWithinTransaction;
-
-    impl<C, E> CustomizeConnection<C, E> for ExecuteWithinTransaction
-    where
-        C: Connection,
-    {
-        fn on_acquire(&self, conn: &mut C) -> Result<(), E> {
-            conn.begin_test_transaction().unwrap();
-            Ok(())
-        }
+        static ref ROUTES: BoxedFilter<(Response,)> =
+            routes(POOL.clone()).map(Reply::into_response).boxed();
     }
 
     fn get_html_id() -> String {
