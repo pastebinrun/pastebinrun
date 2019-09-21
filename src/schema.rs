@@ -53,19 +53,6 @@ table! {
 }
 
 table! {
-    shared_wrappers (wrapper_id) {
-        wrapper_id -> Int4,
-        language_id -> Int4,
-        label -> Text,
-        code -> Text,
-        ordering -> Int4,
-        is_formatter -> Bool,
-        is_asm -> Bool,
-        identifier -> Text,
-    }
-}
-
-table! {
     users (user_id) {
         user_id -> Int4,
         nickname -> Text,
@@ -77,7 +64,6 @@ joinable!(implementation_wrappers -> implementations (implementation_id));
 joinable!(implementations -> languages (language_id));
 joinable!(pastes -> languages (language_id));
 joinable!(sessions -> users (user_id));
-joinable!(shared_wrappers -> languages (language_id));
 
 allow_tables_to_appear_in_same_query!(
     implementations,
@@ -85,6 +71,5 @@ allow_tables_to_appear_in_same_query!(
     languages,
     pastes,
     sessions,
-    shared_wrappers,
     users,
 );
