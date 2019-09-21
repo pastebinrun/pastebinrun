@@ -15,10 +15,10 @@
             </ul>
         </div>
     }
-    <div><label><span>Nickname: </span><input type=text name=nickname value="@form.nickname"></label></div>
+    <div><label><span>Nickname: </span><input type=text name=nickname value="@form.nickname" required></label></div>
     <p>Passwords must be 8 or more characters and must not have been previously exposed in data breaches.</p>
-    <div><label><span>Password: </span><input type=password name=password value="@form.password"></label></div>
-    <div><label><span>Retype password: </span><input type=password name=confirm_password value="@form.confirm_password"></label></div>
+    <div><label><span>Password: </span><input type=password name=password value="@form.password" required></label></div>
+    <div><label><span>Retype password: </span><input type=password name=confirm_password value="@form.confirm_password" required></label></div>
     <div><input type=submit value=Register></div>
 </form>
 @:footer()
