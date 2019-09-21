@@ -34,10 +34,11 @@ pub fn register() -> Result<impl Reply, Rejection> {
 }
 
 pub fn post(
-    form: Form,
+    mut form: Form,
     connection: Connection,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
+        form.normalize();
         let issues = form.validate(&connection)?;
         if !issues.is_empty() {
             return Ok(Response::builder()

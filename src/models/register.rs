@@ -1,4 +1,4 @@
-use crate::schema::users;
+use crate::schema::users::dsl::*;
 use diesel::dsl::{exists, select};
 use diesel::pg::Pg;
 use diesel::prelude::*;
@@ -14,34 +14,37 @@ pub struct Form {
 }
 
 impl Form {
+    pub fn normalize(&mut self) {
+        self.nickname = self.nickname.trim().into();
+        self.password = self.password.trim().into();
+        self.confirm_password = self.confirm_password.trim().into();
+    }
+
     pub fn validate(
         &self,
         connection: &impl Connection<Backend = Pg>,
     ) -> Result<Vec<Issue>, Rejection> {
         let mut issues = Vec::new();
-        let nickname = self.nickname.trim();
-        let password = self.password.trim();
-        let confirm_password = self.confirm_password.trim();
-        if nickname.is_empty() {
+        if self.nickname.is_empty() {
             issues.push(Issue::MissingNickname);
-        } else if select(exists(users::table.filter(users::nickname.eq(nickname))))
+        } else if select(exists(users.filter(nickname.eq(&self.nickname))))
             .get_result(connection)
             .map_err(warp::reject::custom)?
         {
             issues.push(Issue::NicknameAlreadyUsed)
         }
-        if password.is_empty() {
+        if self.password.is_empty() {
             issues.push(Issue::MissingPassword);
         } else {
-            if nickname == password {
+            if self.nickname == self.password {
                 issues.push(Issue::PasswordTheSameAsNickname);
-            } else if password.len() < 8 {
+            } else if self.password.len() < 8 {
                 // Yes, I'm checking byte length, that's intentional
                 issues.push(Issue::PasswordShorterThanEightCharacters);
             }
-            if confirm_password.is_empty() {
+            if self.confirm_password.is_empty() {
                 issues.push(Issue::MissingConfirmPassword);
-            } else if password != confirm_password {
+            } else if self.password != self.confirm_password {
                 issues.push(Issue::PasswordsNotTheSame);
             }
         }
