@@ -43,13 +43,13 @@ struct Output {
 }
 
 pub fn shared(
+    connection: Connection,
     language: String,
     identifier: String,
     Form {
         code,
         compiler_options,
     }: Form,
-    connection: Connection,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
         languages::table
@@ -82,14 +82,14 @@ pub fn shared(
 }
 
 pub fn implementation(
+    connection: Connection,
     language: String,
     implementation: String,
-    identifier: String,
     Form {
         code,
         compiler_options,
     }: Form,
-    connection: Connection,
+    identifier: String,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
         implementations::table

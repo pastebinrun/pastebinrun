@@ -59,8 +59,8 @@ struct JsonImplementation {
 }
 
 pub fn api_language(
-    identifier: String,
     connection: Connection,
+    identifier: String,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
         let Language { id, mode, mime } = languages::table
