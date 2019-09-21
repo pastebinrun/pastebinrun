@@ -43,28 +43,8 @@ table! {
     }
 }
 
-table! {
-    shared_wrappers (wrapper_id) {
-        wrapper_id -> Int4,
-        language_id -> Int4,
-        label -> Text,
-        code -> Text,
-        ordering -> Int4,
-        is_formatter -> Bool,
-        is_asm -> Bool,
-        identifier -> Text,
-    }
-}
-
 joinable!(implementation_wrappers -> implementations (implementation_id));
 joinable!(implementations -> languages (language_id));
 joinable!(pastes -> languages (language_id));
-joinable!(shared_wrappers -> languages (language_id));
 
-allow_tables_to_appear_in_same_query!(
-    implementations,
-    implementation_wrappers,
-    languages,
-    pastes,
-    shared_wrappers,
-);
+allow_tables_to_appear_in_same_query!(implementations, implementation_wrappers, languages, pastes,);

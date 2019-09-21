@@ -32,9 +32,8 @@ const selector = document.createElement('span')
 const compilerOptions = document.createElement('input')
 compilerOptions.placeholder = 'Compiler options'
 compilerOptions.style.display = 'none'
-const implementationButtons = document.createElement('span')
 const buttons = document.createElement('span')
-wrapperButtons.append(selector, compilerOptions, implementationButtons, buttons)
+wrapperButtons.append(selector, compilerOptions, buttons)
 
 const filterAsm = document.createElement('label')
 const filterAsmCheckbox = document.createElement('input')
@@ -46,7 +45,7 @@ const filterRegex = /(?:\t\.(?:text|file|section|globl|p2align|type|cfi_.*|size|
 let abortEval = new AbortController
 async function updateLanguage() {
     const initialValue = language.selectedOptions[0].value
-    const { mime, mode, sharedWrappers, implementations } = await fetchLanguage(initialValue)
+    const { mime, mode, implementations } = await fetchLanguage(initialValue)
     const isCorrectLanguage = () => initialValue === language.selectedOptions[0].value
     if (isCorrectLanguage()) {
         if (mode) {
@@ -56,14 +55,14 @@ async function updateLanguage() {
                 }
             })
         }
-        implementationButtons.textContent = ''
         selector.textContent = ''
-        if (implementations.length) {
+        buttons.textContent = ''
+        if (implementations.length > 1) {
             const select = document.createElement('select')
             for (const { label, identifier, wrappers } of implementations) {
                 const option = document.createElement('option')
                 option.textContent = label
-                option.showButtons = () => addButtons(wrappers, implementationButtons, `${initialValue}/${identifier}`)
+                option.showButtons = () => addButtons(wrappers, buttons, `${initialValue}/${identifier}`)
                 select.append(option)
             }
             function updateButtons() {
@@ -71,10 +70,11 @@ async function updateLanguage() {
             }
             select.addEventListener('change', updateButtons)
             updateButtons()
-            selector.append(select, '')
+            selector.append(select)
+        } else if (implementations.length === 1) {
+            addButtons(implementations[0].wrappers, buttons, `${initialValue}/${implementations[0].identifier}`)
         }
-        compilerOptions.style.display = implementations.length || sharedWrappers.length ? 'inline' : 'none'
-        addButtons(sharedWrappers, buttons, initialValue)
+        compilerOptions.style.display = implementations.length ? 'inline' : 'none'
     }
 }
 
