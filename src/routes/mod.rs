@@ -70,18 +70,14 @@ fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(warp::path::end())
         .and(warp::get2())
         .and_then(api_language::api_language);
-    let run_base = root
+    let run = root
         .and(path!("run" / String / String))
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
-        .and(warp::body::form());
-    run_base
-        .clone()
-        .and(warp::path::end())
-        .and_then(run::shared)
-        .or(run_base.and(path!(String)).and_then(run::implementation))
-        .or(language)
-        .boxed()
+        .and(warp::body::form())
+        .and(path!(String))
+        .and_then(run::run);
+    language.or(run).boxed()
 }
 
 fn api_v1_languages(pool: PgPool) -> BoxedFilter<(impl Reply,)> {

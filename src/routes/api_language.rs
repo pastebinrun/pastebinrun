@@ -1,4 +1,4 @@
-use crate::schema::{implementation_wrappers, implementations, languages, shared_wrappers};
+use crate::schema::{implementation_wrappers, implementations, languages};
 use crate::Connection;
 use diesel::prelude::*;
 use futures::Future;
@@ -47,7 +47,6 @@ struct ImplementationWrapper {
 struct JsonLanguage {
     mode: Option<String>,
     mime: String,
-    shared_wrappers: Vec<Wrapper>,
     implementations: Vec<JsonImplementation>,
 }
 
@@ -74,17 +73,6 @@ pub fn api_language(
             .optional()
             .map_err(warp::reject::custom)?
             .ok_or_else(warp::reject::not_found)?;
-        let shared_wrappers = shared_wrappers::table
-            .filter(shared_wrappers::language_id.eq(id))
-            .select((
-                shared_wrappers::identifier,
-                shared_wrappers::label,
-                shared_wrappers::is_asm,
-                shared_wrappers::is_formatter,
-            ))
-            .order(shared_wrappers::ordering)
-            .load(&connection)
-            .map_err(warp::reject::custom)?;
         let implementations = implementations::table
             .select((
                 implementations::implementation_id,
@@ -138,7 +126,6 @@ pub fn api_language(
             warp::reply::json(&JsonLanguage {
                 mode,
                 mime,
-                shared_wrappers,
                 implementations,
             }),
             CACHE_CONTROL,

@@ -1,4 +1,4 @@
-use crate::schema::{implementation_wrappers, implementations, languages, shared_wrappers};
+use crate::schema::{implementation_wrappers, implementations, languages};
 use crate::Connection;
 use diesel::prelude::*;
 use futures::Future;
@@ -42,46 +42,7 @@ struct Output {
     stderr: String,
 }
 
-pub fn shared(
-    connection: Connection,
-    language: String,
-    identifier: String,
-    Form {
-        code,
-        compiler_options,
-    }: Form,
-) -> impl Future<Item = impl Reply, Error = Rejection> {
-    blocking::run(move || {
-        languages::table
-            .inner_join(shared_wrappers::table)
-            .filter(languages::identifier.eq(language))
-            .filter(shared_wrappers::identifier.eq(identifier))
-            .select(shared_wrappers::code)
-            .get_result(&connection)
-            .optional()
-            .map_err(warp::reject::custom)?
-            .ok_or_else(warp::reject::not_found)
-    })
-    .compat()
-    .and_then(move |language_code: String| {
-        CLIENT
-            .post(SANDBOX_URL.as_str())
-            .json(&Request {
-                files: vec![File {
-                    name: "code",
-                    contents: code,
-                }],
-                stdin: "",
-                code: language_code.replace("%s", &compiler_options),
-            })
-            .send()
-            .and_then(|mut r| r.json())
-            .map_err(warp::reject::custom)
-    })
-    .map(|output: Output| warp::reply::json(&output))
-}
-
-pub fn implementation(
+pub fn run(
     connection: Connection,
     language: String,
     implementation: String,
