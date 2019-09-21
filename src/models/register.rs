@@ -4,6 +4,7 @@ use diesel::pg::Pg;
 use diesel::prelude::*;
 use serde::Deserialize;
 use std::fmt::{self, Display, Formatter};
+use unicode_normalization::UnicodeNormalization;
 use warp::Rejection;
 
 #[derive(Deserialize, Default)]
@@ -16,8 +17,8 @@ pub struct Form {
 impl Form {
     pub fn normalize(&mut self) {
         self.nickname = self.nickname.trim().into();
-        self.password = self.password.trim().into();
-        self.confirm_password = self.confirm_password.trim().into();
+        self.password = self.password.trim().nfkc().collect();
+        self.confirm_password = self.confirm_password.trim().nfkc().collect();
     }
 
     pub fn validate(
@@ -124,5 +125,20 @@ mod test {
             .unwrap(),
             &[Issue::PasswordTheSameAsNickname],
         );
+    }
+
+    #[test]
+    fn normalization_applies_nfkc() {
+        let mut rng = thread_rng();
+        let random: String = (0..22).map(|_| rng.sample(Alphanumeric)).collect();
+        let mut form = Form {
+            nickname: String::new(),
+            // LATIN SMALL LETTER E WITH ACUTE
+            password: random.clone() + "\u{E9}",
+            // LATIN SMALL LETTER E followed by COMBINING ACUTE ACCENT
+            confirm_password: random + "e\u{301}",
+        };
+        form.normalize();
+        assert_eq!(form.password, form.confirm_password);
     }
 }
