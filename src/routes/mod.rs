@@ -61,7 +61,10 @@ fn register(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(warp::body::form())
         .and(connection(pool))
         .and_then(register::post);
-    path!("register").and(warp::path::end()).and(get.or(post)).boxed()
+    path!("register")
+        .and(warp::path::end())
+        .and(get.or(post))
+        .boxed()
 }
 
 fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {

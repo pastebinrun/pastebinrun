@@ -33,7 +33,9 @@ impl Form {
         if password.is_empty() {
             issues.push(Issue::MissingPassword);
         } else {
-            if password.len() < 8 {
+            if nickname == password {
+                issues.push(Issue::PasswordTheSameAsNickname);
+            } else if password.len() < 8 {
                 // Yes, I'm checking byte length, that's intentional
                 issues.push(Issue::PasswordShorterThanEightCharacters);
             }
@@ -55,6 +57,7 @@ pub enum Issue {
     MissingConfirmPassword,
     PasswordShorterThanEightCharacters,
     PasswordsNotTheSame,
+    PasswordTheSameAsNickname,
 }
 
 impl Display for Issue {
@@ -66,6 +69,7 @@ impl Display for Issue {
             Self::MissingConfirmPassword => "Please retype the password.",
             Self::PasswordShorterThanEightCharacters => "Password must be 8 or more characters.",
             Self::PasswordsNotTheSame => "Passwords must be identical",
+            Self::PasswordTheSameAsNickname => "Your password is the same as your nickname.",
         };
         write!(f, "{}", message)
     }
@@ -100,6 +104,22 @@ mod test {
             .validate(&POOL.get().unwrap())
             .unwrap(),
             &[Issue::PasswordsNotTheSame],
+        );
+    }
+
+    #[test]
+    fn identical_nickname_and_password() {
+        let mut rng = thread_rng();
+        let random: String = (0..22).map(|_| rng.sample(Alphanumeric)).collect();
+        assert_eq!(
+            Form {
+                nickname: random.clone(),
+                password: random.clone(),
+                confirm_password: random,
+            }
+            .validate(&POOL.get().unwrap())
+            .unwrap(),
+            &[Issue::PasswordTheSameAsNickname],
         );
     }
 }
