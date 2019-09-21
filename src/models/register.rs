@@ -86,6 +86,11 @@ mod test {
     use rand::distributions::Alphanumeric;
     use rand::prelude::*;
 
+    fn random() -> String {
+        let mut rng = thread_rng();
+        (0..15).map(|_| rng.sample(Alphanumeric)).collect()
+    }
+
     #[test]
     fn empty_everything_report() {
         assert_eq!(
@@ -96,9 +101,8 @@ mod test {
 
     #[test]
     fn different_passwords() {
-        let mut rng = thread_rng();
-        let random_username = (0..22).map(|_| rng.sample(Alphanumeric)).collect();
-        let random_password: String = (0..22).map(|_| rng.sample(Alphanumeric)).collect();
+        let random_username = random();
+        let random_password = random();
         assert_eq!(
             Form {
                 nickname: random_username,
@@ -113,8 +117,7 @@ mod test {
 
     #[test]
     fn identical_nickname_and_password() {
-        let mut rng = thread_rng();
-        let random: String = (0..22).map(|_| rng.sample(Alphanumeric)).collect();
+        let random = random();
         assert_eq!(
             Form {
                 nickname: random.clone(),
@@ -129,8 +132,7 @@ mod test {
 
     #[test]
     fn normalization_applies_nfkc() {
-        let mut rng = thread_rng();
-        let random: String = (0..22).map(|_| rng.sample(Alphanumeric)).collect();
+        let random = random();
         let mut form = Form {
             nickname: String::new(),
             // LATIN SMALL LETTER E WITH ACUTE
