@@ -6,15 +6,15 @@
 @:header()
 
 @Html(paste.markdown)
-<form method="post" action="/">
+<form method="post" action="/" id="editor">
     <p>
         @:language_selection(selection)
         @if let Some(delete_at) = paste.delete_at {
-            <span data-delete-on-modify>
+            <span id="autodelete-text">
                 This paste will be automatically deleted on @delete_at.format("%Y-%m-%d %H:%M") UTC.
             </span>
         }
-        <label data-autohide>
+        <label id="automatically-hidden-label">
             <input type=checkbox name=autodelete checked> Automatically delete after 24 hours
         </label>
     </p>
