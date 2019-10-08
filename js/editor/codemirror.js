@@ -24,12 +24,12 @@ class CodeMirrorEditor {
         this.editor.setValue(value)
     }
 
-    onChange(callback) {
-        this.editor.on('change', callback)
+    unload() {
+        this.editor.toTextArea()
     }
 }
 
-export default function createEditor(textarea, onChange) {
+export default function createTextareaEditor(textarea, onChange) {
     const editor = CodeMirror.fromTextArea(textarea, {
         lineNumbers: true,
         matchBrackets: true,

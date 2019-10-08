@@ -1,3 +1,4 @@
+import createTextareaEditor from './editor/textarea'
 import getLanguage from './get-language'
 import Output from './output'
 import WrapperButtons from './wrapper-buttons'
@@ -6,10 +7,9 @@ class Editor {
     async initialize(form) {
         this.languageSelector = form.querySelector('#language')
         this.wrapperButtons = new WrapperButtons(form.querySelector('#wrapper-buttons'), this.run.bind(this))
-        this.editor = (async () => {
-            const module = await import('./codemirror-editor')
-            return module.default(form.querySelector('#code'), () => this.changeToLookLikeNewPaste())
-        })()
+        this.codeElement = form.querySelector('#code')
+        this.initializeEditor(createTextareaEditor)
+        this.initCodeMirrorEditor()
         this.output = new Output(output)
         this.autodeleteText = form.querySelector('#autodelete-text')
         this.autodeleteCheckbox = form.querySelector('#automatically-hidden-label')
@@ -20,6 +20,28 @@ class Editor {
         }
         this.assignEvents()
         this.updateLanguage()
+    }
+
+    async initCodeMirrorEditor() {
+        const module = await import('./editor/codemirror')
+        this.changeEditor(module.default)
+    }
+
+    changeEditor(createTextareaEditor) {
+        this.editor.unload()
+        this.initializeEditor(createTextareaEditor)
+    }
+
+    initializeEditor(createTextareaEditor) {
+        this.editor = createTextareaEditor(this.codeElement, () => this.changeToLookLikeNewPaste())
+        if (this.currentLanguage) {
+            this.editor.setLanguage(this.currentLanguage)
+        }
+    }
+
+    setLanguage(language) {
+        this.currentLanguage = language
+        this.editor.setLanguage(language)
     }
 
     changeToLookLikeNewPaste() {
@@ -45,10 +67,7 @@ class Editor {
         // This deals with user changing the language after asynchronous event
         if (isStillValid()) {
             this.wrapperButtons.update(language.implementations)
-            const editor = await this.editor
-            if (isStillValid()) {
-                editor.setLanguage(language)
-            }
+            this.setLanguage(language)
         }
     }
 
@@ -64,8 +83,7 @@ class Editor {
         this.abortEval = new AbortController
         const body = new URLSearchParams
         body.append('compilerOptions', compilerOptions)
-        const editor = await this.editor
-        body.append('code', editor.getValue())
+        body.append('code', this.editor.getValue())
         const parameters = {
             method: 'POST',
             body,
@@ -87,7 +105,7 @@ class Editor {
             throw e
         }
         if (wrapper.isFormatter) {
-            editor.setValue(response.stdout)
+            this.editor.setValue(response.stdout)
         }
         this.output.display(wrapper, response)
     }
