@@ -168,6 +168,7 @@ mod test {
     use std::str;
     use warp::filters::BoxedFilter;
     use warp::http::header::{CONTENT_LENGTH, LOCATION};
+    use warp::http::StatusCode;
     use warp::reply::{Reply, Response};
     use warp::Filter;
 
@@ -264,6 +265,7 @@ mod test {
             .header(CONTENT_LENGTH, body.len())
             .body(body)
             .reply(&*ROUTES);
+        assert_eq!(reply.status(), StatusCode::SEE_OTHER);
         let location = reply.headers()[LOCATION].to_str().unwrap();
         assert_eq!(
             warp::test::request()
