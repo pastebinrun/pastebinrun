@@ -1,5 +1,6 @@
 mod api_language;
 mod api_v1;
+mod config;
 mod display_paste;
 mod index;
 mod insert_paste;
@@ -51,6 +52,14 @@ fn display_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(warp::get2())
         .and(connection(pool))
         .and_then(display_paste::display_paste)
+        .boxed()
+}
+
+fn options() -> BoxedFilter<(impl Reply,)> {
+    warp::path("config")
+        .and(warp::path::end())
+        .and(warp::get2())
+        .and_then(config::config)
         .boxed()
 }
 
@@ -123,10 +132,11 @@ pub fn routes(
     headers.insert(REFERRER_POLICY, HeaderValue::from_static("no-referrer"));
     index(pool.clone())
         .or(favicon())
-        .or(raw_paste(pool.clone()))
-        .or(display_paste(pool.clone()))
+        .or(options())
         .or(api_v0(pool.clone()))
         .or(api_v1_languages(pool.clone()))
+        .or(raw_paste(pool.clone()))
+        .or(display_paste(pool.clone()))
         .or(static_dir())
         .recover(not_found)
         .with(warp::reply::with::headers(headers))
