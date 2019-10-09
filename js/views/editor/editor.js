@@ -1,7 +1,8 @@
-import createTextareaEditor from './editor/textarea'
+import createTextareaEditor from '../editor-types/textarea'
 import getLanguage from './get-language'
 import Output from './output'
 import WrapperButtons from './wrapper-buttons'
+import { types, getCurrentEditor } from '../../editor-types'
 
 class Editor {
     async initialize(form) {
@@ -23,8 +24,7 @@ class Editor {
     }
 
     async initCodeMirrorEditor() {
-        const module = await import('./editor/codemirror/codemirror')
-        this.changeEditor(module.default)
+        this.changeEditor(await types[await getCurrentEditor()].createView())
     }
 
     changeEditor(createTextareaEditor) {

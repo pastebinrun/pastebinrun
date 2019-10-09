@@ -4,7 +4,7 @@ class TextAreaEditor {
         this.onChange = onChange
     }
 
-    setLanguage() {}
+    setLanguage() { }
 
     getValue() {
         return this.textarea.value
@@ -15,12 +15,12 @@ class TextAreaEditor {
     }
 
     unload() {
-        this.textarea.removeEventListener('change', this.onChange)
+        this.textarea.removeEventListener('input', this.onChange)
     }
 }
 
 export default function createTextareaEditor(textarea, onChange) {
-    textarea.addEventListener('change', onChange)
+    textarea.addEventListener('input', onChange)
     const textAreaEditor = new TextAreaEditor(textarea, onChange)
     return textAreaEditor
 }
