@@ -8,13 +8,6 @@ use tokio_executor::blocking;
 use warp::http::header::CACHE_CONTROL;
 use warp::{Rejection, Reply};
 
-#[derive(Queryable)]
-struct Language {
-    id: i32,
-    mode: Option<String>,
-    mime: String,
-}
-
 #[derive(Serialize, Queryable)]
 #[serde(rename_all = "camelCase")]
 struct Wrapper {
@@ -45,8 +38,6 @@ struct ImplementationWrapper {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct JsonLanguage {
-    mode: Option<String>,
-    mime: String,
     implementations: Vec<JsonImplementation>,
 }
 
@@ -62,13 +53,9 @@ pub fn api_language(
     identifier: String,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
-        let Language { id, mode, mime } = languages::table
+        let id: i32 = languages::table
             .filter(languages::identifier.eq(identifier))
-            .select((
-                languages::language_id,
-                languages::highlighter_mode,
-                languages::mime,
-            ))
+            .select(languages::language_id)
             .get_result(&connection)
             .optional()
             .map_err(warp::reject::custom)?
@@ -123,11 +110,7 @@ pub fn api_language(
             })
             .collect();
         Ok(warp::reply::with_header(
-            warp::reply::json(&JsonLanguage {
-                mode,
-                mime,
-                implementations,
-            }),
+            warp::reply::json(&JsonLanguage { implementations }),
             CACHE_CONTROL,
             "max-age=14400",
         ))
