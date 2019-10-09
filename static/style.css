@@ -49,14 +49,6 @@ textarea {
 #buttons {
     text-align: right;
 }
-.CodeMirror {
-    border: 1px solid #bbbdbe;
-    height: auto;
-    font-size: 14.4px;
-}
-.CodeMirror-scroll {
-    min-height: 372px;
-}
 table {
     overflow: auto;
     border-collapse: collapse;

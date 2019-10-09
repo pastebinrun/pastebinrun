@@ -23,7 +23,7 @@ class Editor {
     }
 
     async initCodeMirrorEditor() {
-        const module = await import('./editor/codemirror')
+        const module = await import('./editor/codemirror/codemirror')
         this.changeEditor(module.default)
     }
 
