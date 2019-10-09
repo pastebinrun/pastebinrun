@@ -62,12 +62,12 @@ class Editor {
     async updateLanguage() {
         this.wrapperButtons.clear()
         const identifier = this.getLanguageIdentifier()
+        this.setLanguage(identifier)
         const isStillValid = () => identifier === this.getLanguageIdentifier()
         const language = await getLanguage(identifier, isStillValid)
         // This deals with user changing the language after asynchronous event
         if (isStillValid()) {
             this.wrapperButtons.update(language.implementations)
-            this.setLanguage(language)
         }
     }
 

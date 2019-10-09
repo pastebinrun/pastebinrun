@@ -198,13 +198,13 @@ mod test {
         }
     }
 
-    fn get_html_id() -> String {
+    fn get_sh_id() -> String {
         let response = warp::test::request().reply(&*ROUTES);
         let document = Html::parse_document(str::from_utf8(response.body()).unwrap());
         document
             .select(&Selector::parse("#language option").unwrap())
-            .find(|element| element.text().next() == Some("HTML"))
-            .expect("a language called HTML to exist")
+            .find(|element| element.text().next() == Some("Sh"))
+            .expect("a language called Sh to exist")
             .value()
             .attr("value")
             .expect("an ID")
@@ -214,26 +214,51 @@ mod test {
     #[test]
     fn test_language_api() {
         #[derive(Debug, Deserialize, PartialEq)]
-        #[serde(rename_all = "camelCase")]
         pub struct ApiLanguage<'a> {
-            mode: &'a str,
-            mime: &'a str,
+            #[serde(borrow)]
+            implementations: Vec<Implementation<'a>>,
         }
+
+        #[derive(Debug, Deserialize, PartialEq)]
+        pub struct Implementation<'a> {
+            identifier: &'a str,
+            label: &'a str,
+            #[serde(borrow)]
+            wrappers: Vec<Wrapper<'a>>,
+        }
+
+        #[derive(Debug, Deserialize, PartialEq)]
+        #[serde(rename_all = "camelCase")]
+        pub struct Wrapper<'a> {
+            identifier: &'a str,
+            label: &'a str,
+            is_asm: bool,
+            is_formatter: bool,
+        }
+
         let response = warp::test::request()
-            .path(&format!("/api/v0/language/{}", get_html_id()))
+            .path(&format!("/api/v0/language/{}", get_sh_id()))
             .reply(&*ROUTES);
         assert_eq!(
             serde_json::from_slice::<ApiLanguage>(response.body()).unwrap(),
             ApiLanguage {
-                mode: "htmlmixed",
-                mime: "text/html"
+                implementations: vec![Implementation {
+                    identifier: "sh",
+                    label: "sh",
+                    wrappers: vec![Wrapper {
+                        identifier: "run",
+                        label: "Run",
+                        is_asm: false,
+                        is_formatter: false,
+                    }],
+                }],
             },
         );
     }
 
     #[test]
     fn test_raw_pastes() {
-        let body = format!("language={}&code=abc", get_html_id());
+        let body = format!("language={}&code=abc", get_sh_id());
         let reply = warp::test::request()
             .method("POST")
             .header(CONTENT_LENGTH, body.len())
