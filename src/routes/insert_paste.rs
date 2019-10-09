@@ -8,8 +8,9 @@ use rand::prelude::*;
 use serde::de::IgnoredAny;
 use serde::Deserialize;
 use tokio_executor::blocking;
-use warp::http::Uri;
-use warp::{Rejection, Reply};
+use warp::http::header::LOCATION;
+use warp::http::StatusCode;
+use warp::{reply, Rejection, Reply};
 
 const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxzBCDFGHJKLMNPQRSTVWX-";
 
@@ -59,11 +60,10 @@ pub fn insert_paste(
             })
             .execute(&connection)
             .map_err(warp::reject::custom)?;
-
-        Ok(warp::redirect(
-            format!("/{}", cloned_identifier)
-                .parse::<Uri>()
-                .map_err(warp::reject::custom)?,
+        Ok(reply::with_header(
+            StatusCode::SEE_OTHER,
+            LOCATION,
+            format!("/{}", cloned_identifier),
         ))
     })
     .compat()
