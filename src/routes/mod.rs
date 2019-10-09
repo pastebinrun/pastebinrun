@@ -110,7 +110,7 @@ pub fn routes(
         HeaderValue::from_static(concat!(
             "default-src 'none'; ",
             "script-src 'self'; ",
-            "style-src 'self'; ",
+            "style-src 'self' 'unsafe-inline'; ",
             "connect-src 'self'; ",
             "img-src *; ",
             "object-src 'none'; ",
