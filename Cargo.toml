@@ -26,6 +26,7 @@ warp = "0.1.15"
 
 [build-dependencies]
 ructe = { version = "0.6.2", features = ["mime03", "warp"] }
+walkdir = "2.2.9"
 
 [dev-dependencies]
 scraper = "0.10.1"

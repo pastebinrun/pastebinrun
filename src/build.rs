@@ -1,7 +1,7 @@
 use ructe::Ructe;
 use std::error::Error;
-use std::fs;
 use std::process::{Command, Stdio};
+use walkdir::WalkDir;
 
 fn run_command(command: &str, if_fails: &str) {
     if !Command::new("sh")
@@ -16,8 +16,7 @@ fn run_command(command: &str, if_fails: &str) {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    println!("cargo:rerun-if-changed=js");
-    for file in fs::read_dir("js")? {
+    for file in WalkDir::new("js") {
         println!("cargo:rerun-if-changed={}", file?.path().display());
     }
     run_command("npm install", "Installing npm modules failed");
