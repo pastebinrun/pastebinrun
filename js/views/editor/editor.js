@@ -10,7 +10,7 @@ class Editor {
         this.wrapperButtons = new WrapperButtons(form.querySelector('#wrapper-buttons'), this.run.bind(this))
         this.codeElement = form.querySelector('#code')
         this.initializeEditor(createTextareaEditor)
-        this.initCodeMirrorEditor()
+        this.initConfiguredEditor()
         this.output = new Output(output)
         this.autodeleteText = form.querySelector('#autodelete-text')
         this.autodeleteCheckbox = form.querySelector('#automatically-hidden-label')
@@ -23,17 +23,17 @@ class Editor {
         this.updateLanguage()
     }
 
-    async initCodeMirrorEditor() {
+    async initConfiguredEditor() {
         this.changeEditor(await types[await getCurrentEditor()].createView())
     }
 
-    changeEditor(createTextareaEditor) {
+    changeEditor(createEditor) {
         this.editor.unload()
-        this.initializeEditor(createTextareaEditor)
+        this.initializeEditor(createEditor)
     }
 
-    initializeEditor(createTextareaEditor) {
-        this.editor = createTextareaEditor(this.codeElement, () => this.changeToLookLikeNewPaste())
+    initializeEditor(createEditor) {
+        this.editor = createEditor(this.codeElement, () => this.changeToLookLikeNewPaste())
         if (this.currentLanguage) {
             this.editor.setLanguage(this.currentLanguage)
         }
