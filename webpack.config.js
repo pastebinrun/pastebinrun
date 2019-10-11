@@ -1,3 +1,5 @@
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+
 module.exports = {
   entry: './js/index',
   output: {
@@ -12,4 +14,25 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new MonacoWebpackPlugin({
+      output: 'static/js',
+      languages: [
+        'csharp', 
+        'cpp',
+        'html',
+        'java',
+        'javascript',
+        'markdown',
+        'objective-c',
+        'perl',
+        'php',
+        'python',
+        'rust',
+        'shell',
+        'sql',
+        'typescript',
+      ],
+    }),
+  ],
 }

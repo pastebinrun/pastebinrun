@@ -121,7 +121,7 @@ pub fn routes(
             "script-src 'self'; ",
             "style-src 'self' 'unsafe-inline'; ",
             "connect-src 'self'; ",
-            "img-src *; ",
+            "img-src * data:; ",
             "object-src 'none'; ",
             "base-uri 'none'; ",
             "form-action 'self'; ",

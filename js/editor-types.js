@@ -13,6 +13,12 @@ export const types = {
             return (await import('./views/editor-types/codemirror/codemirror')).default
         },
     },
+    monaco: {
+        name: 'Monaco (Visual Studio Code)',
+        async createView() {
+            return (await import('./views/editor-types/monaco/monaco')).default
+        }
+    },
 }
 
 export async function getCurrentEditor() {
