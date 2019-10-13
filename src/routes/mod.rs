@@ -223,6 +223,7 @@ mod test {
     }
 
     #[test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
     fn test_language_api() {
         #[derive(Debug, Deserialize, PartialEq)]
         pub struct ApiLanguage<'a> {
@@ -268,6 +269,7 @@ mod test {
     }
 
     #[test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
     fn test_raw_pastes() {
         let body = format!("language={}&code=abc", get_sh_id());
         let reply = warp::test::request()
