@@ -28,7 +28,7 @@ test:stable: &test
   - apt update
   - apt install -y npm
   - *print_version
-  - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose
+  - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose --features=database_tests
   cache:
     key: debug
     paths:
