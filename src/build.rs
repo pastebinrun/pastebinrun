@@ -1,5 +1,6 @@
 use ructe::Ructe;
 use std::error::Error;
+use std::fs;
 use std::process::{Command, Stdio};
 use walkdir::WalkDir;
 
@@ -21,6 +22,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     run_command("npm install", "Installing npm modules failed");
     run_command("node_modules/.bin/webpack", "Webpack failed");
+    println!(
+        "cargo:rustc-env=ENTRY_FILE_PATH={}",
+        fs::read_to_string("entry")?,
+    );
     Ructe::from_env()
         .unwrap()
         .compile_templates("templates")
