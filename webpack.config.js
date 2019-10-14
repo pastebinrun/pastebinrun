@@ -1,9 +1,10 @@
-const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin")
+const { StatsWriterPlugin } = require("webpack-stats-plugin")
 
 module.exports = {
   entry: './js/index',
   output: {
-    filename: 'static/js/index.js',
+    filename: 'static/js/[chunkhash].js',
     path: __dirname,
   },
   module: {
@@ -26,7 +27,7 @@ module.exports = {
     new MonacoWebpackPlugin({
       output: 'static/js',
       languages: [
-        'csharp', 
+        'csharp',
         'cpp',
         'html',
         'java',
@@ -41,6 +42,12 @@ module.exports = {
         'sql',
         'typescript',
       ],
+    }),
+    new StatsWriterPlugin({
+      filename: 'entry',
+      transform(data) {
+        return data.assetsByChunkName.main
+      },
     }),
   ],
 }
