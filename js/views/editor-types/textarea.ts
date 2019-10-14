@@ -1,4 +1,7 @@
 class TextAreaEditor {
+    textarea: HTMLTextAreaElement
+    onChange: () => void
+
     constructor(textarea, onChange) {
         this.textarea = textarea
         this.onChange = onChange

@@ -18,7 +18,7 @@ export default async function createSettings(node) {
             success.textContent = 'Configuration was updated'
             node.append(success)
             setTimeout(() => {
-                success.style.opacity = 0
+                success.style.opacity = '0'
                 setTimeout(() => {
                     success.remove()
                 }, 1 * 1000)

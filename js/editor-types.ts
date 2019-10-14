@@ -1,3 +1,10 @@
+export interface EditorType {
+    setLanguage(identifier: string): void
+    getValue(): string
+    setValue(text: string): void
+    unload(): void
+}
+
 export const types = {
     textarea: {
         name: 'Textarea',

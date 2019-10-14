@@ -2,16 +2,27 @@ import createTextareaEditor from '../editor-types/textarea'
 import getLanguage from './get-language'
 import Output from './output'
 import WrapperButtons from './wrapper-buttons'
-import { types, getCurrentEditor } from '../../editor-types'
+import { EditorType, types, getCurrentEditor } from '../../editor-types'
 
 class Editor {
+    languageSelector: HTMLSelectElement
+    wrapperButtons: WrapperButtons
+    codeElement: HTMLTextAreaElement
+    output: Output
+    autodeleteText: HTMLSpanElement
+    autodeleteCheckbox: HTMLLabelElement
+    submit: HTMLInputElement
+    editor: EditorType
+    currentLanguage: string | null = null
+    abortEval: AbortController | null = null
+
     async initialize(form) {
         this.languageSelector = form.querySelector('#language')
         this.wrapperButtons = new WrapperButtons(form.querySelector('#wrapper-buttons'), this.run.bind(this))
         this.codeElement = form.querySelector('#code')
         this.initializeEditor(createTextareaEditor)
         this.initConfiguredEditor()
-        this.output = new Output(output)
+        this.output = new Output(form.querySelector('#output'))
         this.autodeleteText = form.querySelector('#autodelete-text')
         this.autodeleteCheckbox = form.querySelector('#automatically-hidden-label')
         this.submit = form.querySelector('[type=submit]')

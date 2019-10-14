@@ -1,6 +1,14 @@
 import * as monaco from 'monaco-editor'
 import './monaco.css'
 
+declare global {
+    interface Window {
+        MonacoEnvironment: {
+            getWorkerUrl(moduleId: string, label: string): string
+        }
+    }
+}
+
 function getWorkerName(label) {
     if (label === 'json' || label === 'css' || label === 'html') {
         return label
@@ -43,6 +51,10 @@ const languageMap = {
 }
 
 class MonacoEditor {
+    textarea: HTMLTextAreaElement
+    container: HTMLDivElement
+    editor: monaco.editor.IStandaloneCodeEditor
+
     constructor(textarea, container, editor) {
         this.textarea = textarea
         this.container = container
@@ -65,7 +77,6 @@ class MonacoEditor {
         this.editor.dispose()
         this.container.remove()
         this.textarea.style.display = 'inline'
-        this.editor.toTextArea()
     }
 }
 
