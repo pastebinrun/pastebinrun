@@ -1,4 +1,4 @@
-import CodeMirror from 'codemirror'
+import * as CodeMirror from 'codemirror'
 
 CodeMirror.defineMode("perl6", () => {
     //   null - magic touch
@@ -10,8 +10,6 @@ CodeMirror.defineMode("perl6", () => {
     //   [x,y] - x=1,2,3; y=must be defined if x{...}
     const PERL6 = {
         // Perl operators
-        temp: 4,
-        let: 4,
         but: 4,
         does: 4,
         leg: 4,
@@ -172,8 +170,6 @@ CodeMirror.defineMode("perl6", () => {
         allof: 1,
         allowed: 1,
         "alternative-names": 1,
-        and: 1,
-        andthen: 1,
         annotations: 1,
         antipair: 1,
         antipairs: 1,
@@ -235,12 +231,10 @@ CodeMirror.defineMode("perl6", () => {
         Bool: 3,
         "bool-only": 1,
         bounds: 1,
-        break: 1,
         Bridge: 3,
         broken: 1,
         BUILD: 1,
         "build-date": 1,
-        but: 1,
         bytes: 1,
         cache: 1,
         "CALL-ME": 1,
@@ -289,12 +283,10 @@ CodeMirror.defineMode("perl6", () => {
         close: 1,
         "close-stdin": 1,
         closed: 1,
-        cmp: 1,
         "cmp-ok": 1,
         code: 1,
         codename: 1,
         codes: 1,
-        coll: 1,
         collate: 1,
         column: 1,
         comb: 1,
@@ -311,14 +303,12 @@ CodeMirror.defineMode("perl6", () => {
         config: 1,
         conj: 1,
         connect: 1,
-        constant: 1,
         constraints: 1,
         construct: 1,
         contains: 1,
         content: 1,
         contents: 1,
         Cool: 1,
-        copy: 1,
         cos: 1,
         cosec: 1,
         cosech: 1,
@@ -348,7 +338,6 @@ CodeMirror.defineMode("perl6", () => {
         decode: 1,
         decoder: 1,
         deepmap: 1,
-        default: 1,
         defined: 1,
         delayed: 1,
         "DELETE-KEY": 1,
@@ -360,7 +349,6 @@ CodeMirror.defineMode("perl6", () => {
         devnull: 1,
         diag: 1,
         "did-you-mean": 1,
-        die: 1,
         "dies-ok": 1,
         dir: 1,
         "dir-sep": 1,
@@ -368,8 +356,6 @@ CodeMirror.defineMode("perl6", () => {
         distribution: 1,
         DISTROnames: 1,
         div: 1,
-        do: 1,
-        does: 1,
         "does-ok": 1,
         done: 1,
         "done-testing": 1,
@@ -390,8 +376,6 @@ CodeMirror.defineMode("perl6", () => {
         enums: 1,
         EOF: 1,
         eof: 1,
-        eq: 1,
-        eqv: 1,
         EVAL: 1,
         "eval-dies-ok": 1,
         "eval-lives-ok": 1,
@@ -401,7 +385,6 @@ CodeMirror.defineMode("perl6", () => {
         "excludes-min": 1,
         "EXISTS-KEY": 1,
         "EXISTS-POS": 1,
-        exit: 1,
         exitcode: 1,
         exp: 1,
         expected: 1,
@@ -409,7 +392,6 @@ CodeMirror.defineMode("perl6", () => {
         expmod: 1,
         extension: 1,
         f: 1,
-        fail: 1,
         "fails-like": 1,
         FALLBACK: 1,
         fc: 1,
@@ -441,7 +423,6 @@ CodeMirror.defineMode("perl6", () => {
         full: 1,
         "full-barrier": 1,
         gcd: 1,
-        ge: 1,
         "GENERATE-USAGE": 1,
         get: 1,
         getc: 1,
@@ -450,7 +431,6 @@ CodeMirror.defineMode("perl6", () => {
         grab: 1,
         grabpairs: 1,
         grep: 1,
-        gt: 1,
         handle: 1,
         handled: 1,
         handles: 1,
@@ -521,16 +501,12 @@ CodeMirror.defineMode("perl6", () => {
         kxxv: 1,
         l: 1,
         lang: 1,
-        last: 1,
         lastcall: 1,
         later: 1,
         lazy: 1,
         lc: 1,
         lcm: 1,
-        le: 1,
         leading: 1,
-        leg: 1,
-        let: 1,
         level: 1,
         like: 1,
         line: 1,
@@ -548,23 +524,17 @@ CodeMirror.defineMode("perl6", () => {
         log: 1,
         lookup: 1,
         lsb: 1,
-        lt: 1,
         made: 1,
         MAIN: 1,
-        make: 1,
         Map: 3,
         map: 1,
         match: 1,
-        max: 1,
         maxpairs: 1,
         merge: 1,
         message: 1,
         meta: 1,
-        method: 1,
         methods: 1,
         migrate: 1,
-        min: 1,
-        minmax: 1,
         minpairs: 1,
         minute: 1,
         misplaced: 1,
@@ -580,21 +550,17 @@ CodeMirror.defineMode("perl6", () => {
         move: 1,
         mro: 1,
         msb: 1,
-        multi: 1,
         multiness: 1,
-        my: 1,
         name: 1,
         named: 1,
         narrow: 1,
         "native-descriptor": 1,
         nativecast: 1,
         nativesizeof: 1,
-        ne: 1,
         need: 1,
         new: 1,
         "new-from-daycount": 1,
         "new-from-pairs": 1,
-        next: 1,
         "next-handle": 1,
         "next-interesting-index": 1,
         nextcallee: 1,
@@ -612,8 +578,6 @@ CodeMirror.defineMode("perl6", () => {
         nok: 1,
         none: 1,
         norm: 1,
-        not: 1,
-        notandthen: 1,
         note: 1,
         now: 1,
         nude: 1,
@@ -633,17 +597,14 @@ CodeMirror.defineMode("perl6", () => {
         opened: 1,
         operation: 1,
         optional: 1,
-        or: 1,
         ord: 1,
         ords: 1,
-        orelse: 1,
         orig: 1,
         "os-error": 1,
         osname: 1,
         "out-buffer": 1,
         "outer-caller-idx": 1,
         pack: 1,
-        package: 1,
         "package-kind": 1,
         "package-name": 1,
         packages: 1,
@@ -731,7 +692,6 @@ CodeMirror.defineMode("perl6", () => {
         "read-bits": 1,
         "read-ubits": 1,
         readchars: 1,
-        readonly: 1,
         ready: 1,
         Real: 3,
         reallocate: 1,
@@ -741,7 +701,6 @@ CodeMirror.defineMode("perl6", () => {
         receive: 1,
         recv: 1,
         redispatcher: 1,
-        redo: 1,
         reduce: 1,
         relative: 1,
         release: 1,
@@ -751,21 +710,18 @@ CodeMirror.defineMode("perl6", () => {
         repo: 1,
         "repo-id": 1,
         report: 1,
-        required: 1,
         reserved: 1,
         resolve: 1,
         restore: 1,
         result: 1,
         resume: 1,
         rethrow: 1,
-        return: 1,
         "return-rw": 1,
         returns: 1,
         reverse: 1,
         right: 1,
         rindex: 1,
         rmdir: 1,
-        role: 1,
         rolish: 1,
         roll: 1,
         rootdir: 1,
@@ -777,7 +733,6 @@ CodeMirror.defineMode("perl6", () => {
         "routine-type": 1,
         run: 1,
         "RUN-MAIN": 1,
-        rw: 1,
         rwx: 1,
         s: 1,
         samecase: 1,
@@ -831,7 +786,6 @@ CodeMirror.defineMode("perl6", () => {
         slurpy: 1,
         snap: 1,
         snapper: 1,
-        so: 1,
         "socket-host": 1,
         "socket-port": 1,
         sort: 1,
@@ -877,7 +831,6 @@ CodeMirror.defineMode("perl6", () => {
         T: 1,
         t: 1,
         tail: 1,
-        take: 1,
         "take-rw": 1,
         tan: 1,
         tanh: 1,
@@ -888,7 +841,6 @@ CodeMirror.defineMode("perl6", () => {
         tc: 1,
         tclc: 1,
         tell: 1,
-        temp: 1,
         term: 1,
         tertiary: 1,
         then: 1,
@@ -921,7 +873,6 @@ CodeMirror.defineMode("perl6", () => {
         uc: 1,
         udp: 1,
         undefine: 1,
-        unicmp: 1,
         unimatch: 1,
         uniname: 1,
         uninames: 1,
@@ -955,7 +906,6 @@ CodeMirror.defineMode("perl6", () => {
         vow: 1,
         w: 1,
         wait: 1,
-        warn: 1,
         watch: 1,
         "watch-path": 1,
         week: 1,
@@ -963,7 +913,6 @@ CodeMirror.defineMode("perl6", () => {
         "week-year": 1,
         "weekday-of-month": 1,
         what: 1,
-        when: 1,
         WHERE: 1,
         WHEREFORE: 1,
         WHICH: 1,
@@ -980,21 +929,18 @@ CodeMirror.defineMode("perl6", () => {
         "write-bits": 1,
         "write-to": 1,
         "write-ubits": 1,
-        X: 1,
         x: 1,
-        xor: 1,
         xx: 1,
         yada: 1,
         year: 1,
         yield: 1,
         "yyyy-mm-dd": 1,
-        Z: 1,
         z: 1,
         zip: 1,
         "zip-latest": 1,
         π: 5,
         τ: 5,
-        𝑒: 5,
+        '𝑒': 5,
         '∅': 5,
         '$_': 5,
         '$!': 5,
@@ -1004,7 +950,7 @@ CodeMirror.defineMode("perl6", () => {
     var RXstyle = "string-2"
     var RXmodifiers = /[goseximacplud]/               // NOTE: "m", "s", "y" and "tr" need to correct real modifiers for each regexp type
 
-    function tokenChain(stream, state, chain, style, tail) {     // NOTE: chain.length > 2 is not working now (it's for s[...][...]geos;)
+    function tokenChain(stream, state, chain, style, tail = undefined) {     // NOTE: chain.length > 2 is not working now (it's for s[...][...]geos;)
         state.chain = null                                //                                                          12   3tail
         state.style = null
         state.tail = null
@@ -1067,7 +1013,7 @@ CodeMirror.defineMode("perl6", () => {
             return tokenChain(stream, state, [ch], "string")
         }
         if (ch == "q") {
-            var c = look(stream, -2)
+            let c = look(stream, -2)
             if (!(c && /\w/.test(c))) {
                 c = look(stream, 0)
                 if (c == "x") {
@@ -1209,9 +1155,9 @@ CodeMirror.defineMode("perl6", () => {
             }
         }
         if (ch == "s") {
-            var c = /[\/>\]})\w]/.test(look(stream, -2))
+            const c = /[\/>\]})\w]/.test(look(stream, -2))
             if (!c) {
-                c = stream.eat(/[(\[{<\^'"!~\/]/)
+                let c = stream.eat(/[(\[{<\^'"!~\/]/)
                 if (c) {
                     if (c == "[")
                         return tokenChain(stream, state, ["]", "]"], RXstyle, RXmodifiers)
@@ -1226,9 +1172,9 @@ CodeMirror.defineMode("perl6", () => {
             }
         }
         if (ch == "y") {
-            var c = /[\/>\]})\w]/.test(look(stream, -2))
+            const c = /[\/>\]})\w]/.test(look(stream, -2))
             if (!c) {
-                c = stream.eat(/[(\[{<\^'"!~\/]/)
+                const c = stream.eat(/[(\[{<\^'"!~\/]/)
                 if (c) {
                     if (c == "[")
                         return tokenChain(stream, state, ["]", "]"], RXstyle, RXmodifiers)
@@ -1243,9 +1189,9 @@ CodeMirror.defineMode("perl6", () => {
             }
         }
         if (ch == "t") {
-            var c = /[\/>\]})\w]/.test(look(stream, -2))
+            const c = /[\/>\]})\w]/.test(look(stream, -2))
             if (!c) {
-                c = stream.eat("r"); if (c) {
+                let c = stream.eat("r"); if (c) {
                     c = stream.eat(/[(\[{<\^'"!~\/]/)
                     if (c) {
                         if (c == "[")
@@ -1411,7 +1357,7 @@ function look(stream, c) {
 }
 
 // return a part of prefix of current stream from current position
-function prefix(stream, c) {
+function prefix(stream, c = undefined) {
     if (c) {
         var x = stream.pos - c
         return stream.string.substr((x >= 0 ? x : 0), c);

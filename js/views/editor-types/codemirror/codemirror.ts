@@ -1,8 +1,8 @@
-import CodeMirror from 'codemirror'
+import * as CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
 import './codemirror.css'
 
-const languagesMap = new Map([
+const languagesMap: Map<string, [() => Promise<void> | void, string]> = new Map([
     ['c', [() => import('codemirror/mode/clike/clike'), 'text/x-csrc']],
     ['c-plus-plus', [() => import('codemirror/mode/clike/clike'), 'text/x-c++src']],
     ['c-sharp', [() => import('codemirror/mode/clike/clike'), 'text/x-csharp']],
@@ -14,7 +14,7 @@ const languagesMap = new Map([
     ['jsx', [() => import('codemirror/mode/jsx/jsx'), 'text/jsx']],
     ['markdown', [() => import('codemirror/mode/markdown/markdown'), 'text/x-markdown']],
     ['perl', [() => import('codemirror/mode/perl/perl'), 'text/x-perl']],
-    ['perl6', [() => import('./perl6.js'), 'text/x-perl6']],
+    ['perl6', [() => import('./perl6'), 'text/x-perl6']],
     ['php', [() => import('codemirror/mode/php/php'), 'application/x-httpd-php']],
     ['plain-text', [() => { }, 'text/plain']],
     ['postgresql', [() => import('codemirror/mode/sql/sql'), 'text/x-pgsql']],
@@ -29,6 +29,9 @@ const languagesMap = new Map([
 ])
 
 class CodeMirrorEditor {
+    editor: CodeMirror.EditorFromTextArea
+    currentIdentifier: string | null = null
+
     constructor(editor) {
         this.editor = editor
     }
@@ -59,10 +62,8 @@ class CodeMirrorEditor {
 export default function createTextareaEditor(textarea, onChange) {
     const editor = CodeMirror.fromTextArea(textarea, {
         lineNumbers: true,
-        matchBrackets: true,
         lineWrapping: true,
         viewportMargin: Infinity,
-        minLines: 40,
     })
     editor.on('change', onChange)
     return new CodeMirrorEditor(editor)

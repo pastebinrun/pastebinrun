@@ -1,6 +1,18 @@
+import { Wrapper } from './types'
+
 const filterRegex = /(?:\t\.(?:text|file|section|globl|p2align|type|cfi_.*|size|section)\b|.Lfunc_end).*\n?/g
 
 export default class Output {
+    output: HTMLDivElement
+    filterAsm: HTMLLabelElement
+    filterAsmCheckbox: HTMLInputElement
+    wrapper: Wrapper
+    json: {
+        stdout: string,
+        stderr: string,
+        status: number | null,
+    }
+
     constructor(output) {
         this.output = output
         this.filterAsm = document.createElement('label')
@@ -59,7 +71,7 @@ export default class Output {
                 italic.textContent = '(no output)'
                 stdoutElement.append(italic)
             }
-            output.append(stdoutHeader, stdoutElement)
+            this.output.append(stdoutHeader, stdoutElement)
         }
     }
 }
