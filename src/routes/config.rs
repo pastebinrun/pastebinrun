@@ -1,7 +1,7 @@
+use crate::models::session::Session;
 use crate::templates::{self, RenderRucte};
-use warp::http::Response;
 use warp::{Rejection, Reply};
 
-pub fn config() -> Result<impl Reply, Rejection> {
-    Response::builder().html(|o| templates::config(o))
+pub fn config(session: Session) -> Result<impl Reply, Rejection> {
+    session.render().html(|o| templates::config(o, &session))
 }

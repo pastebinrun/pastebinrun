@@ -2,6 +2,9 @@ import addOptionsLink from './views/config-link'
 import createSettings from './views/config-page/config-page'
 import createEditor from './views/editor/editor'
 
+declare var __webpack_nonce__: string
+__webpack_nonce__ = document.getElementsByTagName('link')[0].getAttribute('nonce')
+
 addOptionsLink()
 
 const convertedNodes = [

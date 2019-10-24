@@ -1,9 +1,10 @@
 @use crate::models::language::Selection;
+@use crate::models::session::Session;
 @use crate::templates::{buttons, header, footer, language_selection};
 
-@(selection: Selection)
+@(session: &Session, selection: Selection)
 
-@:header()
+@:header(session)
 <form method="post" action="/" id="editor">
     <p>
         @:language_selection(selection)
@@ -14,4 +15,4 @@
     <p><textarea id=code name=code></textarea></p>
     @:buttons()
 </form>
-@:footer()
+@:footer(session)

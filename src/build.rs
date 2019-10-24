@@ -20,6 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     for file in WalkDir::new("js") {
         println!("cargo:rerun-if-changed={}", file?.path().display());
     }
+    println!("cargo:rerun-if-changed=webpack.config.js");
     run_command("npm install", "Installing npm modules failed");
     run_command("node_modules/.bin/webpack", "Webpack failed");
     println!(

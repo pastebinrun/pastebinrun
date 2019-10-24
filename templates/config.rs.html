@@ -1,5 +1,7 @@
+@use crate::models::session::Session;
 @use crate::templates::{footer, header};
-@()
-@:header()
+
+@(session: &Session)
+@:header(session)
 <p id=options> This page requires a modern web browser with enabled JavaScript support.
-@:footer()
+@:footer(session)

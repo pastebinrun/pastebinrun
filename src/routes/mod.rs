@@ -7,6 +7,7 @@ mod insert_paste;
 mod raw_paste;
 mod run;
 
+use crate::models::session::Session;
 use crate::templates::{self, RenderRucte};
 use crate::Connection;
 use diesel::prelude::*;
@@ -19,7 +20,7 @@ use warp::filters::BoxedFilter;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_FRAME_OPTIONS,
 };
-use warp::http::{Response, StatusCode};
+use warp::http::StatusCode;
 use warp::{path, Filter, Rejection, Reply};
 
 type PgPool = Pool<ConnectionManager<PgConnection>>;
@@ -33,6 +34,18 @@ fn connection(pool: PgPool) -> BoxedFilter<(Connection,)> {
         .boxed()
 }
 
+fn session(pool: PgPool) -> BoxedFilter<(Session,)> {
+    connection(pool)
+        .map(|connection| {
+            let bytes: [u8; 32] = rand::random();
+            Session {
+                nonce: base64::encode(&bytes),
+                connection,
+            }
+        })
+        .boxed()
+}
+
 fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::end()
         .and(
@@ -41,7 +54,7 @@ fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
                 .and(warp::body::form())
                 .and(connection(pool.clone()))
                 .and_then(insert_paste::insert_paste)
-                .or(warp::get2().and(connection(pool)).and_then(index::index)),
+                .or(warp::get2().and(session(pool)).and_then(index::index)),
         )
         .boxed()
 }
@@ -50,15 +63,16 @@ fn display_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::param()
         .and(warp::path::end())
         .and(warp::get2())
-        .and(connection(pool))
+        .and(session(pool))
         .and_then(display_paste::display_paste)
         .boxed()
 }
 
-fn options() -> BoxedFilter<(impl Reply,)> {
+fn options(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path("config")
         .and(warp::path::end())
         .and(warp::get2())
+        .and(session(pool))
         .and_then(config::config)
         .boxed()
 }
@@ -114,32 +128,22 @@ pub fn routes(
     pool: Pool<ConnectionManager<PgConnection>>,
 ) -> impl Filter<Extract = (impl Reply,), Error = Rejection> {
     let mut headers = HeaderMap::new();
-    headers.insert(
-        CONTENT_SECURITY_POLICY,
-        HeaderValue::from_static(concat!(
-            "default-src 'none'; ",
-            "script-src 'self'; ",
-            "style-src 'self' 'unsafe-inline'; ",
-            "connect-src 'self'; ",
-            "img-src * data:; ",
-            "object-src 'none'; ",
-            "base-uri 'none'; ",
-            "form-action 'self'; ",
-            "frame-ancestors 'none'",
-        )),
-    );
     headers.insert(X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
     headers.insert(REFERRER_POLICY, HeaderValue::from_static("no-referrer"));
     index(pool.clone())
         .or(favicon())
-        .or(options())
+        .or(options(pool.clone()))
         .or(api_v0(pool.clone()))
         .or(api_v1_languages(pool.clone()))
         .or(raw_paste(pool.clone()))
         .or(display_paste(pool.clone()))
         .or(static_dir())
-        .recover(not_found)
+        .or(not_found(pool))
         .with(warp::reply::with::headers(headers))
+        .with(warp::reply::with::default_header(
+            CONTENT_SECURITY_POLICY,
+            "default-src 'none'; frame-ancestors 'none'",
+        ))
         .with(warp::log("pastebinrun"))
 }
 
@@ -156,14 +160,15 @@ fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejec
         })
 }
 
-fn not_found(rejection: Rejection) -> Result<impl Reply, Rejection> {
-    if rejection.is_not_found() {
-        Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .html(|o| templates::not_found(o))
-    } else {
-        Err(rejection)
-    }
+fn not_found(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
+    session(pool)
+        .and_then(|session: Session| {
+            session
+                .render()
+                .status(StatusCode::NOT_FOUND)
+                .html(|o| templates::not_found(o, &session))
+        })
+        .boxed()
 }
 
 #[cfg(test)]
