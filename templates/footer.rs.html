@@ -1,4 +1,6 @@
-@()
+@use crate::models::session::Session;
+
+@(session: &Session)
 
 </article>
-<script src="/@env!("ENTRY_FILE_PATH")"></script>
+<script src="/@env!("ENTRY_FILE_PATH")" nonce="@session.nonce"></script>

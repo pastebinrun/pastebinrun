@@ -1,9 +1,10 @@
 @use crate::models::language::Selection;
 @use crate::models::paste::ExternPaste;
+@use crate::models::session::Session;
 @use crate::templates::{buttons, header, footer, language_selection};
-@(paste: ExternPaste, selection: Selection)
+@(session: &Session, paste: ExternPaste, selection: Selection)
 
-@:header()
+@:header(session)
 
 @Html(paste.markdown)
 <form method="post" action="/" id="editor">
@@ -21,4 +22,4 @@
     <p><textarea id=code name=code>@('\n')@paste.paste</textarea></p>
     @:buttons()
 </form>
-@:footer()
+@:footer(session)
