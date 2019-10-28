@@ -7,12 +7,12 @@ body {
     font-family: sans-serif;
     overflow-wrap: break-word;
 }
-header {
+#header {
     background: #dd6;
     color: white;
     box-shadow: 0 -5px 2px rgba(0, 0, 0, 0.1) inset;
 }
-header div {
+#header div {
     margin: 0 auto;
     padding: 0 1em;
     max-width: 900px;
@@ -20,21 +20,21 @@ header div {
     align-items: center;
     justify-content: space-between;
 }
-header h1 {
+#header h1 {
     margin: 0;
     color: #440;
     display: inline-block;
 }
-header small {
+#header small {
     opacity: 0.7;
 }
-header nav {
+#header nav {
     float: right;
 }
-header li {
+#header li {
     display: inline;
 }
-article {
+#article {
     margin: 0 auto;
     padding: 0 1em;
     max-width: 980px;
