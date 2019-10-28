@@ -18,7 +18,7 @@ impl Session {
                     "script-src 'self' 'nonce-{nonce}' 'strict-dynamic'; ",
                     "style-src 'self' 'unsafe-inline'; ",
                     "connect-src 'self'; ",
-                    "img-src * data:; ",
+                    "img-src https: data:; ",
                     "object-src 'none'; ",
                     "base-uri 'none'; ",
                     "form-action 'self'; ",
