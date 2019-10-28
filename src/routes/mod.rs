@@ -12,38 +12,45 @@ use crate::templates::{self, RenderRucte};
 use crate::Connection;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
-use futures03::TryFutureExt;
+use futures03::compat::Compat;
+use futures03::{Future, FutureExt, TryFutureExt};
 use std::ffi::OsStr;
 use std::path::PathBuf;
+use std::pin::Pin;
 use tokio_executor::blocking;
 use warp::filters::BoxedFilter;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_FRAME_OPTIONS,
 };
-use warp::http::StatusCode;
+use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
 
 type PgPool = Pool<ConnectionManager<PgConnection>>;
 
 fn connection(pool: PgPool) -> BoxedFilter<(Connection,)> {
     warp::any()
-        .and_then(move || {
-            let pool = pool.clone();
-            blocking::run(move || pool.get().map_err(warp::reject::custom)).compat()
-        })
+        .and_then(move || get_connection(pool.clone()).compat())
         .boxed()
 }
 
+fn get_connection(pool: PgPool) -> impl Future<Output = Result<Connection, Rejection>> {
+    blocking::run(move || pool.get().map_err(warp::reject::custom))
+}
+
 fn session(pool: PgPool) -> BoxedFilter<(Session,)> {
-    connection(pool)
-        .map(|connection| {
-            let bytes: [u8; 32] = rand::random();
-            Session {
-                nonce: base64::encode(&bytes),
-                connection,
-            }
-        })
+    warp::any()
+        .and_then(move || get_session(pool.clone()).compat())
         .boxed()
+}
+
+fn get_session(pool: PgPool) -> impl Future<Output = Result<Session, Rejection>> {
+    get_connection(pool).map_ok(|connection| {
+        let bytes: [u8; 32] = rand::random();
+        Session {
+            nonce: base64::encode(&bytes),
+            connection,
+        }
+    })
 }
 
 fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
@@ -138,7 +145,7 @@ pub fn routes(
         .or(raw_paste(pool.clone()))
         .or(display_paste(pool.clone()))
         .or(static_dir())
-        .or(not_found(pool))
+        .recover(not_found(pool))
         .with(warp::reply::with::headers(headers))
         .with(warp::reply::with::default_header(
             CONTENT_SECURITY_POLICY,
@@ -160,15 +167,26 @@ fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejec
         })
 }
 
-fn not_found(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    session(pool)
-        .and_then(|session: Session| {
-            session
-                .render()
-                .status(StatusCode::NOT_FOUND)
-                .html(|o| templates::not_found(o, &session))
-        })
-        .boxed()
+type NotFoundFuture =
+    Compat<Pin<Box<dyn Future<Output = Result<Response<Vec<u8>>, Rejection>> + Send>>>;
+
+fn not_found(pool: PgPool) -> impl Clone + Fn(Rejection) -> NotFoundFuture {
+    move |rejection| {
+        let pool = pool.clone();
+        async move {
+            if rejection.is_not_found() {
+                let session = get_session(pool.clone()).await?;
+                session
+                    .render()
+                    .status(StatusCode::NOT_FOUND)
+                    .html(|o| templates::not_found(o, &session))
+            } else {
+                Err(rejection)
+            }
+        }
+            .boxed()
+            .compat()
+    }
 }
 
 #[cfg(test)]
