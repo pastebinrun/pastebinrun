@@ -26,10 +26,18 @@ export const types = {
     },
 }
 
-export async function getCurrentEditor() {
-    return sessionStorage.getItem('editorType') || 'codemirror'
+export function getCurrentEditor() {
+    return localStorage.getItem('editorType') || 'codemirror'
 }
 
 export function setCurrentEditor(newEditor) {
-    return sessionStorage.setItem('editorType', newEditor)
+    return localStorage.setItem('editorType', newEditor)
+}
+
+export function onChange(callback: (createEditor: (textArea: HTMLTextAreaElement, onChange: () => void) => EditorType) => void) {
+    addEventListener('storage', async ({ key, newValue }) => {
+        if (key === 'editorType') {
+            callback(await types[newValue].createView())
+        }
+    })
 }

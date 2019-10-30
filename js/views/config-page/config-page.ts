@@ -3,7 +3,7 @@ import './config-page.css'
 
 export default async function createSettings(node) {
     node.textContent = 'Loading settings\u2026'
-    const currentEditor = await getCurrentEditor()
+    const currentEditor = getCurrentEditor()
     node.textContent = 'Editor type: '
     for (const id in types) {
         const label = document.createElement('label')

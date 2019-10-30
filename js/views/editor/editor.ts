@@ -2,7 +2,7 @@ import createTextareaEditor from '../editor-types/textarea'
 import getLanguage from './get-language'
 import Output from './output'
 import WrapperButtons from './wrapper-buttons'
-import { EditorType, types, getCurrentEditor } from '../../editor-types'
+import { EditorType, types, getCurrentEditor, onChange } from '../../editor-types'
 
 class Editor {
     languageSelector: HTMLSelectElement
@@ -21,6 +21,7 @@ class Editor {
         this.wrapperButtons = new WrapperButtons(form.querySelector('#wrapper-buttons'), this.run.bind(this))
         this.codeElement = form.querySelector('#code')
         this.initializeEditor(createTextareaEditor)
+        onChange(editor => this.changeEditor(editor))
         this.initConfiguredEditor()
         this.output = new Output(form.querySelector('#output'))
         this.autodeleteText = form.querySelector('#autodelete-text')
@@ -35,7 +36,7 @@ class Editor {
     }
 
     async initConfiguredEditor() {
-        this.changeEditor(await types[await getCurrentEditor()].createView())
+        this.changeEditor(await types[getCurrentEditor()].createView())
     }
 
     changeEditor(createEditor) {

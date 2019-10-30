@@ -74,6 +74,7 @@ class MonacoEditor {
     }
 
     unload() {
+        this.textarea.value = this.getValue()
         this.editor.dispose()
         this.container.remove()
         this.textarea.style.display = 'inline'
