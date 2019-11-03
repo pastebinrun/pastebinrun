@@ -119,6 +119,7 @@ fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and_then(api_v1::languages::languages);
     let pastes = warp::path("pastes")
         .and(warp::path::end())
+        .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
         .and(connection(pool))
