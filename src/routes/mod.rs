@@ -123,7 +123,10 @@ fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(warp::body::form())
         .and(connection(pool))
         .and_then(api_v1::pastes::insert_paste);
-    path!("api" / "v1").and(languages.or(pastes)).boxed()
+    path!("api" / "v1")
+        .and(languages.or(pastes))
+        .with(warp::cors().allow_any_origin())
+        .boxed()
 }
 
 fn static_dir() -> BoxedFilter<(impl Reply,)> {
