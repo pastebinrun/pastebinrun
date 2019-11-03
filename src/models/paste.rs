@@ -1,4 +1,5 @@
-use crate::schema::pastes;
+use crate::models::rejection::CustomRejection;
+use crate::schema::{languages, pastes};
 use crate::Connection;
 use ammonia::Builder;
 use chrono::{DateTime, Utc};
@@ -6,6 +7,7 @@ use diesel::prelude::*;
 use lazy_static::lazy_static;
 use log::info;
 use pulldown_cmark::{Options, Parser};
+use rand::seq::SliceRandom;
 use warp::Rejection;
 
 #[derive(Queryable)]
@@ -27,6 +29,47 @@ impl Paste {
         }
         Ok(())
     }
+}
+
+const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxzBCDFGHJKLMNPQRSTVWX-";
+
+#[derive(Insertable)]
+#[table_name = "pastes"]
+struct InsertPaste {
+    identifier: String,
+    delete_at: Option<DateTime<Utc>>,
+    language_id: i32,
+    paste: String,
+}
+
+pub fn insert(
+    connection: &Connection,
+    delete_at: Option<DateTime<Utc>>,
+    language: &str,
+    paste: String,
+) -> Result<String, Rejection> {
+    let mut rng = rand::thread_rng();
+    let identifier: String = (0..10)
+        .map(|_| char::from(*CHARACTERS.choose(&mut rng).expect("a random character")))
+        .collect();
+    let language_id = languages::table
+        .select(languages::language_id)
+        .filter(languages::identifier.eq(language))
+        .get_result(connection)
+        .optional()
+        .map_err(warp::reject::custom)?
+        .ok_or_else(|| warp::reject::custom(CustomRejection::UnrecognizedLanguageIdentifier))?;
+    let insert_paste = InsertPaste {
+        identifier,
+        delete_at,
+        language_id,
+        paste,
+    };
+    diesel::insert_into(pastes::table)
+        .values(&insert_paste)
+        .execute(connection)
+        .map_err(warp::reject::custom)?;
+    Ok(insert_paste.identifier)
 }
 
 pub struct ExternPaste {
