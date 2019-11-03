@@ -9,7 +9,7 @@ build = "src/build.rs"
 [dependencies]
 ammonia = "3.0.0"
 base64 = "0.10.1"
-chrono = "0.4.6"
+chrono = { version = "0.4.9", features = ["serde"] }
 diesel = { version = "1.4.1", features = ["chrono", "postgres", "r2d2"] }
 diesel_migrations = "1.4.0"
 env_logger = { version = "0.6.0", default-features = false }

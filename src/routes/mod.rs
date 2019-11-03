@@ -7,6 +7,7 @@ mod insert_paste;
 mod raw_paste;
 mod run;
 
+use crate::models::rejection::CustomRejection;
 use crate::models::session::Session;
 use crate::templates::{self, RenderRucte};
 use crate::Connection;
@@ -110,14 +111,19 @@ fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     language.or(run).boxed()
 }
 
-fn api_v1_languages(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    path!("api" / "v1")
-        .and(warp::path("languages"))
+fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
+    let languages = warp::path("languages")
         .and(warp::path::end())
         .and(warp::get2())
+        .and(connection(pool.clone()))
+        .and_then(api_v1::languages::languages);
+    let pastes = warp::path("pastes")
+        .and(warp::path::end())
+        .and(warp::body::content_length_limit(1_000_000))
+        .and(warp::body::form())
         .and(connection(pool))
-        .and_then(api_v1::languages::languages)
-        .boxed()
+        .and_then(api_v1::pastes::insert_paste);
+    path!("api" / "v1").and(languages.or(pastes)).boxed()
 }
 
 fn static_dir() -> BoxedFilter<(impl Reply,)> {
@@ -141,7 +147,7 @@ pub fn routes(
         .or(favicon())
         .or(options(pool.clone()))
         .or(api_v0(pool.clone()))
-        .or(api_v1_languages(pool.clone()))
+        .or(api_v1(pool.clone()))
         .or(raw_paste(pool.clone()))
         .or(display_paste(pool.clone()))
         .or(static_dir())
@@ -174,7 +180,12 @@ fn not_found(pool: PgPool) -> impl Clone + Fn(Rejection) -> NotFoundFuture {
     move |rejection| {
         let pool = pool.clone();
         async move {
-            if rejection.is_not_found() {
+            if let Some(rejection) = rejection.find_cause::<CustomRejection>() {
+                Response::builder()
+                    .status(rejection.status_code())
+                    .body(rejection.to_string().into_bytes())
+                    .map_err(warp::reject::custom)
+            } else if rejection.is_not_found() {
                 let session = get_session(pool.clone()).await?;
                 session
                     .render()
