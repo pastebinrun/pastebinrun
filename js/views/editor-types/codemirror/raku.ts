@@ -1,6 +1,6 @@
 import * as CodeMirror from 'codemirror'
 
-CodeMirror.defineMode("perl6", () => {
+CodeMirror.defineMode("raku", () => {
     //   null - magic touch
     //   1 - keyword
     //   2 - def
@@ -1350,7 +1350,7 @@ CodeMirror.defineMode("perl6", () => {
     }
 })
 
-CodeMirror.defineMIME("text/x-perl6", "perl6")
+CodeMirror.defineMIME("text/x-raku", "raku")
 
 function look(stream, c) {
     return stream.string.charAt(stream.pos + (c || 0))
