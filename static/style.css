@@ -66,7 +66,8 @@ pre {
     overflow: auto;
 }
 pre, code {
-    background: #f6f8fa;
+    background: #f5f2f0;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 }
 img {
     max-width: 100%;

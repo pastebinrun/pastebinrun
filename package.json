@@ -3,10 +3,12 @@
     "private": true,
     "devDependencies": {
         "@types/codemirror": "0.0.78",
+        "@types/prismjs": "^1.16.0",
         "codemirror": "^5.49.0",
         "css-loader": "^3.2.0",
         "monaco-editor": "^0.18.1",
         "monaco-editor-webpack-plugin": "^1.7.0",
+        "prismjs": "^1.17.1",
         "style-loader": "^1.0.0",
         "ts-loader": "^6.2.0",
         "typescript": "^3.6.4",

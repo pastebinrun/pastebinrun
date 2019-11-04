@@ -18,3 +18,7 @@ for (const { id, view } of convertedNodes) {
         view(node)
     }
 }
+
+if (document.querySelector('[class*=language-]')) {
+    import('./highlight-all')
+}

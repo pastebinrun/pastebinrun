@@ -15,7 +15,7 @@ impl Session {
             format!(
                 concat!(
                     "default-src 'none'; ",
-                    "script-src 'self' 'nonce-{nonce}' 'strict-dynamic'; ",
+                    "script-src 'self' https://cdnjs.cloudflare.com 'nonce-{nonce}' 'strict-dynamic'; ",
                     "style-src 'self' 'unsafe-inline'; ",
                     "connect-src 'self'; ",
                     "img-src https: data:; ",
