@@ -4,10 +4,12 @@ use crate::Connection;
 use ammonia::Builder;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use log::info;
 use pulldown_cmark::{Options, Parser};
 use rand::seq::SliceRandom;
+use std::iter;
 use warp::Rejection;
 
 #[derive(Queryable)]
@@ -106,6 +108,20 @@ fn render_markdown(markdown: &str) -> String {
         static ref FILTER: Builder<'static> = {
             let mut builder = Builder::new();
             builder.link_rel(Some("noopener noreferrer nofollow"));
+            builder.add_generic_attributes(iter::once("class"));
+            builder.attribute_filter(|_, attribute, value| {
+                if attribute == "class" {
+                    Some(
+                        value
+                            .split_ascii_whitespace()
+                            .filter(|value| value.starts_with("language-"))
+                            .join(" ")
+                            .into(),
+                    )
+                } else {
+                    Some(value.into())
+                }
+            });
             builder
         };
     }
@@ -130,5 +146,21 @@ mod test {
     #[test]
     fn strikethrough_works() {
         assert_eq!(render_markdown("~~strike~~"), "<p><del>strike</del></p>\n");
+    }
+
+    #[test]
+    fn code_blocks_work() {
+        assert_eq!(
+            render_markdown("```rust\nfn main() {}\n```"),
+            "<pre><code class=\"language-rust\">fn main() {}\n</code></pre>\n",
+        );
+    }
+
+    #[test]
+    fn only_language_classes_are_allowed() {
+        assert_eq!(
+            render_markdown(r#"<br class="language-a madoka language-b homura">"#),
+            "<br class=\"language-a language-b\">",
+        );
     }
 }
