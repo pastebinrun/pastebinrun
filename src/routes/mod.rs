@@ -21,8 +21,9 @@ use std::pin::Pin;
 use tokio_executor::blocking;
 use warp::filters::BoxedFilter;
 use warp::http::header::{
-    HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_FRAME_OPTIONS,
+    HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, CONTENT_TYPE, REFERRER_POLICY, X_FRAME_OPTIONS,
 };
+use warp::http::method::Method;
 use warp::http::{Response, StatusCode};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -125,8 +126,14 @@ fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(connection(pool))
         .and_then(api_v1::pastes::insert_paste);
     path!("api" / "v1")
-        .and(languages.or(pastes))
-        .with(warp::cors().allow_any_origin())
+        .and(
+            languages.or(pastes).with(
+                warp::cors()
+                    .allow_any_origin()
+                    .allow_methods(&[Method::GET, Method::POST])
+                    .allow_headers(&[CONTENT_TYPE]),
+            ),
+        )
         .boxed()
 }
 
