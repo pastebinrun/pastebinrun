@@ -52,7 +52,7 @@ impl<'de> Deserialize<'de> for DeserializableDuration {
 }
 
 fn default_language() -> String {
-    "plain-text".into()
+    "plaintext".into()
 }
 
 pub fn insert_paste(
