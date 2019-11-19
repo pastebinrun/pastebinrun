@@ -1,35 +1,10 @@
-use ructe::Ructe;
-use std::error::Error;
+use ructe::{Result, Ructe};
 use std::fs;
-use std::process::{Command, Stdio};
-use walkdir::WalkDir;
 
-fn run_command(command: &str, if_fails: &str) {
-    if !Command::new("sh")
-        .args(&["-c", &format!("{} 1>&2", command)])
-        .stdout(Stdio::null())
-        .status()
-        .unwrap()
-        .success()
-    {
-        panic!("{}", if_fails);
-    }
-}
-
-fn main() -> Result<(), Box<dyn Error>> {
-    for file in WalkDir::new("js") {
-        println!("cargo:rerun-if-changed={}", file?.path().display());
-    }
-    println!("cargo:rerun-if-changed=webpack.config.js");
-    run_command("npm install", "Installing npm modules failed");
-    run_command("node_modules/.bin/webpack", "Webpack failed");
+fn main() -> Result<()> {
     println!(
         "cargo:rustc-env=ENTRY_FILE_PATH={}",
-        fs::read_to_string("entry")?,
+        fs::read_to_string("entry").expect("Please use webpack to generate JavaScript"),
     );
-    Ructe::from_env()
-        .unwrap()
-        .compile_templates("templates")
-        .unwrap();
-    Ok(())
+    Ructe::from_env()?.compile_templates("templates")
 }
