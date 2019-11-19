@@ -1,9 +1,12 @@
 build:
   image: rust:latest
   script:
-  - apt update
-  - apt install -y npm
-  - &print_version rustc --version && cargo --version
+  - &init
+    - apt update
+    - apt install -y npm
+    - rustc --version && cargo --version
+    - npm ci
+    - node_modules/.bin/webpack
   - cargo build --release --verbose
   artifacts:
     paths:
@@ -13,7 +16,6 @@ build:
   cache:
     key: release
     paths:
-    - node_modules/
     - target/
 
 test:stable: &test
@@ -25,12 +27,9 @@ test:stable: &test
     POSTGRES_PASSWORD: password
   image: rust:latest
   script:
-  - apt update
-  - apt install -y npm
-  - *print_version
+  - *init
   - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose --features=database_tests
   cache:
     key: debug
     paths:
-    - node_modules/
     - target/
