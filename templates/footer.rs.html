@@ -3,4 +3,4 @@
 @(session: &Session)
 
 </article>
-<script src="/@env!("ENTRY_FILE_PATH")" nonce="@session.nonce"></script>
+<script src="/@crate::models::js::path()" nonce="@session.nonce"></script>
