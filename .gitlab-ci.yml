@@ -1,24 +1,32 @@
-build:
+build:webpack:
+  stage: build
+  image: node:12.13
+  script:
+  - npm ci
+  - node_modules/.bin/webpack
+  artifacts:
+    paths:
+    - static
+    - entry
+
+build:release: &build
+  stage: test
   image: rust:latest
   script:
-  - &init
-    - apt update
-    - apt install -y npm
-    - rustc --version && cargo --version
-    - npm ci
-    - node_modules/.bin/webpack
+  - &init rustc --version && cargo --version
   - cargo build --release --verbose
   artifacts:
     paths:
+    - target/release/pastebinrun
     - migrations
     - static
-    - target/release/pastebinrun
   cache:
     key: release
     paths:
-    - target/
+    - target
 
 test:stable: &test
+  stage: test
   services:
   - postgres
   variables:
@@ -30,6 +38,14 @@ test:stable: &test
   - *init
   - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose --features=database_tests
   cache:
-    key: debug
+    key: ${CI_JOB_NAME}
     paths:
     - target/
+
+test:1.39:
+  <<: *test
+  image: rust:1.39
+
+test:nightly:
+  <<: *test
+  image: rustlang/rust:nightly
