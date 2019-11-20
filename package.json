@@ -1,5 +1,6 @@
 {
     "name": "pastebinrun",
+    "version": "0.1.0",
     "private": true,
     "devDependencies": {
         "@types/codemirror": "0.0.78",
