@@ -17,9 +17,10 @@ build:release: &build
   - cargo build --release --verbose
   artifacts:
     paths:
-    - target/release/pastebinrun
+    - languages.json
     - migrations
     - static
+    - target/release/pastebinrun
   cache:
     key: release
     paths:

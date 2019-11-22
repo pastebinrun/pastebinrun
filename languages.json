@@ -1,0 +1,238 @@
+[
+    {
+        "identifier": "plaintext",
+        "name": "Plain text"
+    },
+    {
+        "identifier": "c",
+        "name": "C",
+        "implementations": [
+            {
+                "label": "Clang",
+                "identifier": "clang",
+                "wrappers": [
+                    {
+                        "identifier": "clang",
+                        "label": "Run",
+                        "code": "mv code code.cpp; clang++ %s code.cpp && ./a.out"
+                    }
+                ]
+            },
+            {
+                "label": "gcc",
+                "identifier": "gcc",
+                "wrappers": [
+                    {
+                        "identifier": "gcc",
+                        "label": "Run",
+                        "code": "mv code code.c; gcc %s code.c && ./a.out"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "identifier": "cpp",
+        "name": "C++",
+        "implementations": [
+            {
+                "label": "Clang",
+                "identifier": "clang",
+                "wrappers": [
+                    {
+                        "identifier": "clangcpp",
+                        "label": "Run",
+                        "code": "mv code code.cpp; clang++ %s code.cpp && ./a.out"
+                    }
+                ]
+            },
+            {
+                "label": "g++",
+                "identifier": "gcc",
+                "wrappers": [
+                    {
+                        "identifier": "gpp",
+                        "label": "Run",
+                        "code": "mv code code.cpp; g++ %s code.cpp && ./a.out"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "identifier": "csharp",
+        "name": "C#"
+    },
+    {
+        "identifier": "haskell",
+        "name": "Haskell"
+    },
+    {
+        "identifier": "html",
+        "name": "HTML"
+    },
+    {
+        "identifier": "java",
+        "name": "Java"
+    },
+    {
+        "identifier": "javascript",
+        "name": "JavaScript"
+    },
+    {
+        "identifier": "jinja2",
+        "name": "Jinja2"
+    },
+    {
+        "identifier": "jsx",
+        "name": "JSX"
+    },
+    {
+        "identifier": "markdown",
+        "name": "Markdown"
+    },
+    {
+        "identifier": "perl",
+        "name": "Perl",
+        "implementations": [
+            {
+                "label": "Perl",
+                "identifier": "perl",
+                "wrappers": [
+                    {
+                        "identifier": "perl",
+                        "label": "Run",
+                        "code": "perl %s code"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "identifier": "php",
+        "name": "PHP"
+    },
+    {
+        "identifier": "postgresql",
+        "name": "PostgreSQL"
+    },
+    {
+        "identifier": "python2",
+        "name": "Python 2"
+    },
+    {
+        "identifier": "python",
+        "name": "Python 3",
+        "implementations": [
+            {
+                "label": "CPython",
+                "identifier": "cpython",
+                "wrappers": [
+                    {
+                        "identifier": "cpython",
+                        "label": "Run",
+                        "code": "python3 %s code"
+                    },
+                    {
+                        "identifier": "black",
+                        "label": "Format (black)",
+                        "code": "black code; cat code",
+                        "is_formatter": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "identifier": "raku",
+        "name": "Raku",
+        "implementations": [
+            {
+                "label": "Rakudo",
+                "identifier": "rakudo",
+                "wrappers": [
+                    {
+                        "identifier": "rakudo",
+                        "label": "Run",
+                        "code": "perl6 %s code"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "identifier": "rust",
+        "name": "Rust",
+        "implementations": [
+            {
+                "label": "Stable",
+                "identifier": "stable",
+                "wrappers": [
+                    {
+                        "identifier": "rustc-stable",
+                        "label": "Run",
+                        "code": "mv code code.rs && rustc %s code.rs && ./code"
+                    },
+                    {
+                        "identifier": "rustc-asm-stable",
+                        "label": "ASM",
+                        "code": "rustc --emit asm --crate-type rlib %s code && cat code.s",
+                        "is_asm": true
+                    },
+                    {
+                        "identifier": "rustfmt-stable",
+                        "label": "Rustfmt",
+                        "code": "rustfmt code; cat code",
+                        "is_formatter": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "identifier": "sh",
+        "name": "Sh",
+        "implementations": [
+            {
+                "label": "sh",
+                "identifier": "sh",
+                "wrappers": [
+                    {
+                        "identifier": "sh",
+                        "label": "Run",
+                        "code": "sh %s code"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "identifier": "sql",
+        "name": "SQL"
+    },
+    {
+        "identifier": "sqlite",
+        "name": "SQLite",
+        "implementations": [
+            {
+                "label": "SQLite",
+                "identifier": "sqlite",
+                "wrappers": [
+                    {
+                        "identifier": "sqlite",
+                        "label": "Run",
+                        "code": "sqlite3 %s < code"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "identifier": "typescript",
+        "name": "TypeScript"
+    },
+    {
+        "identifier": "tsx",
+        "name": "TypeScript-JSX"
+    }
+]

@@ -103,11 +103,10 @@ fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(warp::get2())
         .and_then(api_language::api_language);
     let run = root
-        .and(path!("run" / String / String))
+        .and(path!("run" / String))
         .and(warp::post2())
         .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
-        .and(path!(String))
         .and_then(run::run);
     language.or(run).boxed()
 }
@@ -214,6 +213,7 @@ fn not_found(pool: PgPool) -> impl Clone + Fn(Rejection) -> NotFoundFuture {
 #[cfg(test)]
 mod test {
     use super::routes;
+    use crate::migration;
     use diesel::r2d2::{ConnectionManager, CustomizeConnection, Pool};
     use diesel::Connection;
     use lazy_static::lazy_static;
@@ -237,6 +237,7 @@ mod test {
                 )))
                 .expect("Couldn't create a connection connection");
             diesel_migrations::run_pending_migrations(&pool.get().unwrap()).unwrap();
+            migration::run(pool.get().unwrap()).unwrap();
             routes(pool).map(Reply::into_response).boxed()
         };
     }
@@ -278,7 +279,6 @@ mod test {
 
         #[derive(Debug, Deserialize, PartialEq)]
         pub struct Implementation<'a> {
-            identifier: &'a str,
             label: &'a str,
             #[serde(borrow)]
             wrappers: Vec<Wrapper<'a>>,
@@ -300,10 +300,9 @@ mod test {
             serde_json::from_slice::<ApiLanguage>(response.body()).unwrap(),
             ApiLanguage {
                 implementations: vec![Implementation {
-                    identifier: "sh",
                     label: "sh",
                     wrappers: vec![Wrapper {
-                        identifier: "run",
+                        identifier: "sh",
                         label: "Run",
                         is_asm: false,
                         is_formatter: false,
