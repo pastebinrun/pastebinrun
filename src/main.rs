@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate diesel;
 
+mod migration;
 mod models;
 mod routes;
 mod schema;
@@ -18,6 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let pool = Pool::new(ConnectionManager::new(database_url))
         .expect("Couldn't create a connection connection");
     diesel_migrations::run_pending_migrations(&pool.get()?)?;
+    migration::run(pool.get()?)?;
     warp::serve(routes::routes(pool)).run(([127, 0, 0, 1], 8080));
     Ok(())
 }

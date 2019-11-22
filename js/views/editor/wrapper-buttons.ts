@@ -4,7 +4,7 @@ export default class WrapperButtons {
     buttonsContainer: HTMLSpanElement
     compilerOptions: HTMLInputElement
     buttons: HTMLSpanElement
-    run: (identifier: string, wrapper: Wrapper, compilerOptions: string) => void;
+    run: (wrapper: Wrapper, compilerOptions: string) => void;
     abortController: AbortController
     select: HTMLSelectElement
     optionMap = new WeakMap<HTMLOptionElement, { identifier: string, wrappers: Wrapper[] }>()
@@ -50,13 +50,12 @@ export default class WrapperButtons {
         }
         if (options.length !== 0) {
             const option = options[0]
-            const { wrappers, identifier } = this.optionMap.get(option)
-            for (const wrapper of wrappers) {
+            for (const wrapper of this.optionMap.get(option).wrappers) {
                 const button = document.createElement('button')
                 button.textContent = wrapper.label
                 button.addEventListener('click', e => {
                     e.preventDefault()
-                    this.run(identifier, wrapper, this.compilerOptions.value)
+                    this.run(wrapper, this.compilerOptions.value)
                 })
                 this.buttons.append(button)
             }

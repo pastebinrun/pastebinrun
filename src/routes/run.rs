@@ -1,4 +1,4 @@
-use crate::schema::{implementation_wrappers, implementations, languages};
+use crate::schema::implementation_wrappers;
 use crate::Connection;
 use diesel::prelude::*;
 use futures::Future;
@@ -44,20 +44,14 @@ struct Output {
 
 pub fn run(
     connection: Connection,
-    language: String,
-    implementation: String,
+    identifier: String,
     Form {
         code,
         compiler_options,
     }: Form,
-    identifier: String,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
-        implementations::table
-            .inner_join(implementation_wrappers::table)
-            .inner_join(languages::table)
-            .filter(languages::identifier.eq(language))
-            .filter(implementations::identifier.eq(implementation))
+        implementation_wrappers::table
             .filter(implementation_wrappers::identifier.eq(identifier))
             .select(implementation_wrappers::code)
             .get_result(&connection)

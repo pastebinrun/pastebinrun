@@ -20,7 +20,6 @@ struct Wrapper {
 #[derive(Identifiable, Queryable)]
 struct Implementation {
     id: i32,
-    identifier: String,
     label: String,
 }
 
@@ -43,7 +42,6 @@ struct JsonLanguage {
 
 #[derive(Serialize)]
 struct JsonImplementation {
-    identifier: String,
     label: String,
     wrappers: Vec<Wrapper>,
 }
@@ -61,11 +59,7 @@ pub fn api_language(
             .map_err(warp::reject::custom)?
             .ok_or_else(warp::reject::not_found)?;
         let implementations = implementations::table
-            .select((
-                implementations::implementation_id,
-                implementations::identifier,
-                implementations::label,
-            ))
+            .select((implementations::implementation_id, implementations::label))
             .filter(implementations::language_id.eq(id))
             .load(&connection)
             .map_err(warp::reject::custom)?;
@@ -86,7 +80,6 @@ pub fn api_language(
             .into_iter()
             .zip(implementations)
             .map(|(wrappers, implementation)| JsonImplementation {
-                identifier: implementation.identifier,
                 label: implementation.label,
                 wrappers: wrappers
                     .into_iter()

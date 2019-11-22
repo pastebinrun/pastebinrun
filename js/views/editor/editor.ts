@@ -87,7 +87,7 @@ class Editor {
         return this.languageSelector.selectedOptions[0].value
     }
 
-    async run(implementationIdentifier, wrapper, compilerOptions) {
+    async run(wrapper, compilerOptions) {
         this.output.clear()
         if (this.abortEval) {
             this.abortEval.abort()
@@ -104,8 +104,7 @@ class Editor {
             },
             signal: this.abortEval.signal,
         }
-        const languageIdentifier = this.getLanguageIdentifier()
-        const path = `/api/v0/run/${languageIdentifier}/${implementationIdentifier}/${wrapper.identifier}`
+        const path = `/api/v0/run/${wrapper.identifier}`
         let response
         try {
             response = await (await fetch(path, parameters)).json()
