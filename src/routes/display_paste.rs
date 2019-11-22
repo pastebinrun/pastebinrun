@@ -23,7 +23,7 @@ pub fn display_paste(
                 pastes::paste,
                 pastes::language_id,
                 pastes::delete_at,
-                languages::is_markdown,
+                languages::identifier,
             ))
             .filter(pastes::identifier.eq(requested_identifier))
             .get_result(connection)
