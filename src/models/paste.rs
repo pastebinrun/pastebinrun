@@ -17,7 +17,7 @@ pub struct Paste {
     pub paste: String,
     pub language_id: i32,
     pub delete_at: Option<DateTime<Utc>>,
-    pub is_markdown: bool,
+    pub identifier: String,
 }
 
 impl Paste {
@@ -86,10 +86,10 @@ impl ExternPaste {
         let Paste {
             paste,
             language_id,
+            identifier,
             delete_at,
-            is_markdown,
         } = paste;
-        let markdown = if is_markdown {
+        let markdown = if identifier == "markdown" {
             render_markdown(&paste)
         } else {
             String::new()

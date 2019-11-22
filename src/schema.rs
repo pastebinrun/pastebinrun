@@ -25,7 +25,6 @@ table! {
         language_id -> Int4,
         priority -> Int4,
         name -> Text,
-        is_markdown -> Bool,
         identifier -> Text,
     }
 }
