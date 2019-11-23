@@ -18,7 +18,7 @@ class Editor {
     currentLanguage: string | null = null
     abortEval: AbortController | null = null
 
-    async initialize(form) {
+    initialize(form) {
         this.languageSelector = form.querySelector('#language')
         this.wrapperButtons = new WrapperButtons(form.querySelector('#wrapper-buttons'), this.run.bind(this))
         this.codeElement = form.querySelector('#code')
@@ -26,16 +26,45 @@ class Editor {
         onChange(editor => this.changeEditor(editor))
         this.initConfiguredEditor()
         this.output = new Output(form.querySelector('#output'))
+        const stdout = document.querySelector<HTMLInputElement>('#dbstdout')
+        if (stdout) {
+            this.output.display({}, {
+                stdout: stdout.value,
+                stderr: document.querySelector<HTMLInputElement>('#dbstderr').value,
+                status: +document.querySelector<HTMLInputElement>('#dbstatus')?.value,
+            })
+        }
         this.autodeleteText = form.querySelector('#autodelete-text')
         this.autodeleteCheckbox = form.querySelector('#automatically-hidden-label')
         this.submit = form.querySelector('[type=submit]')
         this.submit.disabled = true
+        form.addEventListener('submit', () => {
+            if (this.output.json && !this.output.wrapper.isFormatter) {
+                for (const name of ['stdout', 'stderr', 'status']) {
+                    const elem = form.querySelector(`#${name}`) || document.createElement('input')
+                    elem.type = 'hidden'
+                    elem.name = name
+                    elem.value = this.output.json[name]
+                    form.append(elem)
+                }
+            } else {
+                this.stdinElement.value = ''
+            }
+        })
         this.detailsElement = document.createElement('details')
         const summary = document.createElement('summary')
         summary.textContent = 'Standard input'
         this.stdinElement = document.createElement('textarea')
+        this.stdinElement.name = 'stdin'
+        this.stdinElement.addEventListener('change', () => this.changeToLookLikeNewPaste())
         this.detailsElement.append(summary, this.stdinElement)
-        this.detailsElement.style.display = 'none'
+        const dbStdin = document.querySelector<HTMLInputElement>('#dbstdin')?.value
+        if (dbStdin) {
+            this.stdinElement.value = dbStdin
+            this.detailsElement.open = true
+        } else {
+            this.detailsElement.style.display = 'none'
+        }
         form.querySelector('#buttons').append(this.detailsElement)
         if (this.autodeleteText) {
             this.autodeleteCheckbox.style.display = 'none'
@@ -71,6 +100,7 @@ class Editor {
             this.autodeleteCheckbox.style.display = ''
         }
         this.submit.disabled = false
+        this.output.clear()
     }
 
     assignEvents() {
@@ -134,5 +164,5 @@ class Editor {
 }
 
 export default function createEditor(form) {
-    return new Editor().initialize(form)
+    new Editor().initialize(form)
 }

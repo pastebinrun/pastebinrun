@@ -37,6 +37,10 @@ table! {
         created_at -> Timestamptz,
         language_id -> Int4,
         paste -> Text,
+        stdin -> Text,
+        exit_code -> Nullable<Int4>,
+        stdout -> Nullable<Text>,
+        stderr -> Nullable<Text>,
     }
 }
 

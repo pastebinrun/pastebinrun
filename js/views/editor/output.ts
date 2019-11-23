@@ -4,19 +4,13 @@ const filterRegex = /(?:\t\.(?:text|file|section|globl|p2align|type|cfi_.*|size|
 
 export default class Output {
     output: HTMLDivElement
-    filterAsm: HTMLLabelElement
-    filterAsmCheckbox: HTMLInputElement
-    wrapper: Wrapper
-    json: {
-        stdout: string,
-        stderr: string,
-        status: number | null,
-    }
+    filterAsm = document.createElement('label')
+    filterAsmCheckbox = document.createElement('input')
+    wrapper: Wrapper | null = null
+    json: { stdout: string, stderr: string, status: number | null } | null = null
 
     constructor(output) {
         this.output = output
-        this.filterAsm = document.createElement('label')
-        this.filterAsmCheckbox = document.createElement('input')
         this.filterAsmCheckbox.type = 'checkbox'
         this.filterAsmCheckbox.checked = true
         this.filterAsmCheckbox.addEventListener('change', () => this.update())
@@ -24,6 +18,7 @@ export default class Output {
     }
 
     clear() {
+        this.json = null
         this.output.textContent = ''
     }
 

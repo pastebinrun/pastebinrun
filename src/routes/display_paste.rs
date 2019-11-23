@@ -24,6 +24,10 @@ pub fn display_paste(
                 pastes::language_id,
                 pastes::delete_at,
                 languages::identifier,
+                pastes::stdin,
+                pastes::exit_code,
+                pastes::stdout,
+                pastes::stderr,
             ))
             .filter(pastes::identifier.eq(requested_identifier))
             .get_result(connection)
