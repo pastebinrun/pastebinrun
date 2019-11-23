@@ -12,6 +12,8 @@ class Editor {
     autodeleteText: HTMLSpanElement
     autodeleteCheckbox: HTMLLabelElement
     submit: HTMLInputElement
+    detailsElement: HTMLDetailsElement
+    stdinElement: HTMLTextAreaElement
     editor: EditorType
     currentLanguage: string | null = null
     abortEval: AbortController | null = null
@@ -28,6 +30,13 @@ class Editor {
         this.autodeleteCheckbox = form.querySelector('#automatically-hidden-label')
         this.submit = form.querySelector('[type=submit]')
         this.submit.disabled = true
+        this.detailsElement = document.createElement('details')
+        const summary = document.createElement('summary')
+        summary.textContent = 'Standard input'
+        this.stdinElement = document.createElement('textarea')
+        this.detailsElement.append(summary, this.stdinElement)
+        this.detailsElement.style.display = 'none'
+        form.querySelector('#buttons').append(this.detailsElement)
         if (this.autodeleteText) {
             this.autodeleteCheckbox.style.display = 'none'
         }
@@ -79,6 +88,7 @@ class Editor {
         const language = await getLanguage(identifier, isStillValid)
         // This deals with user changing the language after asynchronous event
         if (isStillValid()) {
+            this.detailsElement.style.display = language.implementations.length ? 'block' : 'none'
             this.wrapperButtons.update(language.implementations)
         }
     }
@@ -96,6 +106,7 @@ class Editor {
         const body = new URLSearchParams
         body.append('compilerOptions', compilerOptions)
         body.append('code', this.editor.getValue())
+        body.append('stdin', this.stdinElement.value)
         const parameters = {
             method: 'POST',
             body,
