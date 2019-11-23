@@ -20,12 +20,13 @@ lazy_static! {
 pub struct Form {
     code: String,
     compiler_options: String,
+    stdin: String,
 }
 
 #[derive(Serialize)]
 struct Request {
     files: Vec<File>,
-    stdin: &'static str,
+    stdin: String,
     code: String,
 }
 
@@ -48,6 +49,7 @@ pub fn run(
     Form {
         code,
         compiler_options,
+        stdin,
     }: Form,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
@@ -68,7 +70,7 @@ pub fn run(
                     name: "code",
                     contents: code,
                 }],
-                stdin: "",
+                stdin,
                 code: language_code.replace("%s", &compiler_options),
             })
             .send()
