@@ -61,11 +61,37 @@
     },
     {
         "identifier": "csharp",
-        "name": "C#"
+        "name": "C#",
+        "implementations": [
+            {
+                "label": ".NET Core",
+                "identifier": "netcore",
+                "wrappers": [
+                    {
+                        "identifier": "netcore",
+                        "label": "Run",
+                        "code": "dotnet new console &>/dev/null; dotnet run %s"
+                    }
+                ]
+            }
+        ]
     },
     {
         "identifier": "haskell",
-        "name": "Haskell"
+        "name": "Haskell",
+        "implementations": [
+            {
+                "label": "GHC",
+                "identifier": "ghc",
+                "wrappers": [
+                    {
+                        "identifier": "ghc",
+                        "label": "Run",
+                        "code": "mv code code.hs; ghc %s code.hs && ./code"
+                    }
+                ]
+            }
+        ]
     },
     {
         "identifier": "html",
@@ -73,11 +99,48 @@
     },
     {
         "identifier": "java",
-        "name": "Java"
+        "name": "Java",
+        "implementations": [
+            {
+                "label": "OpenJDK 8",
+                "identifier": "openjdk8",
+                "wrappers": [
+                    {
+                        "identifier": "openjdk8",
+                        "label": "Run",
+                        "code": "mv code code.java; /etc/alternatives/java_sdk_1.8.0/bin/javac %s code.java; /etc/alternatives/java_sdk_1.8.0/bin/java \"$(perl -e 'my @classes = grep { !/\\$/ } glob q[*.class]; if (@classes == 1) { my $class = $classes[0]; $class =~ s/\\.class\\z//; print $class } else { print q[Main] }')\""
+                    }
+                ]
+            },
+            {
+                "label": "OpenJDK 11",
+                "identifier": "openjdk11",
+                "wrappers": [
+                    {
+                        "identifier": "openjdk11",
+                        "label": "Run",
+                        "code": "mv code code.java; /etc/alternatives/java_sdk_11/bin/javac %s code.java; /etc/alternatives/java_sdk_11/bin/java \"$(perl -e 'my @classes = grep { !/\\$/ } glob q[*.class]; if (@classes == 1) { my $class = $classes[0]; $class =~ s/\\.class\\z//; print $class } else { print q[Main] }')\""
+                    }
+                ]
+            }
+        ]
     },
     {
         "identifier": "javascript",
-        "name": "JavaScript"
+        "name": "JavaScript",
+        "implementations": [
+            {
+                "label": "Node.js",
+                "identifier": "nodejs",
+                "wrappers": [
+                    {
+                        "identifier": "nodejs",
+                        "label": "Run",
+                        "code": "node %s code"
+                    }
+                ]
+            }
+        ]
     },
     {
         "identifier": "jinja2",
@@ -110,7 +173,20 @@
     },
     {
         "identifier": "php",
-        "name": "PHP"
+        "name": "PHP",
+        "implementations": [
+            {
+                "label": "PHP",
+                "identifier": "php",
+                "wrappers": [
+                    {
+                        "identifier": "php",
+                        "label": "Run",
+                        "code": "php %s code"
+                    }
+                ]
+            }
+        ]
     },
     {
         "identifier": "postgresql",
@@ -229,7 +305,20 @@
     },
     {
         "identifier": "typescript",
-        "name": "TypeScript"
+        "name": "TypeScript",
+        "implementations": [
+            {
+                "label": "Node.js",
+                "identifier": "nodejs",
+                "wrappers": [
+                    {
+                        "identifier": "typescript-nodejs",
+                        "label": "Run",
+                        "code": "mv code code.ts; /usr/local/bin/tsc %s code.ts && node code"
+                    }
+                ]
+            }
+        ]
     },
     {
         "identifier": "tsx",
