@@ -47,6 +47,9 @@ textarea {
     height: 372px;
     resize: vertical;
 }
+[name=stdin] {
+    height: 124px;
+}
 #right-buttons {
     float: right;
 }

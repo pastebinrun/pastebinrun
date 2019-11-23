@@ -22,4 +22,14 @@
     <p><textarea id=code name=code>@('\n')@paste.paste</textarea></p>
     @:buttons()
 </form>
+<input type=hidden id=dbstdin value="@paste.stdin">
+@if let Some(exit_code) = paste.exit_code {
+    <input type=hidden id=dbstatus value="@exit_code">
+}
+@if let Some(stdout) = paste.stdout {
+    <input type=hidden id=dbstdout value="@stdout">
+}
+@if let Some(stderr) = paste.stderr {
+    <input type=hidden id=dbstderr value="@stderr">
+}
 @:footer(session)

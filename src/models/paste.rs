@@ -18,6 +18,10 @@ pub struct Paste {
     pub language_id: i32,
     pub delete_at: Option<DateTime<Utc>>,
     pub identifier: String,
+    pub stdin: String,
+    pub exit_code: Option<i32>,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>,
 }
 
 impl Paste {
@@ -42,6 +46,10 @@ struct InsertPaste {
     delete_at: Option<DateTime<Utc>>,
     language_id: i32,
     paste: String,
+    stdin: String,
+    stdout: Option<String>,
+    stderr: Option<String>,
+    exit_code: Option<i32>,
 }
 
 pub fn insert(
@@ -49,6 +57,10 @@ pub fn insert(
     delete_at: Option<DateTime<Utc>>,
     language: &str,
     paste: String,
+    stdin: String,
+    stdout: Option<String>,
+    stderr: Option<String>,
+    exit_code: Option<i32>,
 ) -> Result<String, Rejection> {
     let mut rng = rand::thread_rng();
     let identifier: String = (0..10)
@@ -66,6 +78,10 @@ pub fn insert(
         delete_at,
         language_id,
         paste,
+        stdin,
+        stdout,
+        stderr,
+        exit_code,
     };
     diesel::insert_into(pastes::table)
         .values(&insert_paste)
@@ -79,6 +95,10 @@ pub struct ExternPaste {
     pub language_id: i32,
     pub delete_at: Option<DateTime<Utc>>,
     pub markdown: String,
+    pub stdin: String,
+    pub exit_code: Option<i32>,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>,
 }
 
 impl ExternPaste {
@@ -88,6 +108,10 @@ impl ExternPaste {
             language_id,
             identifier,
             delete_at,
+            stdin,
+            exit_code,
+            stdout,
+            stderr,
         } = paste;
         let markdown = if identifier == "markdown" {
             render_markdown(&paste)
@@ -99,6 +123,10 @@ impl ExternPaste {
             language_id,
             delete_at,
             markdown,
+            stdin,
+            exit_code,
+            stdout,
+            stderr,
         }
     }
 }

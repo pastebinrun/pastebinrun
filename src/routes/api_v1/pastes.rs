@@ -69,6 +69,10 @@ pub fn insert_paste(
             expiration.map(|expiration| Utc::now() + expiration.0),
             &language,
             code,
+            "".into(),
+            None,
+            None,
+            None,
         )
     })
     .compat()
