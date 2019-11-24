@@ -1,5 +1,6 @@
-use crate::schema::{implementation_wrappers, implementations, languages};
-use diesel::pg::Pg;
+use crate::models::paste;
+use crate::schema::{implementation_wrappers, implementations, languages, pastes};
+use crate::Connection;
 use diesel::prelude::*;
 use diesel::sql_types::{Bool, Integer, Text};
 use serde::Deserialize;
@@ -9,6 +10,7 @@ use std::fs;
 #[derive(Deserialize)]
 struct Language {
     identifier: String,
+    helloworld: Option<String>,
     #[serde(default)]
     implementations: Vec<Implementation>,
 }
@@ -32,13 +34,42 @@ struct Wrapper {
     is_formatter: bool,
 }
 
-pub fn run(connection: impl Connection<Backend = Pg>) -> Result<(), Box<dyn Error>> {
+pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
     let languages: Vec<Language> = serde_json::from_slice(&fs::read("languages.json")?)?;
     for Language {
         identifier: languages_identifier,
+        helloworld,
         implementations,
     } in languages
     {
+        if let Some(hello_world) = helloworld {
+            let paste_id: Option<i32> = languages::table
+                .filter(languages::identifier.eq(&languages_identifier))
+                .select(languages::hello_world_paste_id)
+                .get_result(connection)?;
+            if paste_id.is_none() {
+                let identifier = paste::insert(
+                    connection,
+                    None,
+                    &languages_identifier,
+                    hello_world,
+                    "".into(),
+                    None,
+                    None,
+                    None,
+                )
+                .unwrap();
+                diesel::update(languages::table)
+                    .set(
+                        languages::hello_world_paste_id.eq(pastes::table
+                            .select(pastes::paste_id)
+                            .filter(pastes::identifier.eq(identifier))
+                            .single_value()),
+                    )
+                    .filter(languages::identifier.eq(&languages_identifier))
+                    .execute(connection)?;
+            }
+        }
         for Implementation {
             label,
             identifier: implementation_identifier,
@@ -61,7 +92,7 @@ pub fn run(connection: impl Connection<Backend = Pg>) -> Result<(), Box<dyn Erro
                 .on_conflict((implementations::language_id, implementations::identifier))
                 .do_update()
                 .set(implementations::label.eq(&label))
-                .execute(&connection)?;
+                .execute(connection)?;
             for (
                 i,
                 Wrapper {
@@ -105,7 +136,7 @@ pub fn run(connection: impl Connection<Backend = Pg>) -> Result<(), Box<dyn Erro
                         implementation_wrappers::is_formatter.eq(is_formatter),
                         implementation_wrappers::ordering.eq(i),
                     ))
-                    .execute(&connection)?;
+                    .execute(connection)?;
             }
         }
     }

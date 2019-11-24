@@ -18,7 +18,7 @@ pub fn display_paste(
         Paste::delete_old(connection)?;
         let languages = Language::fetch(connection)?;
         let paste: Paste = pastes::table
-            .inner_join(languages::table)
+            .inner_join(languages::table.on(pastes::language_id.eq(languages::language_id)))
             .select((
                 pastes::paste,
                 pastes::language_id,

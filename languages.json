@@ -6,6 +6,7 @@
     {
         "identifier": "c",
         "name": "C",
+        "helloworld": "#include <stdio.h>\n\nint main(void) {\n    puts(\"Hello, world!\");\n    return 0;\n}",
         "implementations": [
             {
                 "label": "Clang",
@@ -34,6 +35,7 @@
     {
         "identifier": "cpp",
         "name": "C++",
+        "helloworld": "#include <iostream>\n\nint main(void) {\n    std::cout << \"Hello, world!\\n\";\n}",
         "implementations": [
             {
                 "label": "Clang",
@@ -62,6 +64,7 @@
     {
         "identifier": "csharp",
         "name": "C#",
+        "helloworld": "using System;\n\nclass Program {\n    static void Main(string[] args) {\n        Console.WriteLine(\"Hello, world!\");\n    }\n}",
         "implementations": [
             {
                 "label": ".NET Core",
@@ -79,6 +82,7 @@
     {
         "identifier": "haskell",
         "name": "Haskell",
+        "helloworld": "main = putStrLn \"Hello, world!\"",
         "implementations": [
             {
                 "label": "GHC",
@@ -100,6 +104,7 @@
     {
         "identifier": "java",
         "name": "Java",
+        "helloworld": "class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, world!\");\n    }\n}",
         "implementations": [
             {
                 "label": "OpenJDK 8",
@@ -128,6 +133,7 @@
     {
         "identifier": "javascript",
         "name": "JavaScript",
+        "helloworld": "console.log(\"Hello, world!\");",
         "implementations": [
             {
                 "label": "Node.js",
@@ -157,6 +163,7 @@
     {
         "identifier": "perl",
         "name": "Perl",
+        "helloworld": "use v5.12;\nuse warnings;\n\nsay \"Hello, world!\";",
         "implementations": [
             {
                 "label": "Perl",
@@ -174,6 +181,7 @@
     {
         "identifier": "php",
         "name": "PHP",
+        "helloworld": "<?php\necho \"Hello, world!\\n\";",
         "implementations": [
             {
                 "label": "PHP",
@@ -199,6 +207,7 @@
     {
         "identifier": "python",
         "name": "Python 3",
+        "helloworld": "print(\"Hello, world!\")",
         "implementations": [
             {
                 "label": "CPython",
@@ -222,6 +231,7 @@
     {
         "identifier": "raku",
         "name": "Raku",
+        "helloworld": "say \"Hello, world!\"",
         "implementations": [
             {
                 "label": "Rakudo",
@@ -239,6 +249,7 @@
     {
         "identifier": "rust",
         "name": "Rust",
+        "helloworld": "fn main() {\n    println!(\"Hello, world!\");\n}",
         "implementations": [
             {
                 "label": "Stable",
@@ -268,6 +279,7 @@
     {
         "identifier": "sh",
         "name": "Sh",
+        "helloworld": "echo Hello, world!",
         "implementations": [
             {
                 "label": "sh",
@@ -289,6 +301,7 @@
     {
         "identifier": "sqlite",
         "name": "SQLite",
+        "helloworld": "SELECT 'Hello, world!'",
         "implementations": [
             {
                 "label": "SQLite",
@@ -306,6 +319,7 @@
     {
         "identifier": "typescript",
         "name": "TypeScript",
+        "helloworld": "console.log(\"Hello, world!\");",
         "implementations": [
             {
                 "label": "Node.js",

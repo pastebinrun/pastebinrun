@@ -15,9 +15,10 @@
                 This paste will be automatically deleted on @delete_at.format("%Y-%m-%d %H:%M") UTC.
             </span>
         }
-        <label id="automatically-hidden-label">
-            <input type=checkbox name=autodelete checked> Automatically delete after 24 hours
-        </label>
+        <span id="automatically-hidden-label">
+            <label><input type=checkbox name=autodelete checked> Automatically delete after 24 hours</label>
+            <span id=hello-world></span>
+        </span>
     </p>
     <p><textarea id=code name=code>@('\n')@paste.paste</textarea></p>
     @:buttons()

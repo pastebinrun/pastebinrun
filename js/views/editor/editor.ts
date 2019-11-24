@@ -11,6 +11,7 @@ class Editor {
     output: Output
     autodeleteText: HTMLSpanElement
     autodeleteCheckbox: HTMLLabelElement
+    helloWorldLink: HTMLSpanElement
     submit: HTMLInputElement
     detailsElement: HTMLDetailsElement
     stdinElement: HTMLTextAreaElement
@@ -31,11 +32,12 @@ class Editor {
             this.output.display({}, {
                 stdout: stdout.value,
                 stderr: document.querySelector<HTMLInputElement>('#dbstderr').value,
-                status: +document.querySelector<HTMLInputElement>('#dbstatus')?.value,
+                status: +document.querySelector<HTMLInputElement>('#dbstatus') ?.value,
             })
         }
         this.autodeleteText = form.querySelector('#autodelete-text')
         this.autodeleteCheckbox = form.querySelector('#automatically-hidden-label')
+        this.helloWorldLink = form.querySelector('#hello-world')
         this.submit = form.querySelector('[type=submit]')
         this.submit.disabled = true
         form.addEventListener('submit', () => {
@@ -58,7 +60,7 @@ class Editor {
         this.stdinElement.name = 'stdin'
         this.stdinElement.addEventListener('change', () => this.changeToLookLikeNewPaste())
         this.detailsElement.append(summary, this.stdinElement)
-        const dbStdin = document.querySelector<HTMLInputElement>('#dbstdin')?.value
+        const dbStdin = document.querySelector<HTMLInputElement>('#dbstdin') ?.value
         if (dbStdin) {
             this.stdinElement.value = dbStdin
             this.detailsElement.open = true
@@ -112,12 +114,19 @@ class Editor {
 
     async updateLanguage() {
         this.wrapperButtons.clear()
+        this.helloWorldLink.textContent = ''
         const identifier = this.getLanguageIdentifier()
         this.setLanguage(identifier)
         const isStillValid = () => identifier === this.getLanguageIdentifier()
         const language = await getLanguage(identifier, isStillValid)
         // This deals with user changing the language after asynchronous event
         if (isStillValid()) {
+            if (language.helloWorldPaste) {
+                const anchor = document.createElement('a')
+                anchor.href = '/' + language.helloWorldPaste
+                anchor.textContent = 'Hello world program'
+                this.helloWorldLink.append(' | ', anchor)
+            }
             this.detailsElement.style.display = language.implementations.length ? 'block' : 'none'
             this.wrapperButtons.update(language.implementations)
         }
