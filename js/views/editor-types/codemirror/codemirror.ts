@@ -6,6 +6,7 @@ const languagesMap = {
     c: [() => import('codemirror/mode/clike/clike'), 'text/x-csrc'],
     cpp: [() => import('codemirror/mode/clike/clike'), 'text/x-c++src'],
     csharp: [() => import('codemirror/mode/clike/clike'), 'text/x-csharp'],
+    go: [() => import('codemirror/mode/go/go'), 'text/x-go'],
     haskell: [() => import('codemirror/mode/haskell/haskell'), 'text/x-haskell'],
     html: [() => import('codemirror/mode/htmlmixed/htmlmixed'), 'text/html'],
     java: [() => import('codemirror/mode/clike/clike'), 'text/x-java'],
