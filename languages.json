@@ -70,7 +70,7 @@
                     {
                         "identifier": "netcore",
                         "label": "Run",
-                        "code": "dotnet new console &>/dev/null; dotnet run %s"
+                        "code": "dotnet new console &>/dev/null; mv code Program.cs; dotnet run %s"
                     }
                 ]
             }
