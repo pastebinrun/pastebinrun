@@ -8,11 +8,19 @@ use std::error::Error;
 use std::fs;
 
 #[derive(Deserialize)]
-struct Language {
+struct JsonLanguage {
     identifier: String,
+    name: String,
     helloworld: Option<String>,
     #[serde(default)]
     implementations: Vec<Implementation>,
+}
+
+#[derive(Insertable)]
+struct Language<'a> {
+    identifier: &'a str,
+    name: String,
+    priority: i32,
 }
 
 #[derive(Deserialize)]
@@ -35,13 +43,23 @@ struct Wrapper {
 }
 
 pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
-    let languages: Vec<Language> = serde_json::from_slice(&fs::read("languages.json")?)?;
-    for Language {
+    let languages: Vec<JsonLanguage> = serde_json::from_slice(&fs::read("languages.json")?)?;
+    for JsonLanguage {
         identifier: languages_identifier,
+        name,
         helloworld,
         implementations,
     } in languages
     {
+        diesel::insert_into(languages::table)
+            .values(Language {
+                identifier: &languages_identifier,
+                name,
+                priority: 10,
+            })
+            .on_conflict(languages::identifier)
+            .do_nothing()
+            .execute(connection)?;
         if let Some(hello_world) = helloworld {
             let paste_id: Option<i32> = languages::table
                 .filter(languages::identifier.eq(&languages_identifier))

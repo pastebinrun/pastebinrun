@@ -80,6 +80,30 @@
         ]
     },
     {
+        "identifier": "go",
+        "name": "Go",
+        "helloworld": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, world!\")\n}",
+        "implementations": [
+            {
+                "label": "gc",
+                "identifier": "gc",
+                "wrappers": [
+                    {
+                        "identifier": "gc",
+                        "label": "Run",
+                        "code": "mv code code.go; go run code.go"
+                    },
+                    {
+                        "identifier": "goimports",
+                        "label": "Format",
+                        "code": "goimports -w code; cat code",
+                        "is_formatter": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "identifier": "haskell",
         "name": "Haskell",
         "helloworld": "main = putStrLn \"Hello, world!\"",

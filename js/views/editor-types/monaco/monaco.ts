@@ -29,6 +29,7 @@ const languageMap = {
     c: 'objective-c', // Somehow the repo doesn't have C language
     cpp: 'cpp',
     csharp: 'csharp',
+    go: 'go',
     haskell: null,
     html: 'html',
     java: 'java',
