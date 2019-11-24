@@ -1,4 +1,4 @@
-use crate::schema::{implementation_wrappers, implementations, languages};
+use crate::schema::{implementation_wrappers, implementations, languages, pastes};
 use crate::Connection;
 use diesel::prelude::*;
 use futures::Future;
@@ -7,6 +7,12 @@ use serde::Serialize;
 use tokio_executor::blocking;
 use warp::http::header::CACHE_CONTROL;
 use warp::{Rejection, Reply};
+
+#[derive(Queryable)]
+struct Language {
+    id: i32,
+    paste_identifier: Option<String>,
+}
 
 #[derive(Serialize, Queryable)]
 #[serde(rename_all = "camelCase")]
@@ -37,6 +43,7 @@ struct ImplementationWrapper {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct JsonLanguage {
+    hello_world_paste: Option<String>,
     implementations: Vec<JsonImplementation>,
 }
 
@@ -51,16 +58,22 @@ pub fn api_language(
     identifier: String,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
-        let id: i32 = languages::table
+        let language: Language = languages::table
             .filter(languages::identifier.eq(identifier))
-            .select(languages::language_id)
+            .select((
+                languages::language_id,
+                pastes::table
+                    .select(pastes::identifier)
+                    .filter(languages::hello_world_paste_id.eq(pastes::paste_id.nullable()))
+                    .single_value(),
+            ))
             .get_result(&connection)
             .optional()
             .map_err(warp::reject::custom)?
             .ok_or_else(warp::reject::not_found)?;
         let implementations = implementations::table
             .select((implementations::implementation_id, implementations::label))
-            .filter(implementations::language_id.eq(id))
+            .filter(implementations::language_id.eq(language.id))
             .load(&connection)
             .map_err(warp::reject::custom)?;
         let implementation_wrappers = ImplementationWrapper::belonging_to(&implementations)
@@ -103,7 +116,10 @@ pub fn api_language(
             })
             .collect();
         Ok(warp::reply::with_header(
-            warp::reply::json(&JsonLanguage { implementations }),
+            warp::reply::json(&JsonLanguage {
+                implementations,
+                hello_world_paste: language.paste_identifier,
+            }),
             CACHE_CONTROL,
             "max-age=14400",
         ))
