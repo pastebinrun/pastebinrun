@@ -64,7 +64,6 @@ export default function createTextareaEditor(textarea, onChange) {
     const editor = CodeMirror.fromTextArea(textarea, {
         lineNumbers: true,
         lineWrapping: true,
-        viewportMargin: Infinity,
     })
     editor.on('change', onChange)
     return new CodeMirrorEditor(editor)
