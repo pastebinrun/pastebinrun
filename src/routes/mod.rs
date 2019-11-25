@@ -59,7 +59,6 @@ fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::end()
         .and(
             warp::post2()
-                .and(warp::body::content_length_limit(1_000_000))
                 .and(warp::body::form())
                 .and(connection(pool.clone()))
                 .and_then(insert_paste::insert_paste)
@@ -105,7 +104,6 @@ fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     let run = root
         .and(path!("run" / String))
         .and(warp::post2())
-        .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
         .and_then(run::run);
     language.or(run).boxed()
@@ -120,7 +118,6 @@ fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     let pastes = warp::path("pastes")
         .and(warp::path::end())
         .and(warp::post2())
-        .and(warp::body::content_length_limit(1_000_000))
         .and(warp::body::form())
         .and(connection(pool))
         .and_then(api_v1::pastes::insert_paste);

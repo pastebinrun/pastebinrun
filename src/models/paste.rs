@@ -73,6 +73,18 @@ pub fn insert(
         .optional()
         .map_err(warp::reject::custom)?
         .ok_or_else(|| warp::reject::custom(CustomRejection::UnrecognizedLanguageIdentifier))?;
+    for (field, name) in &[(&paste, "paste"), (&stdin, "stdin")] {
+        if field.len() > 1_000_000 {
+            Err(warp::reject::custom(CustomRejection::FieldTooLarge(name)))?;
+        }
+    }
+    for (field, name) in &[(&stdout, "stdout"), (&stderr, "stderr")] {
+        if let Some(field) = field {
+            if field.len() > 1_000_000 {
+                Err(warp::reject::custom(CustomRejection::FieldTooLarge(name)))?;
+            }
+        }
+    }
     let insert_paste = InsertPaste {
         identifier,
         delete_at,
