@@ -4,10 +4,11 @@ export default class WrapperButtons {
     buttonsContainer: HTMLSpanElement
     compilerOptions: HTMLInputElement
     buttons: HTMLSpanElement
-    run: (wrapper: Wrapper, compilerOptions: string) => void;
+    run: (wrapper: Wrapper, compilerOptions: string) => void
     abortController: AbortController
     select: HTMLSelectElement
     optionMap = new WeakMap<HTMLOptionElement, { identifier: string, wrappers: Wrapper[] }>()
+    globalKeyEvent: (e: KeyboardEvent) => void | null = null
 
     constructor(buttonsContainer, run) {
         this.buttonsContainer = buttonsContainer
@@ -39,6 +40,8 @@ export default class WrapperButtons {
     }
 
     clear() {
+        document.removeEventListener('keydown', this.globalKeyEvent)
+        this.globalKeyEvent = null
         this.buttonsContainer.textContent = ''
     }
 
@@ -50,13 +53,24 @@ export default class WrapperButtons {
         }
         if (options.length !== 0) {
             const option = options[0]
+            let first = true
             for (const wrapper of this.optionMap.get(option).wrappers) {
                 const button = document.createElement('button')
                 button.textContent = wrapper.label
-                button.addEventListener('click', e => {
+                const event = (e: Event) => {
                     e.preventDefault()
                     this.run(wrapper, this.compilerOptions.value)
-                })
+                }
+                if (first) {
+                    this.globalKeyEvent = e => {
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                            event(e)
+                        }
+                    }
+                    document.addEventListener('keydown', this.globalKeyEvent)
+                    first = false
+                }
+                button.addEventListener('click', event)
                 this.buttons.append(button)
             }
         }

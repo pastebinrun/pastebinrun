@@ -92,6 +92,7 @@ export default function createMonacoEditor(textarea, onChange) {
         value: textarea.value,
     })
     editor.onDidChangeModelContent(onChange)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {})
     textarea.form.addEventListener('submit', () => textarea.value = editor.getValue())
     return new MonacoEditor(textarea, container, editor)
 }
