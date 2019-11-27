@@ -75,13 +75,13 @@ pub fn insert(
         .ok_or_else(|| warp::reject::custom(CustomRejection::UnrecognizedLanguageIdentifier))?;
     for (field, name) in &[(&paste, "paste"), (&stdin, "stdin")] {
         if field.len() > 1_000_000 {
-            Err(warp::reject::custom(CustomRejection::FieldTooLarge(name)))?;
+            return Err(warp::reject::custom(CustomRejection::FieldTooLarge(name)));
         }
     }
     for (field, name) in &[(&stdout, "stdout"), (&stderr, "stderr")] {
         if let Some(field) = field {
             if field.len() > 1_000_000 {
-                Err(warp::reject::custom(CustomRejection::FieldTooLarge(name)))?;
+                return Err(warp::reject::custom(CustomRejection::FieldTooLarge(name)));
             }
         }
     }
