@@ -33,6 +33,11 @@ body {
 }
 #header li {
     display: inline;
+    border-left: 1px solid #440;
+    padding: 0 0.5em;
+}
+#header li:first-child {
+    border: none;
 }
 #article {
     margin: 0 auto;
