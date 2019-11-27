@@ -1,10 +1,9 @@
 use crate::schema::languages;
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
 use futures::Future;
 use futures03::TryFutureExt;
 use serde::Serialize;
-use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
 #[derive(Queryable, Serialize)]

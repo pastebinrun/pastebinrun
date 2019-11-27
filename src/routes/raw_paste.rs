@@ -1,10 +1,9 @@
 use crate::models::paste::Paste;
 use crate::schema::pastes::dsl::*;
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
 use futures::Future;
 use futures03::TryFutureExt;
-use tokio_executor::blocking;
 use warp::Rejection;
 
 pub fn raw_paste(

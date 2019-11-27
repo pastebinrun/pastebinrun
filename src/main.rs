@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate diesel;
 
+mod blocking;
 mod migration;
 mod models;
 mod routes;

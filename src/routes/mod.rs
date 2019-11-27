@@ -10,7 +10,7 @@ mod run;
 use crate::models::rejection::CustomRejection;
 use crate::models::session::Session;
 use crate::templates::{self, RenderRucte};
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use futures03::compat::Compat;
@@ -18,7 +18,6 @@ use futures03::{Future, FutureExt, TryFutureExt};
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::pin::Pin;
-use tokio_executor::blocking;
 use warp::filters::BoxedFilter;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, CONTENT_TYPE, REFERRER_POLICY, X_FRAME_OPTIONS,

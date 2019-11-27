@@ -1,3 +1,4 @@
+use crate::blocking;
 use crate::models::language::{Language, Selection};
 use crate::models::paste::{ExternPaste, Paste};
 use crate::models::session::Session;
@@ -6,7 +7,6 @@ use crate::templates::{self, RenderRucte};
 use diesel::prelude::*;
 use futures::future::*;
 use futures03::TryFutureExt;
-use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
 pub fn display_paste(

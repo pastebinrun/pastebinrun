@@ -1,10 +1,9 @@
 use crate::schema::{implementation_wrappers, implementations, languages, pastes};
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
 use futures::Future;
 use futures03::prelude::*;
 use serde::Serialize;
-use tokio_executor::blocking;
 use warp::http::header::CACHE_CONTROL;
 use warp::{Rejection, Reply};
 

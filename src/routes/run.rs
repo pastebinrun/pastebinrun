@@ -1,5 +1,5 @@
 use crate::schema::implementation_wrappers;
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
 use futures::Future;
 use futures03::TryFutureExt;
@@ -7,7 +7,6 @@ use lazy_static::lazy_static;
 use reqwest::r#async::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
-use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
 lazy_static! {
