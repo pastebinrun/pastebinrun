@@ -213,7 +213,7 @@ mod test {
     use crate::migration;
     use diesel::r2d2::{ConnectionManager, CustomizeConnection, Pool};
     use diesel::Connection;
-    use lazy_static::lazy_static;
+    use once_cell::sync::Lazy;
     use scraper::{Html, Selector};
     use serde::Deserialize;
     use std::env;
@@ -224,20 +224,18 @@ mod test {
     use warp::reply::{Reply, Response};
     use warp::Filter;
 
-    lazy_static! {
-        static ref ROUTES: BoxedFilter<(Response,)> = {
-            let pool = Pool::builder()
-                .connection_customizer(Box::new(ExecuteWithinTransaction))
-                .max_size(1)
-                .build(ConnectionManager::new(env::var("DATABASE_URL").expect(
-                    "Setting DATABASE_URL environment variable required to run tests",
-                )))
-                .expect("Couldn't create a connection connection");
-            diesel_migrations::run_pending_migrations(&pool.get().unwrap()).unwrap();
-            migration::run(&pool.get().unwrap()).unwrap();
-            routes(pool).map(Reply::into_response).boxed()
-        };
-    }
+    static ROUTES: Lazy<BoxedFilter<(Response,)>> = Lazy::new(|| {
+        let pool = Pool::builder()
+            .connection_customizer(Box::new(ExecuteWithinTransaction))
+            .max_size(1)
+            .build(ConnectionManager::new(env::var("DATABASE_URL").expect(
+                "Setting DATABASE_URL environment variable required to run tests",
+            )))
+            .expect("Couldn't create a connection connection");
+        diesel_migrations::run_pending_migrations(&pool.get().unwrap()).unwrap();
+        migration::run(&pool.get().unwrap()).unwrap();
+        routes(pool).map(Reply::into_response).boxed()
+    });
 
     #[derive(Debug)]
     struct ExecuteWithinTransaction;
