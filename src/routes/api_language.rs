@@ -1,8 +1,7 @@
+use crate::models::db::DbErrorExt;
 use crate::schema::{implementation_wrappers, implementations, languages, pastes};
 use crate::Connection;
 use diesel::prelude::*;
-use futures::Future;
-use futures03::prelude::*;
 use serde::Serialize;
 use tokio_executor::blocking;
 use warp::http::header::CACHE_CONTROL;
@@ -53,10 +52,10 @@ struct JsonImplementation {
     wrappers: Vec<Wrapper>,
 }
 
-pub fn api_language(
+pub async fn api_language(
     connection: Connection,
     identifier: String,
-) -> impl Future<Item = impl Reply, Error = Rejection> {
+) -> Result<impl Reply, Rejection> {
     blocking::run(move || {
         let language: Language = languages::table
             .filter(languages::identifier.eq(identifier))
@@ -69,13 +68,13 @@ pub fn api_language(
             ))
             .get_result(&connection)
             .optional()
-            .map_err(warp::reject::custom)?
+            .into_rejection()?
             .ok_or_else(warp::reject::not_found)?;
         let implementations = implementations::table
             .select((implementations::implementation_id, implementations::label))
             .filter(implementations::language_id.eq(language.id))
             .load(&connection)
-            .map_err(warp::reject::custom)?;
+            .into_rejection()?;
         let implementation_wrappers = ImplementationWrapper::belonging_to(&implementations)
             .select((
                 implementation_wrappers::implementation_wrapper_id,
@@ -87,7 +86,7 @@ pub fn api_language(
             ))
             .order(implementation_wrappers::ordering)
             .load(&connection)
-            .map_err(warp::reject::custom)?;
+            .into_rejection()?;
         let implementations = implementation_wrappers
             .grouped_by(&implementations)
             .into_iter()
@@ -124,5 +123,5 @@ pub fn api_language(
             "max-age=14400",
         ))
     })
-    .compat()
+    .await
 }

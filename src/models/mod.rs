@@ -1,3 +1,4 @@
+pub mod db;
 pub mod js;
 pub mod language;
 pub mod paste;

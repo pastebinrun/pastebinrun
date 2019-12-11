@@ -1,8 +1,6 @@
 use crate::models::paste;
 use crate::Connection;
 use chrono::{Duration, Utc};
-use futures::Future;
-use futures03::TryFutureExt;
 use serde::de::IgnoredAny;
 use serde::Deserialize;
 use tokio_executor::blocking;
@@ -22,7 +20,7 @@ pub struct PasteForm {
     status: Option<i32>,
 }
 
-pub fn insert_paste(
+pub async fn insert_paste(
     PasteForm {
         language,
         code,
@@ -33,7 +31,7 @@ pub fn insert_paste(
         status,
     }: PasteForm,
     connection: Connection,
-) -> impl Future<Item = impl Reply, Error = Rejection> {
+) -> Result<impl Reply, Rejection> {
     blocking::run(move || {
         let delete_at = autodelete.map(|_| Utc::now() + Duration::hours(24));
         let identifier = paste::insert(
@@ -52,5 +50,5 @@ pub fn insert_paste(
             format!("/{}", identifier),
         ))
     })
-    .compat()
+    .await
 }
