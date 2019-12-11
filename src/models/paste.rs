@@ -52,15 +52,25 @@ struct InsertPaste {
     exit_code: Option<i32>,
 }
 
+#[derive(Default)]
+pub struct ExtraPasteParameters {
+    pub stdin: String,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>,
+    pub exit_code: Option<i32>,
+}
+
 pub fn insert(
     connection: &Connection,
     delete_at: Option<DateTime<Utc>>,
     language: &str,
     paste: String,
-    stdin: String,
-    stdout: Option<String>,
-    stderr: Option<String>,
-    exit_code: Option<i32>,
+    ExtraPasteParameters {
+        stdin,
+        stdout,
+        stderr,
+        exit_code,
+    }: ExtraPasteParameters,
 ) -> Result<String, Rejection> {
     let mut rng = rand::thread_rng();
     let identifier: String = (0..10)

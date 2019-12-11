@@ -1,4 +1,5 @@
 use crate::models::paste;
+use crate::models::paste::ExtraPasteParameters;
 use crate::Connection;
 use chrono::{Duration, Utc};
 use futures::Future;
@@ -41,10 +42,12 @@ pub fn insert_paste(
             delete_at,
             &language,
             code,
-            stdin,
-            stdout,
-            stderr,
-            status,
+            ExtraPasteParameters {
+                stdin,
+                stdout,
+                stderr,
+                exit_code: status,
+            },
         )?;
         Ok(reply::with_header(
             StatusCode::SEE_OTHER,
