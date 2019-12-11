@@ -1,4 +1,4 @@
-use crate::models::paste;
+use crate::models::paste::{self, ExtraPasteParameters};
 use crate::{blocking, Connection};
 use chrono::{Duration, Utc};
 use futures::Future;
@@ -68,10 +68,12 @@ pub fn insert_paste(
             expiration.map(|expiration| Utc::now() + expiration.0),
             &language,
             code,
-            "".into(),
-            None,
-            None,
-            None,
+            ExtraPasteParameters {
+                stdin: "".into(),
+                stdout: None,
+                stderr: None,
+                exit_code: None,
+            },
         )
     })
     .compat()

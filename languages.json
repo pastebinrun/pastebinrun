@@ -15,7 +15,7 @@
                     {
                         "identifier": "clang",
                         "label": "Run",
-                        "code": "mv code code.cpp; clang++ %s code.cpp && ./a.out"
+                        "code": "mv code code.c; clang %s code.c && ./a.out"
                     }
                 ]
             },
