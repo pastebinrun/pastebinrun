@@ -202,8 +202,8 @@ fn not_found(pool: PgPool) -> impl Clone + Fn(Rejection) -> NotFoundFuture {
                 Err(rejection)
             }
         }
-            .boxed()
-            .compat()
+        .boxed()
+        .compat()
     }
 }
 
