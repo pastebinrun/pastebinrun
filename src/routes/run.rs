@@ -2,8 +2,8 @@ use crate::models::db::DbErrorExt;
 use crate::schema::implementation_wrappers;
 use crate::Connection;
 use diesel::prelude::*;
-use futures03::TryFutureExt;
-use lazy_static::lazy_static;
+use futures::TryFutureExt;
+use once_cell::sync::Lazy;
 use reqwest::r#async::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -11,10 +11,8 @@ use tokio_executor::blocking;
 use warp::reject::Reject;
 use warp::{Rejection, Reply};
 
-lazy_static! {
-    static ref CLIENT: Client = Client::new();
-    static ref SANDBOX_URL: String = env::var("SANDBOX_URL").unwrap();
-}
+static CLIENT: Lazy<Client> = Lazy::new(Client::new);
+static SANDBOX_URL: Lazy<String> = Lazy::new(|| env::var("SANDBOX_URL").unwrap());
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]

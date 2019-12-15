@@ -1,4 +1,5 @@
 use crate::models::paste;
+use crate::models::paste::ExtraPasteParameters;
 use crate::schema::{implementation_wrappers, implementations, languages, pastes};
 use crate::Connection;
 use diesel::prelude::*;
@@ -71,10 +72,7 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
                     None,
                     &languages_identifier,
                     hello_world,
-                    "".into(),
-                    None,
-                    None,
-                    None,
+                    ExtraPasteParameters::default(),
                 )
                 .unwrap();
                 diesel::update(languages::table)

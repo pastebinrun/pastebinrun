@@ -1,4 +1,4 @@
-use crate::models::paste;
+use crate::models::paste::{self, ExtraPasteParameters};
 use crate::Connection;
 use chrono::{Duration, Utc};
 use serde::de::{Deserializer, Unexpected, Visitor};
@@ -67,10 +67,12 @@ pub async fn insert_paste(
             expiration.map(|expiration| Utc::now() + expiration.0),
             &language,
             code,
-            "".into(),
-            None,
-            None,
-            None,
+            ExtraPasteParameters {
+                stdin: "".into(),
+                stdout: None,
+                stderr: None,
+                exit_code: None,
+            },
         )
     })
     .await

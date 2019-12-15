@@ -6,8 +6,8 @@ use ammonia::Builder;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use itertools::Itertools;
-use lazy_static::lazy_static;
 use log::info;
+use once_cell::sync::Lazy;
 use pulldown_cmark::{Options, Parser};
 use rand::seq::SliceRandom;
 use std::iter;
@@ -53,15 +53,25 @@ struct InsertPaste {
     exit_code: Option<i32>,
 }
 
+#[derive(Default)]
+pub struct ExtraPasteParameters {
+    pub stdin: String,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>,
+    pub exit_code: Option<i32>,
+}
+
 pub fn insert(
     connection: &Connection,
     delete_at: Option<DateTime<Utc>>,
     language: &str,
     paste: String,
-    stdin: String,
-    stdout: Option<String>,
-    stderr: Option<String>,
-    exit_code: Option<i32>,
+    ExtraPasteParameters {
+        stdin,
+        stdout,
+        stderr,
+        exit_code,
+    }: ExtraPasteParameters,
 ) -> Result<String, Rejection> {
     let mut rng = rand::thread_rng();
     let identifier: String = (0..10)
@@ -145,27 +155,25 @@ impl ExternPaste {
 }
 
 fn render_markdown(markdown: &str) -> String {
-    lazy_static! {
-        static ref FILTER: Builder<'static> = {
-            let mut builder = Builder::new();
-            builder.link_rel(Some("noopener noreferrer nofollow"));
-            builder.add_generic_attributes(iter::once("class"));
-            builder.attribute_filter(|_, attribute, value| {
-                if attribute == "class" {
-                    Some(
-                        value
-                            .split_ascii_whitespace()
-                            .filter(|value| value.starts_with("language-"))
-                            .join(" ")
-                            .into(),
-                    )
-                } else {
-                    Some(value.into())
-                }
-            });
-            builder
-        };
-    }
+    static FILTER: Lazy<Builder<'static>> = Lazy::new(|| {
+        let mut builder = Builder::new();
+        builder.link_rel(Some("noopener noreferrer nofollow"));
+        builder.add_generic_attributes(iter::once("class"));
+        builder.attribute_filter(|_, attribute, value| {
+            if attribute == "class" {
+                Some(
+                    value
+                        .split_ascii_whitespace()
+                        .filter(|value| value.starts_with("language-"))
+                        .join(" ")
+                        .into(),
+                )
+            } else {
+                Some(value.into())
+            }
+        });
+        builder
+    });
     let mut output = String::new();
     let options = Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH;
     pulldown_cmark::html::push_html(&mut output, Parser::new_ext(markdown, options));
