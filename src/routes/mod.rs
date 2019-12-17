@@ -178,14 +178,12 @@ pub fn routes(
 fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejection> + Copy {
     warp::path::param()
         .and(warp::path::end())
-        .and_then(move |path: PathBuf| {
-            async move {
-                match (path.extension(), path.file_stem().and_then(OsStr::to_str)) {
-                    (Some(received_ext), Some(file_stem)) if ext == received_ext => {
-                        Ok(file_stem.to_string())
-                    }
-                    _ => Err(warp::reject::not_found()),
+        .and_then(move |path: PathBuf| async move {
+            match (path.extension(), path.file_stem().and_then(OsStr::to_str)) {
+                (Some(received_ext), Some(file_stem)) if ext == received_ext => {
+                    Ok(file_stem.to_string())
                 }
+                _ => Err(warp::reject::not_found()),
             }
         })
 }

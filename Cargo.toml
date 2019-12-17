@@ -21,13 +21,13 @@ mime = "0.3.14"
 once_cell = "1.2.0"
 pulldown-cmark = "0.6.1"
 rand = "0.7.2"
-reqwest = { version = "=0.10.0-alpha.2", features = ["json"] }
+reqwest = { git = "https://github.com/seanmonstar/reqwest.git", rev = "ce43f80d8be3fef72267483aeba0a6927f150035", features = ["json"] }
 serde = { version = "1.0.103", features = ["derive"] }
 serde_json = "1.0.44"
 time-parse = "0.1.2"
-tokio = "=0.2.0-alpha.6"
+tokio = "0.2.4"
 tokio-executor = { version = "=0.2.0-alpha.6", features = ["blocking"] }
-warp = { git = "https://github.com/seanmonstar/warp.git", rev = "fb64f24b6126efc618ca04a29acf1a7d4737c33c" }
+warp = { git = "https://github.com/seanmonstar/warp.git", rev = "b6cbcca0914cfb435ae19c1aab86c0ffa0316322" }
 
 [build-dependencies]
 ructe = "0.8.0"

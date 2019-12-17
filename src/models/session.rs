@@ -14,8 +14,7 @@ pub struct Session {
 
 impl Session {
     pub fn render(&self) -> Builder {
-        let mut builder = Response::builder();
-        builder.header(
+        Response::builder().header(
             CONTENT_SECURITY_POLICY,
             format!(
                 concat!(
@@ -31,14 +30,13 @@ impl Session {
                 ),
                 nonce = self.nonce,
             ),
-        );
-        builder
+        )
     }
 }
 
 #[extension_trait(pub)]
 impl RenderExt for Builder {
-    fn html<F>(&mut self, f: F) -> Result<Response<Vec<u8>>, Rejection>
+    fn html<F>(self, f: F) -> Result<Response<Vec<u8>>, Rejection>
     where
         F: FnOnce(&mut Vec<u8>) -> io::Result<()>,
     {

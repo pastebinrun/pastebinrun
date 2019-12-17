@@ -4,7 +4,7 @@ use crate::Connection;
 use diesel::prelude::*;
 use futures::TryFutureExt;
 use once_cell::sync::Lazy;
-use reqwest::r#async::Client;
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
 use tokio_executor::blocking;
