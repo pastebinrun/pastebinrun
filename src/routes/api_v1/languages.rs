@@ -1,9 +1,8 @@
 use crate::models::db::DbErrorExt;
 use crate::schema::languages;
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
 use serde::Serialize;
-use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
 #[derive(Queryable, Serialize)]

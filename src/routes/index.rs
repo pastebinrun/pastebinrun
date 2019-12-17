@@ -1,7 +1,7 @@
+use crate::blocking;
 use crate::models::language::{Language, Selection};
 use crate::models::session::{RenderExt, Session};
 use crate::templates;
-use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
 pub async fn index(session: Session) -> Result<impl Reply, Rejection> {

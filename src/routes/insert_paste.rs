@@ -1,10 +1,9 @@
 use crate::models::paste;
 use crate::models::paste::ExtraPasteParameters;
-use crate::Connection;
+use crate::{blocking, Connection};
 use chrono::{Duration, Utc};
 use serde::de::IgnoredAny;
 use serde::Deserialize;
-use tokio_executor::blocking;
 use warp::http::header::LOCATION;
 use warp::http::StatusCode;
 use warp::{reply, Rejection, Reply};

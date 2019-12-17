@@ -1,13 +1,12 @@
 use crate::models::db::DbErrorExt;
 use crate::schema::implementation_wrappers;
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
 use futures::TryFutureExt;
 use once_cell::sync::Lazy;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
-use tokio_executor::blocking;
 use warp::reject::Reject;
 use warp::{Rejection, Reply};
 

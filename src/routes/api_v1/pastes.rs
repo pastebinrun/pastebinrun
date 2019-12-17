@@ -1,10 +1,9 @@
 use crate::models::paste::{self, ExtraPasteParameters};
-use crate::Connection;
+use crate::{blocking, Connection};
 use chrono::{Duration, Utc};
 use serde::de::{Deserializer, Unexpected, Visitor};
 use serde::{de, Deserialize};
 use std::fmt::{self, Formatter};
-use tokio_executor::blocking;
 use warp::Rejection;
 
 #[derive(Deserialize)]

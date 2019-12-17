@@ -25,8 +25,7 @@ reqwest = { git = "https://github.com/seanmonstar/reqwest.git", rev = "ce43f80d8
 serde = { version = "1.0.103", features = ["derive"] }
 serde_json = "1.0.44"
 time-parse = "0.1.2"
-tokio = "0.2.4"
-tokio-executor = { version = "=0.2.0-alpha.6", features = ["blocking"] }
+tokio = { version = "0.2.4", features = ["blocking"] }
 warp = { git = "https://github.com/seanmonstar/warp.git", rev = "b6cbcca0914cfb435ae19c1aab86c0ffa0316322" }
 
 [build-dependencies]

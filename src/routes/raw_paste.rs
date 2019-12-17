@@ -1,9 +1,8 @@
 use crate::models::db::DbErrorExt;
 use crate::models::paste::Paste;
 use crate::schema::pastes::dsl::*;
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
-use tokio_executor::blocking;
 use warp::Rejection;
 
 pub async fn raw_paste(

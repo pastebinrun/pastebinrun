@@ -1,3 +1,4 @@
+use crate::blocking;
 use crate::models::db::DbErrorExt;
 use crate::models::language::{Language, Selection};
 use crate::models::paste::{ExternPaste, Paste};
@@ -5,7 +6,6 @@ use crate::models::session::{RenderExt, Session};
 use crate::schema::{languages, pastes};
 use crate::templates;
 use diesel::prelude::*;
-use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
 pub async fn display_paste(
