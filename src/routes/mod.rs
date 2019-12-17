@@ -8,13 +8,12 @@ mod raw_paste;
 mod run;
 
 use crate::models::rejection::CustomRejection;
-use crate::models::session::Session;
-use crate::templates::{self, RenderRucte};
+use crate::models::session::{RenderExt, Session};
+use crate::templates;
 use crate::{blocking, Connection};
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
-use futures03::compat::Compat;
-use futures03::{Future, FutureExt, TryFutureExt};
+use futures::{Future, FutureExt};
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::pin::Pin;
@@ -24,44 +23,53 @@ use warp::http::header::{
 };
 use warp::http::method::Method;
 use warp::http::{Response, StatusCode};
+use warp::reject::Reject;
 use warp::{path, Filter, Rejection, Reply};
 
 type PgPool = Pool<ConnectionManager<PgConnection>>;
 
 fn connection(pool: PgPool) -> BoxedFilter<(Connection,)> {
     warp::any()
-        .and_then(move || get_connection(pool.clone()).compat())
+        .and_then(move || get_connection(pool.clone()))
         .boxed()
 }
 
-fn get_connection(pool: PgPool) -> impl Future<Output = Result<Connection, Rejection>> {
-    blocking::run(move || pool.get().map_err(warp::reject::custom))
+async fn get_connection(pool: PgPool) -> Result<Connection, Rejection> {
+    blocking::run(move || {
+        pool.get()
+            .map_err(|e| warp::reject::custom(ConnectionError(e)))
+    })
+    .await
 }
+
+#[derive(Debug)]
+struct ConnectionError<E>(E);
+
+impl<E: 'static + std::fmt::Debug + Send + Sync> Reject for ConnectionError<E> {}
 
 fn session(pool: PgPool) -> BoxedFilter<(Session,)> {
     warp::any()
-        .and_then(move || get_session(pool.clone()).compat())
+        .and_then(move || get_session(pool.clone()))
         .boxed()
 }
 
-fn get_session(pool: PgPool) -> impl Future<Output = Result<Session, Rejection>> {
-    get_connection(pool).map_ok(|connection| {
-        let bytes: [u8; 32] = rand::random();
-        Session {
-            nonce: base64::encode(&bytes),
-            connection,
-        }
+async fn get_session(pool: PgPool) -> Result<Session, Rejection> {
+    let connection = get_connection(pool).await?;
+    let bytes: [u8; 32] = rand::random();
+    Ok(Session {
+        nonce: base64::encode(&bytes),
+        connection,
     })
 }
 
 fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::end()
         .and(
-            warp::post2()
+            warp::post()
                 .and(warp::body::form())
                 .and(connection(pool.clone()))
                 .and_then(insert_paste::insert_paste)
-                .or(warp::get2().and(session(pool)).and_then(index::index)),
+                .or(warp::get().and(session(pool)).and_then(index::index)),
         )
         .boxed()
 }
@@ -69,7 +77,7 @@ fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 fn display_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path::param()
         .and(warp::path::end())
-        .and(warp::get2())
+        .and(warp::get())
         .and(session(pool))
         .and_then(display_paste::display_paste)
         .boxed()
@@ -78,7 +86,7 @@ fn display_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 fn options(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     warp::path("config")
         .and(warp::path::end())
-        .and(warp::get2())
+        .and(warp::get())
         .and(session(pool))
         .and_then(config::config)
         .boxed()
@@ -86,7 +94,7 @@ fn options(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 
 fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     with_ext("txt")
-        .and(warp::get2())
+        .and(warp::get())
         .and(connection(pool))
         .and_then(raw_paste::raw_paste)
         .boxed()
@@ -98,11 +106,11 @@ fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .clone()
         .and(path!("language" / String))
         .and(warp::path::end())
-        .and(warp::get2())
+        .and(warp::get())
         .and_then(api_language::api_language);
     let run = root
         .and(path!("run" / String))
-        .and(warp::post2())
+        .and(warp::post())
         .and(warp::body::form())
         .and_then(run::run);
     language.or(run).boxed()
@@ -111,12 +119,12 @@ fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     let languages = warp::path("languages")
         .and(warp::path::end())
-        .and(warp::get2())
+        .and(warp::get())
         .and(connection(pool.clone()))
         .and_then(api_v1::languages::languages);
     let pastes = warp::path("pastes")
         .and(warp::path::end())
-        .and(warp::post2())
+        .and(warp::post())
         .and(warp::body::form())
         .and(connection(pool))
         .and_then(api_v1::pastes::insert_paste);
@@ -169,7 +177,7 @@ pub fn routes(
 fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejection> + Copy {
     warp::path::param()
         .and(warp::path::end())
-        .and_then(move |path: PathBuf| {
+        .and_then(move |path: PathBuf| async move {
             match (path.extension(), path.file_stem().and_then(OsStr::to_str)) {
                 (Some(received_ext), Some(file_stem)) if ext == received_ext => {
                     Ok(file_stem.to_string())
@@ -179,18 +187,19 @@ fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejec
         })
 }
 
-type NotFoundFuture =
-    Compat<Pin<Box<dyn Future<Output = Result<Response<Vec<u8>>, Rejection>> + Send>>>;
-
-fn not_found(pool: PgPool) -> impl Clone + Fn(Rejection) -> NotFoundFuture {
+fn not_found(
+    pool: PgPool,
+) -> impl Clone
+       + Fn(Rejection) -> Pin<Box<dyn Future<Output = Result<Response<Vec<u8>>, Rejection>> + Send>>
+{
     move |rejection| {
         let pool = pool.clone();
         async move {
-            if let Some(rejection) = rejection.find_cause::<CustomRejection>() {
-                Response::builder()
+            if let Some(rejection) = rejection.find::<CustomRejection>() {
+                Ok(Response::builder()
                     .status(rejection.status_code())
                     .body(rejection.to_string().into_bytes())
-                    .map_err(warp::reject::custom)
+                    .unwrap())
             } else if rejection.is_not_found() {
                 let session = get_session(pool.clone()).await?;
                 session
@@ -202,7 +211,6 @@ fn not_found(pool: PgPool) -> impl Clone + Fn(Rejection) -> NotFoundFuture {
             }
         }
         .boxed()
-        .compat()
     }
 }
 
@@ -249,9 +257,9 @@ mod test {
         }
     }
 
-    fn get_sh_id() -> String {
+    async fn get_sh_id() -> String {
         let response = warp::test::request().reply(&*ROUTES);
-        let document = Html::parse_document(str::from_utf8(response.body()).unwrap());
+        let document = Html::parse_document(str::from_utf8(response.await.body()).unwrap());
         document
             .select(&Selector::parse("#language option").unwrap())
             .find(|element| element.text().next() == Some("Sh"))
@@ -278,17 +286,18 @@ mod test {
         is_formatter: bool,
     }
 
-    #[test]
+    #[tokio::test]
     #[cfg_attr(not(feature = "database_tests"), ignore)]
-    fn test_language_api() {
+    async fn test_language_api() {
         #[derive(Debug, Deserialize, PartialEq)]
         pub struct ApiLanguage<'a> {
             #[serde(borrow)]
             implementations: Vec<Implementation<'a>>,
         }
         let response = warp::test::request()
-            .path(&format!("/api/v0/language/{}", get_sh_id()))
-            .reply(&*ROUTES);
+            .path(&format!("/api/v0/language/{}", get_sh_id().await))
+            .reply(&*ROUTES)
+            .await;
         assert_eq!(
             serde_json::from_slice::<ApiLanguage>(response.body()).unwrap(),
             ApiLanguage {
@@ -305,29 +314,31 @@ mod test {
         );
     }
 
-    #[test]
+    #[tokio::test]
     #[cfg_attr(not(feature = "database_tests"), ignore)]
-    fn test_raw_pastes() {
-        let body = format!("language={}&code=abc", get_sh_id());
+    async fn test_raw_pastes() {
+        let body = format!("language={}&code=abc", get_sh_id().await);
         let reply = warp::test::request()
             .method("POST")
             .header(CONTENT_LENGTH, body.len())
             .body(body)
-            .reply(&*ROUTES);
+            .reply(&*ROUTES)
+            .await;
         assert_eq!(reply.status(), StatusCode::SEE_OTHER);
         let location = reply.headers()[LOCATION].to_str().unwrap();
         assert_eq!(
             warp::test::request()
                 .path(&format!("{}.txt", location))
                 .reply(&*ROUTES)
+                .await
                 .body(),
             "abc"
         );
     }
 
-    #[test]
+    #[tokio::test]
     #[cfg_attr(not(feature = "sandbox_tests"), ignore)]
-    fn test_sandbox() {
+    async fn test_sandbox() {
         #[derive(Deserialize)]
         struct LanguageIdentifier<'a> {
             identifier: &'a str,
@@ -341,13 +352,15 @@ mod test {
         }
         let languages = warp::test::request()
             .path("/api/v1/languages")
-            .reply(&*ROUTES);
+            .reply(&*ROUTES)
+            .await;
         let languages =
             serde_json::from_slice::<Vec<LanguageIdentifier>>(languages.body()).unwrap();
         for LanguageIdentifier { identifier } in languages {
             let language = warp::test::request()
                 .path(&format!("/api/v0/language/{}", identifier))
-                .reply(&*ROUTES);
+                .reply(&*ROUTES)
+                .await;
             if let ApiLanguage {
                 hello_world_paste: Some(hello_world_paste),
                 implementations,
@@ -355,7 +368,8 @@ mod test {
             {
                 let code = warp::test::request()
                     .path(&format!("/{}.txt", hello_world_paste))
-                    .reply(&*ROUTES);
+                    .reply(&*ROUTES)
+                    .await;
                 let wrappers = implementations
                     .into_iter()
                     .flat_map(|i| i.wrappers)
@@ -370,7 +384,8 @@ mod test {
                         .method("POST")
                         .header(CONTENT_LENGTH, body.len())
                         .body(body)
-                        .reply(&*ROUTES);
+                        .reply(&*ROUTES)
+                        .await;
                     let body = str::from_utf8(out.body()).unwrap();
                     assert!(
                         body.contains(r#"Hello, world!\n""#),

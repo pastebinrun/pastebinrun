@@ -1,3 +1,4 @@
+use crate::models::db::DbErrorExt;
 use crate::schema::languages::dsl::*;
 use crate::Connection;
 use diesel::prelude::*;
@@ -16,7 +17,7 @@ impl Language {
             .select((language_id, identifier, name))
             .order((priority.asc(), name.asc()))
             .load(connection)
-            .map_err(warp::reject::custom)
+            .into_rejection()
     }
 }
 

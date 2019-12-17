@@ -1,18 +1,17 @@
 use crate::blocking;
+use crate::models::db::DbErrorExt;
 use crate::models::language::{Language, Selection};
 use crate::models::paste::{ExternPaste, Paste};
-use crate::models::session::Session;
+use crate::models::session::{RenderExt, Session};
 use crate::schema::{languages, pastes};
-use crate::templates::{self, RenderRucte};
+use crate::templates;
 use diesel::prelude::*;
-use futures::future::*;
-use futures03::TryFutureExt;
 use warp::{Rejection, Reply};
 
-pub fn display_paste(
+pub async fn display_paste(
     requested_identifier: String,
     session: Session,
-) -> impl Future<Item = impl Reply, Error = Rejection> {
+) -> Result<impl Reply, Rejection> {
     blocking::run(move || {
         let connection = &session.connection;
         Paste::delete_old(connection)?;
@@ -32,7 +31,7 @@ pub fn display_paste(
             .filter(pastes::identifier.eq(requested_identifier))
             .get_result(connection)
             .optional()
-            .map_err(warp::reject::custom)?
+            .into_rejection()?
             .ok_or_else(warp::reject::not_found)?;
         let selected_language = Some(paste.language_id);
         session.render().html(|o| {
@@ -47,5 +46,5 @@ pub fn display_paste(
             )
         })
     })
-    .compat()
+    .await
 }

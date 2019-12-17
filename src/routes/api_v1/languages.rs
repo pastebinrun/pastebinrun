@@ -1,8 +1,7 @@
+use crate::models::db::DbErrorExt;
 use crate::schema::languages;
 use crate::{blocking, Connection};
 use diesel::prelude::*;
-use futures::Future;
-use futures03::TryFutureExt;
 use serde::Serialize;
 use warp::{Rejection, Reply};
 
@@ -12,13 +11,13 @@ struct Language {
     name: String,
 }
 
-pub fn languages(connection: Connection) -> impl Future<Item = impl Reply, Error = Rejection> {
+pub async fn languages(connection: Connection) -> Result<impl Reply, Rejection> {
     blocking::run(move || {
         let languages: Vec<Language> = languages::table
             .select((languages::identifier, languages::name))
             .load(&connection)
-            .map_err(warp::reject::custom)?;
+            .into_rejection()?;
         Ok(warp::reply::json(&languages))
     })
-    .compat()
+    .await
 }

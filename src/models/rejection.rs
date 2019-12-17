@@ -1,6 +1,6 @@
-use std::error::Error;
 use std::fmt::{Display, Formatter, Result};
 use warp::http::StatusCode;
+use warp::reject::Reject;
 
 #[derive(Debug)]
 pub enum CustomRejection {
@@ -26,4 +26,4 @@ impl Display for CustomRejection {
     }
 }
 
-impl Error for CustomRejection {}
+impl Reject for CustomRejection {}
