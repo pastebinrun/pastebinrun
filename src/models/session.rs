@@ -1,10 +1,12 @@
 use crate::Connection;
+use std::borrow::Cow;
 use warp::http::header::CONTENT_SECURITY_POLICY;
 use warp::http::response::{Builder, Response};
 
 pub struct Session {
     pub nonce: String,
     pub connection: Connection,
+    pub description: Cow<'static, str>,
 }
 
 impl Session {
