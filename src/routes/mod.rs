@@ -51,6 +51,7 @@ fn get_session(pool: PgPool) -> impl Future<Output = Result<Session, Rejection>>
         Session {
             nonce: base64::encode(&bytes),
             connection,
+            description: "Compile and share code in multiple programming languages".into(),
         }
     })
 }

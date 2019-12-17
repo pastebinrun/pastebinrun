@@ -6,12 +6,13 @@ use crate::templates::{self, RenderRucte};
 use diesel::prelude::*;
 use futures::future::*;
 use futures03::TryFutureExt;
+use std::borrow::Cow;
 use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
 pub fn display_paste(
     requested_identifier: String,
-    session: Session,
+    mut session: Session,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
         let connection = &session.connection;
@@ -34,6 +35,7 @@ pub fn display_paste(
             .optional()
             .map_err(warp::reject::custom)?
             .ok_or_else(warp::reject::not_found)?;
+        session.description = generate_description(&paste.paste);
         let selected_language = Some(paste.language_id);
         session.render().html(|o| {
             templates::display_paste(
@@ -48,4 +50,12 @@ pub fn display_paste(
         })
     })
     .compat()
+}
+
+fn generate_description(paste: &str) -> Cow<'static, str> {
+    let mut description = paste.chars().take(239).collect();
+    if description != paste {
+        description += "…";
+    }
+    description
 }
