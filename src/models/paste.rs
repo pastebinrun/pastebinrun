@@ -113,6 +113,7 @@ pub fn insert(
     Ok(insert_paste.identifier)
 }
 
+#[derive(Default)]
 pub struct ExternPaste {
     pub paste: String,
     pub language_id: i32,

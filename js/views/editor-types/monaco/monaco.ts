@@ -75,6 +75,14 @@ class MonacoEditor {
         this.editor.setValue(value)
     }
 
+    update() {
+        // Monaco has no idea how to reflow, so let's force it to reflow twice
+        this.container.style.width = '0'
+        this.editor.layout()
+        this.container.style.width = ''
+        this.editor.layout()
+    }
+
     unload() {
         this.textarea.value = this.getValue()
         this.editor.dispose()

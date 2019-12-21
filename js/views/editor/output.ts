@@ -1,15 +1,29 @@
 import { Wrapper } from './types'
+import { SplitChunksPlugin } from 'webpack'
 
 const filterRegex = /(?:\t\.(?:text|file|section|globl|p2align|type|cfi_.*|size|section)\b|.Lfunc_end).*\n?/g
 
 export default class Output {
+    split: HTMLDivElement
+    outputContainer: HTMLDivElement
     output: HTMLDivElement
     filterAsm = document.createElement('label')
     filterAsmCheckbox = document.createElement('input')
     wrapper: Wrapper | null = null
     json: { stdout: string, stderr: string, status: number | null } | null = null
 
-    constructor(output) {
+    static addTo(split: HTMLDivElement) {
+        const outputContainer = document.createElement('div')
+        outputContainer.id = 'outputcontainer'
+        const output = document.createElement('div')
+        output.id = 'output'
+        outputContainer.append(output)
+        return new Output(split, outputContainer, output)
+    }
+
+    private constructor(split: HTMLDivElement, outputContainer: HTMLDivElement, output: HTMLDivElement) {
+        this.split = split
+        this.outputContainer = outputContainer
         this.output = output
         this.filterAsmCheckbox.type = 'checkbox'
         this.filterAsmCheckbox.checked = true
@@ -18,8 +32,8 @@ export default class Output {
     }
 
     clear() {
-        this.json = null
         this.output.textContent = ''
+        this.outputContainer.remove()
     }
 
     error() {
@@ -34,7 +48,8 @@ export default class Output {
 
     update() {
         const { stdout, stderr, status } = this.json
-        this.output.textContent = ''
+        this.clear()
+        this.split.append(this.outputContainer)
         if (stderr) {
             const stderrHeader = document.createElement('h2')
             stderrHeader.textContent = 'Standard error'

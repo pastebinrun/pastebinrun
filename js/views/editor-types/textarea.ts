@@ -17,6 +17,8 @@ class TextAreaEditor {
         this.textarea.value = value
     }
 
+    update() {}
+
     unload() {
         this.textarea.removeEventListener('input', this.onChange)
     }

@@ -2,6 +2,7 @@ export interface EditorType {
     setLanguage(identifier: string): void
     getValue(): string
     setValue(text: string): void
+    update(): void
     unload(): void
 }
 

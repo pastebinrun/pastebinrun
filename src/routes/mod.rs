@@ -320,7 +320,7 @@ mod test {
     #[tokio::test]
     #[cfg_attr(not(feature = "database_tests"), ignore)]
     async fn test_raw_pastes() {
-        let body = format!("language={}&code=abc", get_sh_id().await);
+        let body = format!("language={}&code=abc&share=share24", get_sh_id().await);
         let reply = warp::test::request()
             .method("POST")
             .header(CONTENT_LENGTH, body.len())
