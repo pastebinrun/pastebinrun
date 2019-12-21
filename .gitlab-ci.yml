@@ -15,6 +15,7 @@ build:release: &build
   script:
   - &init rustc --version && cargo --version
   - cargo build --release --verbose
+  - &clean_cargo cargo install cargo-cache --git https://github.com/matthiaskrgr/cargo-cache --no-default-features --features ci-autoclean && cargo-cache
   artifacts:
     paths:
     - languages.json
@@ -38,6 +39,7 @@ test:stable: &test
   script:
   - *init
   - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose --features=database_tests
+  - *clean_cargo
   cache:
     key: ${CI_JOB_NAME}
     paths:
