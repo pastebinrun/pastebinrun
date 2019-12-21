@@ -1,13 +1,13 @@
 @use crate::models::session::Session;
 
-@(_session: &Session)
+@(session: &Session)
 
 <!DOCTYPE html>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>pastebin.run</title>
 <link rel=stylesheet href="/static/style.css">
-<meta name=description content="Pastebin.run is a website for privately storing and sharing text online.">
+<meta name=description content="@session.description">
 <header id=header>
     <div>
         <a href="/">

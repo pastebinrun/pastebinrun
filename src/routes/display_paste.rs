@@ -6,11 +6,12 @@ use crate::models::session::{RenderExt, Session};
 use crate::schema::{languages, pastes};
 use crate::templates;
 use diesel::prelude::*;
+use std::borrow::Cow;
 use warp::{Rejection, Reply};
 
 pub async fn display_paste(
     requested_identifier: String,
-    session: Session,
+    mut session: Session,
 ) -> Result<impl Reply, Rejection> {
     blocking::run(move || {
         let connection = &session.connection;
@@ -33,6 +34,7 @@ pub async fn display_paste(
             .optional()
             .into_rejection()?
             .ok_or_else(warp::reject::not_found)?;
+        session.description = generate_description(&paste.paste);
         let selected_language = Some(paste.language_id);
         session.render().html(|o| {
             templates::display_paste(
@@ -47,4 +49,12 @@ pub async fn display_paste(
         })
     })
     .await
+}
+
+fn generate_description(paste: &str) -> Cow<'static, str> {
+    let mut description = paste.chars().take(239).collect();
+    if description != paste {
+        description += "…";
+    }
+    description
 }

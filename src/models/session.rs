@@ -1,6 +1,7 @@
 use crate::Connection;
 use extension_trait::extension_trait;
 use mime::TEXT_HTML_UTF_8;
+use std::borrow::Cow;
 use std::io;
 use warp::http;
 use warp::http::header::{CONTENT_SECURITY_POLICY, CONTENT_TYPE};
@@ -10,6 +11,7 @@ use warp::reject::{Reject, Rejection};
 pub struct Session {
     pub nonce: String,
     pub connection: Connection,
+    pub description: Cow<'static, str>,
 }
 
 impl Session {

@@ -59,6 +59,7 @@ async fn get_session(pool: PgPool) -> Result<Session, Rejection> {
     Ok(Session {
         nonce: base64::encode(&bytes),
         connection,
+        description: "Compile and share code in multiple programming languages".into(),
     })
 }
 
@@ -177,12 +178,14 @@ pub fn routes(
 fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejection> + Copy {
     warp::path::param()
         .and(warp::path::end())
-        .and_then(move |path: PathBuf| async move {
-            match (path.extension(), path.file_stem().and_then(OsStr::to_str)) {
-                (Some(received_ext), Some(file_stem)) if ext == received_ext => {
-                    Ok(file_stem.to_string())
+        .and_then(move |path: PathBuf| {
+            async move {
+                match (path.extension(), path.file_stem().and_then(OsStr::to_str)) {
+                    (Some(received_ext), Some(file_stem)) if ext == received_ext => {
+                        Ok(file_stem.to_string())
+                    }
+                    _ => Err(warp::reject::not_found()),
                 }
-                _ => Err(warp::reject::not_found()),
             }
         })
 }
@@ -210,7 +213,7 @@ fn not_found(
                 Err(rejection)
             }
         }
-        .boxed()
+            .boxed()
     }
 }
 
