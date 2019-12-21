@@ -4,7 +4,6 @@ use crate::Connection;
 use chrono::{Duration, Utc};
 use futures::Future;
 use futures03::TryFutureExt;
-use serde::de::IgnoredAny;
 use serde::Deserialize;
 use tokio_executor::blocking;
 use warp::http::header::LOCATION;
@@ -15,7 +14,7 @@ use warp::{reply, Rejection, Reply};
 pub struct PasteForm {
     language: String,
     code: String,
-    autodelete: Option<IgnoredAny>,
+    share: Share,
     #[serde(default)]
     stdin: String,
     stdout: Option<String>,
@@ -23,11 +22,18 @@ pub struct PasteForm {
     status: Option<i32>,
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Share {
+    Share,
+    Share24,
+}
+
 pub fn insert_paste(
     PasteForm {
         language,
         code,
-        autodelete,
+        share,
         stdin,
         stdout,
         stderr,
@@ -36,7 +42,10 @@ pub fn insert_paste(
     connection: Connection,
 ) -> impl Future<Item = impl Reply, Error = Rejection> {
     blocking::run(move || {
-        let delete_at = autodelete.map(|_| Utc::now() + Duration::hours(24));
+        let delete_at = match share {
+            Share::Share => None,
+            Share::Share24 => Some(Utc::now() + Duration::hours(24)),
+        };
         let identifier = paste::insert(
             &connection,
             delete_at,

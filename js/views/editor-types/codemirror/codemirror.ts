@@ -55,6 +55,8 @@ class CodeMirrorEditor {
         this.editor.setValue(value)
     }
 
+    update() {}
+
     unload() {
         this.editor.toTextArea()
     }
