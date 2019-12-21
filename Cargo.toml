@@ -26,7 +26,7 @@ serde = { version = "1.0.103", features = ["derive"] }
 serde_json = "1.0.44"
 time-parse = "0.1.2"
 tokio = { version = "0.2.4", features = ["blocking"] }
-warp = { git = "https://github.com/seanmonstar/warp.git", rev = "b6cbcca0914cfb435ae19c1aab86c0ffa0316322" }
+warp = { git = "https://github.com/seanmonstar/warp.git", rev = "8b8c9950260ef7312e29c4af72b0753619a5ad5c" }
 
 [build-dependencies]
 ructe = "0.8.0"
