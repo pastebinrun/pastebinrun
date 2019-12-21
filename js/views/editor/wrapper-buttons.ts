@@ -29,12 +29,13 @@ export default class WrapperButtons {
             this.select.append(option)
         }
         this.buttonsContainer.textContent = ''
-        if (implementations.length > 1) {
-            this.buttonsContainer.append(this.select)
-            this.select.addEventListener('change', () => this.updateButtons())
-        }
         if (implementations.length !== 0) {
-            this.buttonsContainer.append(this.compilerOptions, this.buttons)
+            this.buttonsContainer.append(this.buttons)
+            if (implementations.length > 1) {
+                this.buttonsContainer.append(this.select)
+                this.select.addEventListener('change', () => this.updateButtons())
+            }
+            this.buttonsContainer.append(this.compilerOptions)
         }
         this.updateButtons()
     }
@@ -71,7 +72,7 @@ export default class WrapperButtons {
                     first = false
                 }
                 button.addEventListener('click', event)
-                this.buttons.append(button)
+                this.buttons.append(button, ' ')
             }
         }
     }

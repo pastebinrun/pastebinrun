@@ -8,20 +8,21 @@
 
 @Html(paste.markdown)
 <form method="post" action="/" id="editor">
-    <p>
+    @if let Some(delete_at) = paste.delete_at {
+        <div id="autodelete-text">
+            This paste will be automatically deleted on @delete_at.format("%Y-%m-%d %H:%M") UTC.
+        </div>
+    }
+    <div id="toolbar">
         @:language_selection(selection)
-        @if let Some(delete_at) = paste.delete_at {
-            <span id="autodelete-text">
-                This paste will be automatically deleted on @delete_at.format("%Y-%m-%d %H:%M") UTC.
-            </span>
-        }
-        <span id="automatically-hidden-label">
-            <label><input type=checkbox name=autodelete checked> Automatically delete after 24 hours</label>
-            <span id=hello-world></span>
-        </span>
-    </p>
-    <p><textarea id=code name=code>@('\n')@paste.paste</textarea></p>
-    @:buttons()
+        @:buttons()
+    </div>
+    <div id="split">
+        <div id="extrafieldsplit">
+            <div id="textarea"><textarea id=code name=code>@('\n')@paste.paste</textarea></div>
+            <div id="extrafields"></div>
+        </div>
+    </div>
 </form>
 <input type=hidden id=dbstdin value="@paste.stdin">
 @if let Some(exit_code) = paste.exit_code {

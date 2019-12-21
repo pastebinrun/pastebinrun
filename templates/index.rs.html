@@ -1,19 +1,8 @@
 @use crate::models::language::Selection;
 @use crate::models::session::Session;
-@use crate::templates::{buttons, header, footer, language_selection};
+@use crate::models::paste::ExternPaste;
+@use crate::templates::display_paste;
 
 @(session: &Session, selection: Selection)
 
-@:header(session)
-<form method="post" action="/" id="editor">
-    <p>
-        @:language_selection(selection)
-        <label>
-            <input type=checkbox name=autodelete checked> Automatically delete after 24 hours
-        </label>
-        <span id=hello-world></span>
-    </p>
-    <p><textarea id=code name=code></textarea></p>
-    @:buttons()
-</form>
-@:footer(session)
+@:display_paste(session, ExternPaste::default(), selection)

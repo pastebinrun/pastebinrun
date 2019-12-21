@@ -203,8 +203,8 @@ fn not_found(pool: PgPool) -> impl Clone + Fn(Rejection) -> NotFoundFuture {
                 Err(rejection)
             }
         }
-        .boxed()
-        .compat()
+            .boxed()
+            .compat()
     }
 }
 
@@ -310,7 +310,7 @@ mod test {
     #[test]
     #[cfg_attr(not(feature = "database_tests"), ignore)]
     fn test_raw_pastes() {
-        let body = format!("language={}&code=abc", get_sh_id());
+        let body = format!("language={}&code=abc&share=share24", get_sh_id());
         let reply = warp::test::request()
             .method("POST")
             .header(CONTENT_LENGTH, body.len())

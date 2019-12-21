@@ -10,14 +10,13 @@ class Editor {
     codeElement: HTMLTextAreaElement
     output: Output
     autodeleteText: HTMLSpanElement
-    autodeleteCheckbox: HTMLLabelElement
-    helloWorldLink: HTMLSpanElement
-    submit: HTMLInputElement
+    submitButtons: HTMLInputElement[]
     detailsElement: HTMLDetailsElement
     stdinElement: HTMLTextAreaElement
     editor: EditorType
     currentLanguage: string | null = null
     abortEval: AbortController | null = null
+    isHelloWorld: boolean = false
 
     initialize(form) {
         this.languageSelector = form.querySelector('#language')
@@ -26,20 +25,20 @@ class Editor {
         this.initializeEditor(createTextareaEditor)
         onChange(editor => this.changeEditor(editor))
         this.initConfiguredEditor()
-        this.output = new Output(form.querySelector('#output'))
+        this.output = Output.addTo(form.querySelector('#split'))
         const stdout = document.querySelector<HTMLInputElement>('#dbstdout')
         if (stdout) {
-            this.output.display({}, {
+            this.displayOutput({}, {
                 stdout: stdout.value,
                 stderr: document.querySelector<HTMLInputElement>('#dbstderr').value,
                 status: +document.querySelector<HTMLInputElement>('#dbstatus') ?.value,
             })
         }
         this.autodeleteText = form.querySelector('#autodelete-text')
-        this.autodeleteCheckbox = form.querySelector('#automatically-hidden-label')
-        this.helloWorldLink = form.querySelector('#hello-world')
-        this.submit = form.querySelector('[type=submit]')
-        this.submit.disabled = true
+        this.submitButtons = form.querySelectorAll('[type=submit]')
+        for (const submit of this.submitButtons) {
+            submit.disabled = true
+        }
         form.addEventListener('submit', () => {
             if (this.output.json && !this.output.wrapper.isFormatter) {
                 for (const name of ['stdout', 'stderr', 'status']) {
@@ -58,7 +57,10 @@ class Editor {
         summary.textContent = 'Standard input'
         this.stdinElement = document.createElement('textarea')
         this.stdinElement.name = 'stdin'
-        this.stdinElement.addEventListener('change', () => this.changeToLookLikeNewPaste())
+        this.stdinElement.addEventListener('change', () => {
+            this.isHelloWorld = false
+            this.changeToLookLikeNewPaste()
+        })
         this.detailsElement.append(summary, this.stdinElement)
         const dbStdin = document.querySelector<HTMLInputElement>('#dbstdin') ?.value
         if (dbStdin) {
@@ -67,12 +69,10 @@ class Editor {
         } else {
             this.detailsElement.style.display = 'none'
         }
-        form.querySelector('#buttons').append(this.detailsElement)
-        if (this.autodeleteText) {
-            this.autodeleteCheckbox.style.display = 'none'
-        }
+        form.querySelector('#extrafields').append(this.detailsElement)
         this.assignEvents()
         this.updateLanguage()
+        addEventListener('resize', () => this.editor.update())
     }
 
     async initConfiguredEditor() {
@@ -85,7 +85,10 @@ class Editor {
     }
 
     initializeEditor(createEditor) {
-        this.editor = createEditor(this.codeElement, () => this.changeToLookLikeNewPaste())
+        this.editor = createEditor(this.codeElement, () => {
+            this.changeToLookLikeNewPaste()
+            this.isHelloWorld = false
+        })
         if (this.currentLanguage) {
             this.editor.setLanguage(this.currentLanguage)
         }
@@ -99,10 +102,10 @@ class Editor {
     changeToLookLikeNewPaste() {
         if (this.autodeleteText) {
             this.autodeleteText.style.display = 'none'
-            this.autodeleteCheckbox.style.display = ''
         }
-        this.submit.disabled = false
-        this.output.clear()
+        for (const submit of this.submitButtons) {
+            submit.disabled = false
+        }
     }
 
     assignEvents() {
@@ -114,21 +117,22 @@ class Editor {
 
     async updateLanguage() {
         this.wrapperButtons.clear()
-        this.helloWorldLink.textContent = ''
         const identifier = this.getLanguageIdentifier()
         this.setLanguage(identifier)
         const isStillValid = () => identifier === this.getLanguageIdentifier()
         const language = await getLanguage(identifier, isStillValid)
         // This deals with user changing the language after asynchronous event
         if (isStillValid()) {
-            if (language.helloWorldPaste) {
-                const anchor = document.createElement('a')
-                anchor.href = '/' + language.helloWorldPaste
-                anchor.textContent = 'Hello world program'
-                this.helloWorldLink.append(' | ', anchor)
-            }
             this.detailsElement.style.display = language.implementations.length ? 'block' : 'none'
             this.wrapperButtons.update(language.implementations)
+            const isStillHelloWorld = () => this.isHelloWorld || this.editor.getValue() === ''
+            if (isStillHelloWorld()) {
+                const helloWorldText = language.helloWorldPaste ? await (await fetch(`/${language.helloWorldPaste}.txt`)).text() : ""
+                if (isStillHelloWorld()) {
+                    this.editor.setValue(helloWorldText)
+                    this.isHelloWorld = true
+                }
+            }
         }
     }
 
@@ -138,6 +142,7 @@ class Editor {
 
     async run(wrapper, compilerOptions) {
         this.output.clear()
+        this.editor.update()
         if (this.abortEval) {
             this.abortEval.abort()
         }
@@ -168,7 +173,12 @@ class Editor {
         if (wrapper.isFormatter) {
             this.editor.setValue(response.stdout)
         }
+        this.displayOutput(wrapper, response)
+    }
+
+    displayOutput(wrapper, response) {
         this.output.display(wrapper, response)
+        this.editor.update()
     }
 }
 
