@@ -73,7 +73,7 @@
                     {
                         "identifier": "netcore",
                         "label": "Run",
-                        "code": "dotnet new console &>/dev/null; mv code Program.cs; dotnet run %s"
+                        "code": "ln -fst . /opt/microsoft/home/csharp/bin/Debug/netcoreapp*/*; dotnet /usr/lib64/dotnet/sdk/*/Roslyn/bincore/csc.dll %s code @/opt/microsoft/home/csharp/csopts.txt >&2; dotnet project.dll"
                     }
                 ]
             }
