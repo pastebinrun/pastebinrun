@@ -1,5 +1,5 @@
+import './spinner.css'
 import { Wrapper } from './types'
-import { SplitChunksPlugin } from 'webpack'
 
 const filterRegex = /(?:\t\.(?:text|file|section|globl|p2align|type|cfi_.*|size|section)\b|.Lfunc_end).*\n?/g
 
@@ -44,6 +44,14 @@ export default class Output {
         this.wrapper = wrapper
         this.json = json
         this.update()
+    }
+
+    spin() {
+        this.output.textContent = ''
+        const spinner = document.createElement('div')
+        spinner.className = 'spinner'
+        this.output.append(spinner)
+        this.split.append(this.outputContainer)
     }
 
     update() {
