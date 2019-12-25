@@ -74,6 +74,7 @@ pub fn api_language(
         let implementations = implementations::table
             .select((implementations::implementation_id, implementations::label))
             .filter(implementations::language_id.eq(language.id))
+            .order(implementations::ordering)
             .load(&connection)
             .map_err(warp::reject::custom)?;
         let implementation_wrappers = ImplementationWrapper::belonging_to(&implementations)
