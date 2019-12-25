@@ -282,19 +282,80 @@
                     {
                         "identifier": "rustc-stable",
                         "label": "Run",
-                        "code": "mv code code.rs && rustc %s code.rs && ./code"
+                        "code": "/opt/util/rust-run stable %s"
                     },
                     {
                         "identifier": "rustc-asm-stable",
                         "label": "ASM",
-                        "code": "rustc --emit asm --crate-type rlib %s code && cat code.s",
+                        "code": "/opt/util/rust-asm stable %s",
                         "is_asm": true
                     },
                     {
                         "identifier": "rustfmt-stable",
                         "label": "Rustfmt",
-                        "code": "rustfmt code; cat code",
+                        "code": "/opt/util/rust-fmt stable",
                         "is_formatter": true
+                    },
+                    {
+                        "identifier": "clippy-stable",
+                        "label": "Clippy",
+                        "code": "/opt/util/rust-clippy stable"
+                    }
+                ]
+            },
+            {
+                "label": "Beta",
+                "identifier": "beta",
+                "wrappers": [
+                    {
+                        "identifier": "rustc-beta",
+                        "label": "Run",
+                        "code": "/opt/util/rust-run beta %s"
+                    },
+                    {
+                        "identifier": "rustc-asm-beta",
+                        "label": "ASM",
+                        "code": "/opt/util/rust-asm beta %s",
+                        "is_asm": true
+                    },
+                    {
+                        "identifier": "rustfmt-beta",
+                        "label": "Rustfmt",
+                        "code": "/opt/util/rust-fmt beta",
+                        "is_formatter": true
+                    },
+                    {
+                        "identifier": "clippy-beta",
+                        "label": "Clippy",
+                        "code": "/opt/util/rust-clippy beta"
+                    }
+                ]
+            },
+            {
+                "label": "Nightly",
+                "identifier": "nightly",
+                "wrappers": [
+                    {
+                        "identifier": "rustc-nightly",
+                        "label": "Run",
+                        "code": "/opt/util/rust-run nightly %s"
+                    },
+                    {
+                        "identifier": "rustc-asm-nightly",
+                        "label": "ASM",
+                        "code": "/opt/util/rust-asm nightly %s",
+                        "is_asm": true
+                    },
+                    {
+                        "identifier": "rustfmt-nightly",
+                        "label": "Rustfmt",
+                        "code": "/opt/util/rust-fmt nightly",
+                        "is_formatter": true
+                    },
+                    {
+                        "identifier": "clippy-nightly",
+                        "label": "Clippy",
+                        "code": "/opt/util/rust-clippy nightly"
                     }
                 ]
             }
