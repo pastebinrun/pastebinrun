@@ -86,11 +86,14 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
                     .execute(connection)?;
             }
         }
-        for Implementation {
-            label,
-            identifier: implementation_identifier,
-            wrappers,
-        } in implementations
+        for (
+            i,
+            Implementation {
+                label,
+                identifier: implementation_identifier,
+                wrappers,
+            },
+        ) in (1..).zip(implementations)
         {
             languages::table
                 .filter(languages::identifier.eq(&languages_identifier))
@@ -98,16 +101,24 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
                     languages::language_id,
                     label.as_sql::<Text>(),
                     implementation_identifier.as_sql::<Text>(),
+                    i.as_sql::<Integer>(),
                 ))
                 .insert_into(implementations::table)
                 .into_columns((
                     implementations::language_id,
                     implementations::label,
                     implementations::identifier,
+                    implementations::ordering,
                 ))
-                .on_conflict((implementations::language_id, implementations::identifier))
+                .on_conflict((
+                    implementations::language_id,
+                    implementations::identifier,
+                ))
                 .do_update()
-                .set(implementations::label.eq(&label))
+                .set((
+                    implementations::label.eq(&label),
+                    implementations::ordering.eq(i),
+                ))
                 .execute(connection)?;
             for (
                 i,

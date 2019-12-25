@@ -4,6 +4,7 @@ table! {
         language_id -> Int4,
         identifier -> Text,
         label -> Text,
+        ordering -> Int4,
     }
 }
 
