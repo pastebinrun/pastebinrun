@@ -100,6 +100,8 @@ class Editor {
     }
 
     changeToLookLikeNewPaste() {
+        this.output.clear()
+        this.editor.update()
         if (this.autodeleteText) {
             this.autodeleteText.style.display = 'none'
         }
@@ -141,7 +143,7 @@ class Editor {
     }
 
     async run(wrapper, compilerOptions) {
-        this.output.clear()
+        this.output.spin()
         this.editor.update()
         if (this.abortEval) {
             this.abortEval.abort()

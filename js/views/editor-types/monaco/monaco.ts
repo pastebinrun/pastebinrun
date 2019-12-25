@@ -42,7 +42,7 @@ const languageMap = {
     plaintext: null,
     postgresql: 'sql',
     python2: 'python',
-    python3: 'python',
+    python: 'python',
     raku: null,
     rust: 'rust',
     sh: 'shell',
