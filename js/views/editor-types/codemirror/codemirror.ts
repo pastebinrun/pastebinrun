@@ -18,7 +18,6 @@ const languagesMap = {
     php: [() => import('codemirror/mode/php/php'), 'application/x-httpd-php'],
     plaintext: [() => { }, 'text/plain'],
     postgresql: [() => import('codemirror/mode/sql/sql'), 'text/x-pgsql'],
-    python2: [() => import('codemirror/mode/python/python'), 'text/x-python'],
     python: [() => import('codemirror/mode/python/python'), 'text/x-python'],
     raku: [() => import('./raku'), 'text/x-raku'],
     rust: [() => import('codemirror/mode/rust/rust'), 'text/x-rustsrc'],
