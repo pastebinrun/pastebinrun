@@ -31,7 +31,7 @@ test:stable: &test
   stage: test
   services:
   - postgres
-  - name: registry.gitlab.com/pastebin.run/sandbox/master
+  - name: registry.gitlab.com/pastebinrun/sandbox/master
     alias: sandbox
   variables:
     POSTGRES_DB: db
