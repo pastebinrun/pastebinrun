@@ -76,8 +76,7 @@ fn index(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 }
 
 fn display_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    warp::path::param()
-        .and(warp::path::end())
+    warp::path!(String)
         .and(warp::get())
         .and(session(pool))
         .and_then(display_paste::display_paste)
@@ -85,8 +84,7 @@ fn display_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 }
 
 fn options(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    warp::path("config")
-        .and(warp::path::end())
+    warp::path!("config")
         .and(warp::get())
         .and(session(pool))
         .and_then(config::config)
@@ -102,11 +100,10 @@ fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 }
 
 fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    let root = path!("api" / "v0").and(connection(pool));
+    let root = path!("api" / "v0" / ..).and(connection(pool));
     let language = root
         .clone()
         .and(path!("language" / String))
-        .and(warp::path::end())
         .and(warp::get())
         .and_then(api_language::api_language);
     let run = root
@@ -118,18 +115,16 @@ fn api_v0(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 }
 
 fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    let languages = warp::path("languages")
-        .and(warp::path::end())
+    let languages = warp::path!("languages")
         .and(warp::get())
         .and(connection(pool.clone()))
         .and_then(api_v1::languages::languages);
-    let pastes = warp::path("pastes")
-        .and(warp::path::end())
+    let pastes = warp::path!("pastes")
         .and(warp::post())
         .and(warp::body::form())
         .and(connection(pool))
         .and_then(api_v1::pastes::insert_paste);
-    path!("api" / "v1")
+    path!("api" / "v1" / ..)
         .and(
             languages.or(pastes).with(
                 warp::cors()
@@ -146,8 +141,7 @@ fn static_dir() -> BoxedFilter<(impl Reply,)> {
 }
 
 fn favicon() -> BoxedFilter<(impl Reply,)> {
-    warp::path("favicon.ico")
-        .and(warp::path::end())
+    warp::path!("favicon.ico")
         .and(warp::fs::file("static/favicon.ico"))
         .boxed()
 }
@@ -176,18 +170,14 @@ pub fn routes(
 }
 
 fn with_ext(ext: &'static str) -> impl Filter<Extract = (String,), Error = Rejection> + Copy {
-    warp::path::param()
-        .and(warp::path::end())
-        .and_then(move |path: PathBuf| {
-            async move {
-                match (path.extension(), path.file_stem().and_then(OsStr::to_str)) {
-                    (Some(received_ext), Some(file_stem)) if ext == received_ext => {
-                        Ok(file_stem.to_string())
-                    }
-                    _ => Err(warp::reject::not_found()),
-                }
+    warp::path!(PathBuf).and_then(move |path: PathBuf| async move {
+        match (path.extension(), path.file_stem().and_then(OsStr::to_str)) {
+            (Some(received_ext), Some(file_stem)) if ext == received_ext => {
+                Ok(file_stem.to_string())
             }
-        })
+            _ => Err(warp::reject::not_found()),
+        }
+    })
 }
 
 fn not_found(
@@ -213,7 +203,7 @@ fn not_found(
                 Err(rejection)
             }
         }
-            .boxed()
+        .boxed()
     }
 }
 

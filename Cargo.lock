@@ -1040,7 +1040,7 @@ dependencies = [
  "serde_json 1.0.44 (registry+https://github.com/rust-lang/crates.io-index)",
  "time-parse 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "warp 0.2.0-alpha.0 (git+https://github.com/seanmonstar/warp.git?rev=8b8c9950260ef7312e29c4af72b0753619a5ad5c)",
+ "warp 0.2.0-alpha.0 (git+https://github.com/seanmonstar/warp.git?rev=71aedeab4a935efa65866d6e635ead3a8ac74d94)",
 ]
 
 [[package]]
@@ -1891,7 +1891,7 @@ dependencies = [
 [[package]]
 name = "warp"
 version = "0.2.0-alpha.0"
-source = "git+https://github.com/seanmonstar/warp.git?rev=8b8c9950260ef7312e29c4af72b0753619a5ad5c#8b8c9950260ef7312e29c4af72b0753619a5ad5c"
+source = "git+https://github.com/seanmonstar/warp.git?rev=71aedeab4a935efa65866d6e635ead3a8ac74d94#71aedeab4a935efa65866d6e635ead3a8ac74d94"
 dependencies = [
  "bytes 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2281,7 +2281,7 @@ dependencies = [
 "checksum version_check 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
 "checksum version_check 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "078775d0255232fb988e6fccf26ddc9d1ac274299aaedcedce21c6f72cc533ce"
 "checksum want 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1ce8a968cb1cd110d136ff8b819a556d6fb6d919363c61534f6860c7eb172ba0"
-"checksum warp 0.2.0-alpha.0 (git+https://github.com/seanmonstar/warp.git?rev=8b8c9950260ef7312e29c4af72b0753619a5ad5c)" = "<none>"
+"checksum warp 0.2.0-alpha.0 (git+https://github.com/seanmonstar/warp.git?rev=71aedeab4a935efa65866d6e635ead3a8ac74d94)" = "<none>"
 "checksum wasi 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b89c3ce4ce14bdc6fb6beaf9ec7928ca331de5df7e5ea278375642a2f478570d"
 "checksum wasm-bindgen 0.2.55 (registry+https://github.com/rust-lang/crates.io-index)" = "29ae32af33bacd663a9a28241abecf01f2be64e6a185c6139b04f18b6385c5f2"
 "checksum wasm-bindgen-backend 0.2.55 (registry+https://github.com/rust-lang/crates.io-index)" = "1845584bd3593442dc0de6e6d9f84454a59a057722f36f005e44665d6ab19d85"
