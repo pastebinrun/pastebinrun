@@ -110,10 +110,7 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
                     implementations::identifier,
                     implementations::ordering,
                 ))
-                .on_conflict((
-                    implementations::language_id,
-                    implementations::identifier,
-                ))
+                .on_conflict((implementations::language_id, implementations::identifier))
                 .do_update()
                 .set((
                     implementations::label.eq(&label),

@@ -225,10 +225,6 @@
         "name": "PostgreSQL"
     },
     {
-        "identifier": "python2",
-        "name": "Python 2"
-    },
-    {
         "identifier": "python",
         "name": "Python 3",
         "helloworld": "print(\"Hello, world!\")",
