@@ -19,6 +19,7 @@ use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::pin::Pin;
 use tokio_executor::blocking;
+use warp::filters::cors::Cors;
 use warp::filters::BoxedFilter;
 use warp::http::header::{
     HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, CONTENT_TYPE, REFERRER_POLICY, X_FRAME_OPTIONS,
@@ -88,9 +89,15 @@ fn options(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 
 fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
     with_ext("txt")
-        .and(warp::get2())
-        .and(connection(pool))
-        .and_then(raw_paste::raw_paste)
+        .map(warp::ext::set)
+        .untuple_one()
+        .and(
+            warp::get2()
+                .and(warp::ext::get())
+                .and(connection(pool))
+                .and_then(raw_paste::raw_paste)
+                .with(cors()),
+        )
         .boxed()
 }
 
@@ -123,15 +130,15 @@ fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(connection(pool))
         .and_then(api_v1::pastes::insert_paste);
     path!("api" / "v1")
-        .and(
-            languages.or(pastes).with(
-                warp::cors()
-                    .allow_any_origin()
-                    .allow_methods(&[Method::GET, Method::POST])
-                    .allow_headers(&[CONTENT_TYPE]),
-            ),
-        )
+        .and(languages.or(pastes).with(cors()))
         .boxed()
+}
+
+fn cors() -> Cors {
+    warp::cors()
+        .allow_any_origin()
+        .allow_methods(&[Method::GET, Method::POST])
+        .allow_headers(&[CONTENT_TYPE])
 }
 
 fn static_dir() -> BoxedFilter<(impl Reply,)> {
