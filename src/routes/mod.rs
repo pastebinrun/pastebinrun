@@ -210,8 +210,8 @@ fn not_found(pool: PgPool) -> impl Clone + Fn(Rejection) -> NotFoundFuture {
                 Err(rejection)
             }
         }
-            .boxed()
-            .compat()
+        .boxed()
+        .compat()
     }
 }
 
@@ -344,7 +344,7 @@ mod test {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
         pub struct ApiLanguage<'a> {
-            hello_world_paste: Option<String>,
+            hello_world: String,
             #[serde(borrow)]
             implementations: Vec<Implementation<'a>>,
         }
@@ -357,37 +357,29 @@ mod test {
             let language = warp::test::request()
                 .path(&format!("/api/v0/language/{}", identifier))
                 .reply(&*ROUTES);
-            if let ApiLanguage {
-                hello_world_paste: Some(hello_world_paste),
+            let ApiLanguage {
+                hello_world,
                 implementations,
-            } = serde_json::from_slice(language.body()).unwrap()
-            {
-                let code = warp::test::request()
-                    .path(&format!("/{}.txt", hello_world_paste))
+            } = serde_json::from_slice(language.body()).unwrap();
+            let wrappers = implementations
+                .into_iter()
+                .flat_map(|i| i.wrappers)
+                .filter(|w| w.label == "Run");
+            for Wrapper { identifier, .. } in wrappers {
+                let body = format!("code={}&compilerOptions=&stdin=", hello_world);
+                let out = warp::test::request()
+                    .path(&format!("/api/v0/run/{}", identifier))
+                    .method("POST")
+                    .header(CONTENT_LENGTH, body.len())
+                    .body(body)
                     .reply(&*ROUTES);
-                let wrappers = implementations
-                    .into_iter()
-                    .flat_map(|i| i.wrappers)
-                    .filter(|w| w.label == "Run");
-                for Wrapper { identifier, .. } in wrappers {
-                    let body = format!(
-                        "code={}&compilerOptions=&stdin=",
-                        str::from_utf8(code.body()).unwrap()
-                    );
-                    let out = warp::test::request()
-                        .path(&format!("/api/v0/run/{}", identifier))
-                        .method("POST")
-                        .header(CONTENT_LENGTH, body.len())
-                        .body(body)
-                        .reply(&*ROUTES);
-                    let body = str::from_utf8(out.body()).unwrap();
-                    assert!(
-                        body.contains(r#"Hello, world!\n""#),
-                        "{}: {}",
-                        identifier,
-                        body,
-                    );
-                }
+                let body = str::from_utf8(out.body()).unwrap();
+                assert!(
+                    body.contains(r#"Hello, world!\n""#),
+                    "{}: {}",
+                    identifier,
+                    body,
+                );
             }
         }
     }
