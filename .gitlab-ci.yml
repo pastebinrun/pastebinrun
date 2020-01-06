@@ -54,3 +54,4 @@ test:1.39:
 test:nightly:
   <<: *test
   image: rustlang/rust:nightly
+  allow_failure: yes
