@@ -1,6 +1,4 @@
-use crate::models::paste;
-use crate::models::paste::ExtraPasteParameters;
-use crate::schema::{implementation_wrappers, implementations, languages, pastes};
+use crate::schema::{implementation_wrappers, implementations, languages};
 use crate::Connection;
 use diesel::prelude::*;
 use diesel::sql_types::{Bool, Integer, Text};
@@ -12,7 +10,8 @@ use std::fs;
 struct JsonLanguage {
     identifier: String,
     name: String,
-    helloworld: Option<String>,
+    #[serde(default)]
+    helloworld: String,
     #[serde(default)]
     implementations: Vec<Implementation>,
 }
@@ -22,6 +21,7 @@ struct Language<'a> {
     identifier: &'a str,
     name: String,
     priority: i32,
+    hello_world: &'a str,
 }
 
 #[derive(Deserialize)]
@@ -48,7 +48,7 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
     for JsonLanguage {
         identifier: languages_identifier,
         name,
-        helloworld,
+        helloworld: hello_world,
         implementations,
     } in languages
     {
@@ -57,35 +57,12 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
                 identifier: &languages_identifier,
                 name,
                 priority: 10,
+                hello_world: &hello_world,
             })
             .on_conflict(languages::identifier)
-            .do_nothing()
+            .do_update()
+            .set(languages::hello_world.eq(&hello_world))
             .execute(connection)?;
-        if let Some(hello_world) = helloworld {
-            let paste_id: Option<i32> = languages::table
-                .filter(languages::identifier.eq(&languages_identifier))
-                .select(languages::hello_world_paste_id)
-                .get_result(connection)?;
-            if paste_id.is_none() {
-                let identifier = paste::insert(
-                    connection,
-                    None,
-                    &languages_identifier,
-                    hello_world,
-                    ExtraPasteParameters::default(),
-                )
-                .unwrap();
-                diesel::update(languages::table)
-                    .set(
-                        languages::hello_world_paste_id.eq(pastes::table
-                            .select(pastes::paste_id)
-                            .filter(pastes::identifier.eq(identifier))
-                            .single_value()),
-                    )
-                    .filter(languages::identifier.eq(&languages_identifier))
-                    .execute(connection)?;
-            }
-        }
         for (
             i,
             Implementation {

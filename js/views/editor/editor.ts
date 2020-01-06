@@ -127,13 +127,9 @@ class Editor {
         if (isStillValid()) {
             this.detailsElement.style.display = language.implementations.length ? 'block' : 'none'
             this.wrapperButtons.update(language.implementations)
-            const isStillHelloWorld = () => this.isHelloWorld || this.editor.getValue() === ''
-            if (isStillHelloWorld()) {
-                const helloWorldText = language.helloWorldPaste ? await (await fetch(`/${language.helloWorldPaste}.txt`)).text() : ""
-                if (isStillHelloWorld()) {
-                    this.editor.setValue(helloWorldText)
-                    this.isHelloWorld = true
-                }
+            if (this.isHelloWorld || this.editor.getValue() === '') {
+                this.editor.setValue(language.helloWorld)
+                this.isHelloWorld = true
             }
         }
     }

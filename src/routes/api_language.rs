@@ -1,4 +1,4 @@
-use crate::schema::{implementation_wrappers, implementations, languages, pastes};
+use crate::schema::{implementation_wrappers, implementations, languages};
 use crate::Connection;
 use diesel::prelude::*;
 use futures::Future;
@@ -11,7 +11,7 @@ use warp::{Rejection, Reply};
 #[derive(Queryable)]
 struct Language {
     id: i32,
-    paste_identifier: Option<String>,
+    hello_world: Option<String>,
 }
 
 #[derive(Serialize, Queryable)]
@@ -43,7 +43,7 @@ struct ImplementationWrapper {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct JsonLanguage {
-    hello_world_paste: Option<String>,
+    hello_world: Option<String>,
     implementations: Vec<JsonImplementation>,
 }
 
@@ -60,13 +60,7 @@ pub fn api_language(
     blocking::run(move || {
         let language: Language = languages::table
             .filter(languages::identifier.eq(identifier))
-            .select((
-                languages::language_id,
-                pastes::table
-                    .select(pastes::identifier)
-                    .filter(languages::hello_world_paste_id.eq(pastes::paste_id.nullable()))
-                    .single_value(),
-            ))
+            .select((languages::language_id, languages::hello_world))
             .get_result(&connection)
             .optional()
             .map_err(warp::reject::custom)?
@@ -119,7 +113,7 @@ pub fn api_language(
         Ok(warp::reply::with_header(
             warp::reply::json(&JsonLanguage {
                 implementations,
-                hello_world_paste: language.paste_identifier,
+                hello_world: language.hello_world,
             }),
             CACHE_CONTROL,
             "max-age=14400",

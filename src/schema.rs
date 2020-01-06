@@ -27,7 +27,7 @@ table! {
         priority -> Int4,
         name -> Text,
         identifier -> Text,
-        hello_world_paste_id -> Nullable<Int4>,
+        hello_world -> Nullable<Text>,
     }
 }
 
@@ -48,5 +48,6 @@ table! {
 
 joinable!(implementation_wrappers -> implementations (implementation_id));
 joinable!(implementations -> languages (language_id));
+joinable!(pastes -> languages (language_id));
 
 allow_tables_to_appear_in_same_query!(implementations, implementation_wrappers, languages, pastes,);
