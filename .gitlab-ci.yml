@@ -22,6 +22,8 @@ build:release: &build
   - &init rustc --version && cargo --version
   - cargo build --release --verbose
   - &clean_cargo cargo install cargo-cache --git https://github.com/matthiaskrgr/cargo-cache --no-default-features --features ci-autoclean && cargo-cache
+  needs:
+  - build:webpack
   artifacts:
     paths:
     - languages.json
@@ -48,6 +50,8 @@ test:stable: &test
   - *init
   - DATABASE_URL=postgresql://user:password@postgres/db SANDBOX_URL=http://sandbox:8888 cargo test --verbose --features=database_tests,sandbox_tests
   - *clean_cargo
+  needs:
+  - build:webpack
   cache:
     key: ${CI_JOB_NAME}
     paths:
