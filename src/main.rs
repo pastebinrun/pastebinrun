@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .expect("Couldn't create a connection connection");
     diesel_migrations::run_pending_migrations(&pool.get()?)?;
     migration::run(&pool.get()?)?;
-    warp::serve(routes::routes(pool)).run(([127, 0, 0, 1], 8080));
+    warp::serve(routes::routes(pool)).run(([0, 0, 0, 0], 8080));
     Ok(())
 }
 

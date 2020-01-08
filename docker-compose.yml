@@ -1,0 +1,20 @@
+version: '3.7'
+services:
+  pastebinrun:
+    depends_on:
+    - db
+    - sandbox
+    build: .
+    ports:
+    - 127.0.0.1:8080:8080
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://postgres@db
+      SANDBOX_URL: http://sandbox:8888
+      RUST_LOG: info
+  db:
+    image: postgres:12
+    restart: always
+  sandbox:
+    image: registry.gitlab.com/pastebinrun/sandbox/master
+    restart: always
