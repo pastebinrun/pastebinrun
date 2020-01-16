@@ -5,7 +5,7 @@
     "devDependencies": {
         "@types/codemirror": "0.0.82",
         "@types/prismjs": "1.16.0",
-        "codemirror": "5.49.2",
+        "codemirror": "5.50.2",
         "css-loader": "3.3.0",
         "monaco-editor": "0.18.1",
         "monaco-editor-webpack-plugin": "1.7.0",
