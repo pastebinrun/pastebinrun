@@ -6,7 +6,7 @@ variables:
 
 build:webpack:
   stage: build
-  image: node:12.13
+  image: node:12.14
   script:
   - npm ci
   - node_modules/.bin/webpack
