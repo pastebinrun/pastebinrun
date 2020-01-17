@@ -57,6 +57,14 @@ test:stable: &test
     paths:
     - target/
 
+test:clippy:
+  <<: *test
+  script:
+  - *init
+  - rustup component add clippy
+  - cargo clippy --verbose
+  - *clean_cargo
+
 test:1.39:
   <<: *test
   image: rust:1.39
