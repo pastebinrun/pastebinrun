@@ -6,8 +6,10 @@
 
 @:header(session)
 
-@Html(paste.markdown)
 <form method="post" action="/" id="editor">
+    <div>
+        @Html(paste.markdown)
+    </div>
     @if let Some(delete_at) = paste.delete_at {
         <div id="autodelete-text">
             This paste will be automatically deleted on @delete_at.format("%Y-%m-%d %H:%M") UTC.
