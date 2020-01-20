@@ -399,4 +399,49 @@ mod test {
             }
         }
     }
+
+    #[test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
+    fn raw_cors() {
+        assert_eq!(
+            warp::test::request()
+                .path("/a.txt")
+                .method("OPTIONS")
+                .header("origin", "example.com")
+                .header("access-control-request-method", "GET")
+                .reply(&*ROUTES)
+                .status(),
+            StatusCode::OK,
+        );
+    }
+
+    #[test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
+    fn paste_no_cors() {
+        assert_eq!(
+            warp::test::request()
+                .path("/a")
+                .method("OPTIONS")
+                .header("origin", "example.com")
+                .header("access-control-request-method", "GET")
+                .reply(&*ROUTES)
+                .status(),
+            StatusCode::METHOD_NOT_ALLOWED,
+        );
+    }
+
+    #[test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
+    fn api_v1_cors() {
+        assert_eq!(
+            warp::test::request()
+                .path("/api/v1/languages")
+                .method("OPTIONS")
+                .header("origin", "example.com")
+                .header("access-control-request-method", "GET")
+                .reply(&*ROUTES)
+                .status(),
+            StatusCode::OK,
+        );
+    }
 }
