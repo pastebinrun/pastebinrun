@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "devDependencies": {
-        "@types/codemirror": "0.0.82",
+        "@types/codemirror": "0.0.83",
         "@types/prismjs": "1.16.0",
         "codemirror": "5.51.0",
         "css-loader": "3.4.2",
