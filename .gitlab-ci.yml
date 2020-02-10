@@ -21,7 +21,7 @@ build:release: &build
   script:
   - &init rustc --version && cargo --version
   - cargo build --release --verbose
-  - &clean_cargo cargo install cargo-cache --git https://github.com/matthiaskrgr/cargo-cache --no-default-features --features ci-autoclean && cargo-cache
+  - &clean_cargo cargo install cargo-cache --git https://github.com/matthiaskrgr/cargo-cache --no-default-features --features ci-autoclean && cargo-cache --autoclean
   needs:
   - build:webpack
   artifacts:
