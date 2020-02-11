@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::models::db::DbErrorExt;
 use crate::schema::implementation_wrappers;
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
-use futures::Future;
-use futures03::TryFutureExt;
+use futures::TryFutureExt;
 use once_cell::sync::Lazy;
-use reqwest::r#async::Client;
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
-use tokio_executor::blocking;
+use warp::reject::Reject;
 use warp::{Rejection, Reply};
 
 static CLIENT: Lazy<Client> = Lazy::new(Client::new);
@@ -57,7 +57,7 @@ struct Output {
     stderr: String,
 }
 
-pub fn run(
+pub async fn run(
     connection: Connection,
     identifier: String,
     Form {
@@ -65,31 +65,35 @@ pub fn run(
         compiler_options,
         stdin,
     }: Form,
-) -> impl Future<Item = impl Reply, Error = Rejection> {
-    blocking::run(move || {
+) -> Result<impl Reply, Rejection> {
+    let language_code: String = blocking::run(move || {
         implementation_wrappers::table
             .filter(implementation_wrappers::identifier.eq(identifier))
             .select(implementation_wrappers::code)
             .get_result(&connection)
             .optional()
-            .map_err(warp::reject::custom)?
+            .into_rejection()?
             .ok_or_else(warp::reject::not_found)
     })
-    .compat()
-    .and_then(move |language_code: String| {
-        CLIENT
-            .post(SANDBOX_URL.as_str())
-            .json(&Request {
-                files: vec![File {
-                    name: "code",
-                    contents: code,
-                }],
-                stdin,
-                code: language_code.replace("%s", &compiler_options),
-            })
-            .send()
-            .and_then(|mut r| r.json())
-            .map_err(warp::reject::custom)
-    })
-    .map(|json: Output| warp::reply::json(&json))
+    .await?;
+    let json: Output = CLIENT
+        .post(SANDBOX_URL.as_str())
+        .json(&Request {
+            files: vec![File {
+                name: "code",
+                contents: code,
+            }],
+            stdin,
+            code: language_code.replace("%s", &compiler_options),
+        })
+        .send()
+        .and_then(|r| r.json())
+        .map_err(|e| warp::reject::custom(RemoteServerError(e)))
+        .await?;
+    Ok(warp::reply::json(&json))
 }
+
+#[derive(Debug)]
+struct RemoteServerError(reqwest::Error);
+
+impl Reject for RemoteServerError {}

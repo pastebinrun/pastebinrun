@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::models::db::DbErrorExt;
 use crate::models::rejection::CustomRejection;
 use crate::schema::{languages, pastes};
 use crate::Connection;
@@ -45,7 +46,7 @@ impl Paste {
         let pastes = diesel::delete(pastes::table)
             .filter(pastes::delete_at.lt(Utc::now()))
             .execute(connection)
-            .map_err(warp::reject::custom)?;
+            .into_rejection()?;
         if pastes > 0 {
             info!("Deleted {} paste(s)", pastes);
         }
@@ -97,7 +98,7 @@ pub fn insert(
         .filter(languages::identifier.eq(language))
         .get_result(connection)
         .optional()
-        .map_err(warp::reject::custom)?
+        .into_rejection()?
         .ok_or_else(|| warp::reject::custom(CustomRejection::UnrecognizedLanguageIdentifier))?;
     for (field, name) in &[(&paste, "paste"), (&stdin, "stdin")] {
         if field.len() > 1_000_000 {
@@ -124,7 +125,7 @@ pub fn insert(
     diesel::insert_into(pastes::table)
         .values(&insert_paste)
         .execute(connection)
-        .map_err(warp::reject::custom)?;
+        .into_rejection()?;
     Ok(insert_paste.identifier)
 }
 

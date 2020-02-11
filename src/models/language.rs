@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::models::db::DbErrorExt;
 use crate::schema::languages::dsl::*;
 use crate::Connection;
 use diesel::prelude::*;
@@ -32,7 +33,7 @@ impl Language {
             .select((language_id, identifier, name))
             .order((priority.asc(), name.asc()))
             .load(connection)
-            .map_err(warp::reject::custom)
+            .into_rejection()
     }
 }
 

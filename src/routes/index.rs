@@ -14,15 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::blocking;
 use crate::models::language::{Language, Selection};
-use crate::models::session::Session;
-use crate::templates::{self, RenderRucte};
-use futures::Future;
-use futures03::TryFutureExt;
-use tokio_executor::blocking;
+use crate::models::session::{RenderExt, Session};
+use crate::templates;
 use warp::{Rejection, Reply};
 
-pub fn index(session: Session) -> impl Future<Item = impl Reply, Error = Rejection> {
+pub async fn index(session: Session) -> Result<impl Reply, Rejection> {
     blocking::run(move || {
         let languages = Language::fetch(&session.connection)?;
         session.render().html(|o| {
@@ -36,5 +34,5 @@ pub fn index(session: Session) -> impl Future<Item = impl Reply, Error = Rejecti
             )
         })
     })
-    .compat()
+    .await
 }

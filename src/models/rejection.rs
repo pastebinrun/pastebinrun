@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::error::Error;
 use std::fmt::{Display, Formatter, Result};
 use warp::http::StatusCode;
+use warp::reject::Reject;
 
 #[derive(Debug)]
 pub enum CustomRejection {
@@ -42,4 +42,4 @@ impl Display for CustomRejection {
     }
 }
 
-impl Error for CustomRejection {}
+impl Reject for CustomRejection {}

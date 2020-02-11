@@ -14,19 +14,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::models::db::DbErrorExt;
 use crate::models::paste::Paste;
 use crate::schema::pastes::dsl::*;
-use crate::Connection;
+use crate::{blocking, Connection};
 use diesel::prelude::*;
-use futures::Future;
-use futures03::TryFutureExt;
-use tokio_executor::blocking;
 use warp::Rejection;
 
-pub fn raw_paste(
+pub async fn raw_paste(
     requested_identifier: String,
     connection: Connection,
-) -> impl Future<Item = String, Error = Rejection> {
+) -> Result<String, Rejection> {
     blocking::run(move || {
         Paste::delete_old(&connection)?;
         pastes
@@ -34,8 +32,8 @@ pub fn raw_paste(
             .filter(identifier.eq(requested_identifier))
             .get_result(&connection)
             .optional()
-            .map_err(warp::reject::custom)?
+            .into_rejection()?
             .ok_or_else(warp::reject::not_found)
     })
-    .compat()
+    .await
 }

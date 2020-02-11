@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::session::Session;
-use crate::templates::{self, RenderRucte};
+use crate::models::session::{RenderExt, Session};
+use crate::templates;
 use warp::{Rejection, Reply};
 
-pub fn config(session: Session) -> Result<impl Reply, Rejection> {
+pub async fn config(session: Session) -> Result<impl Reply, Rejection> {
     session.render().html(|o| templates::config(o, &session))
 }

@@ -14,22 +14,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::blocking;
+use crate::models::db::DbErrorExt;
 use crate::models::language::{Language, Selection};
 use crate::models::paste::{ExternPaste, Paste};
-use crate::models::session::Session;
+use crate::models::session::{RenderExt, Session};
 use crate::schema::{languages, pastes};
-use crate::templates::{self, RenderRucte};
+use crate::templates;
 use diesel::prelude::*;
-use futures::future::*;
-use futures03::TryFutureExt;
 use std::borrow::Cow;
-use tokio_executor::blocking;
 use warp::{Rejection, Reply};
 
-pub fn display_paste(
+pub async fn display_paste(
     requested_identifier: String,
     mut session: Session,
-) -> impl Future<Item = impl Reply, Error = Rejection> {
+) -> Result<impl Reply, Rejection> {
     blocking::run(move || {
         let connection = &session.connection;
         Paste::delete_old(connection)?;
@@ -49,7 +48,7 @@ pub fn display_paste(
             .filter(pastes::identifier.eq(requested_identifier))
             .get_result(connection)
             .optional()
-            .map_err(warp::reject::custom)?
+            .into_rejection()?
             .ok_or_else(warp::reject::not_found)?;
         session.description = generate_description(&paste.paste);
         let selected_language = Some(paste.language_id);
@@ -65,7 +64,7 @@ pub fn display_paste(
             )
         })
     })
-    .compat()
+    .await
 }
 
 fn generate_description(paste: &str) -> Cow<'static, str> {

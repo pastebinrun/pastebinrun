@@ -14,26 +14,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::db::DbErrorExt;
-use crate::schema::languages;
-use crate::{blocking, Connection};
-use diesel::prelude::*;
-use serde::Serialize;
-use warp::{Rejection, Reply};
+use extension_trait::extension_trait;
+use warp::reject::{Reject, Rejection};
 
-#[derive(Queryable, Serialize)]
-struct Language {
-    identifier: String,
-    name: String,
-}
+#[derive(Debug)]
+struct DbError(diesel::result::Error);
 
-pub async fn languages(connection: Connection) -> Result<impl Reply, Rejection> {
-    blocking::run(move || {
-        let languages: Vec<Language> = languages::table
-            .select((languages::identifier, languages::name))
-            .load(&connection)
-            .into_rejection()?;
-        Ok(warp::reply::json(&languages))
-    })
-    .await
+impl Reject for DbError {}
+
+#[extension_trait(pub)]
+impl<T> DbErrorExt for Result<T, diesel::result::Error> {
+    type Error = T;
+    fn into_rejection(self) -> Result<Self::Error, Rejection> {
+        self.map_err(|e| warp::reject::custom(DbError(e)))
+    }
 }

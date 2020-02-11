@@ -16,12 +16,9 @@
 
 use crate::models::paste;
 use crate::models::paste::ExtraPasteParameters;
-use crate::Connection;
+use crate::{blocking, Connection};
 use chrono::{Duration, Utc};
-use futures::Future;
-use futures03::TryFutureExt;
 use serde::Deserialize;
-use tokio_executor::blocking;
 use warp::http::header::LOCATION;
 use warp::http::StatusCode;
 use warp::{reply, Rejection, Reply};
@@ -45,7 +42,7 @@ pub enum Share {
     Share24,
 }
 
-pub fn insert_paste(
+pub async fn insert_paste(
     PasteForm {
         language,
         code,
@@ -56,7 +53,7 @@ pub fn insert_paste(
         status,
     }: PasteForm,
     connection: Connection,
-) -> impl Future<Item = impl Reply, Error = Rejection> {
+) -> Result<impl Reply, Rejection> {
     blocking::run(move || {
         let delete_at = match share {
             Share::Share => None,
@@ -80,5 +77,5 @@ pub fn insert_paste(
             format!("/{}", identifier),
         ))
     })
-    .compat()
+    .await
 }

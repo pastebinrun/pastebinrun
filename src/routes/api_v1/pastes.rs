@@ -15,14 +15,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::models::paste::{self, ExtraPasteParameters};
-use crate::Connection;
+use crate::{blocking, Connection};
 use chrono::{Duration, Utc};
-use futures::Future;
-use futures03::TryFutureExt;
 use serde::de::{Deserializer, Unexpected, Visitor};
 use serde::{de, Deserialize};
 use std::fmt::{self, Formatter};
-use tokio_executor::blocking;
 use warp::Rejection;
 
 #[derive(Deserialize)]
@@ -71,14 +68,14 @@ fn default_language() -> String {
     "plaintext".into()
 }
 
-pub fn insert_paste(
+pub async fn insert_paste(
     PasteForm {
         expiration,
         language,
         code,
     }: PasteForm,
     connection: Connection,
-) -> impl Future<Item = String, Error = Rejection> {
+) -> Result<String, Rejection> {
     blocking::run(move || {
         paste::insert(
             &connection,
@@ -93,5 +90,5 @@ pub fn insert_paste(
             },
         )
     })
-    .compat()
+    .await
 }
