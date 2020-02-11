@@ -158,6 +158,7 @@ fn cors() -> Cors {
         .allow_any_origin()
         .allow_methods(&[Method::GET, Method::POST])
         .allow_headers(&[CONTENT_TYPE])
+        .build()
 }
 
 fn static_dir() -> BoxedFilter<(impl Reply,)> {
@@ -172,7 +173,7 @@ fn favicon() -> BoxedFilter<(impl Reply,)> {
 
 pub fn routes(
     pool: Pool<ConnectionManager<PgConnection>>,
-) -> impl Filter<Extract = (impl Reply,), Error = Rejection> {
+) -> impl Clone + Filter<Extract = (impl Reply,), Error = Rejection> {
     let mut headers = HeaderMap::new();
     headers.insert(X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
     headers.insert(REFERRER_POLICY, HeaderValue::from_static("no-referrer"));
