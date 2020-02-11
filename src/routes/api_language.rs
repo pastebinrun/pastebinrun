@@ -1,5 +1,21 @@
+// pastebin.run
+// Copyright (C) 2020 Konrad Borowski
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use crate::models::db::DbErrorExt;
-use crate::schema::{implementation_wrappers, implementations, languages, pastes};
+use crate::schema::{implementation_wrappers, implementations, languages};
 use crate::{blocking, Connection};
 use diesel::prelude::*;
 use serde::Serialize;
@@ -9,7 +25,7 @@ use warp::{Rejection, Reply};
 #[derive(Queryable)]
 struct Language {
     id: i32,
-    paste_identifier: Option<String>,
+    hello_world: Option<String>,
 }
 
 #[derive(Serialize, Queryable)]
@@ -41,7 +57,7 @@ struct ImplementationWrapper {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct JsonLanguage {
-    hello_world_paste: Option<String>,
+    hello_world: Option<String>,
     implementations: Vec<JsonImplementation>,
 }
 
@@ -58,13 +74,7 @@ pub async fn api_language(
     blocking::run(move || {
         let language: Language = languages::table
             .filter(languages::identifier.eq(identifier))
-            .select((
-                languages::language_id,
-                pastes::table
-                    .select(pastes::identifier)
-                    .filter(languages::hello_world_paste_id.eq(pastes::paste_id.nullable()))
-                    .single_value(),
-            ))
+            .select((languages::language_id, languages::hello_world))
             .get_result(&connection)
             .optional()
             .into_rejection()?
@@ -72,6 +82,7 @@ pub async fn api_language(
         let implementations = implementations::table
             .select((implementations::implementation_id, implementations::label))
             .filter(implementations::language_id.eq(language.id))
+            .order(implementations::ordering)
             .load(&connection)
             .into_rejection()?;
         let implementation_wrappers = ImplementationWrapper::belonging_to(&implementations)
@@ -116,7 +127,7 @@ pub async fn api_language(
         Ok(warp::reply::with_header(
             warp::reply::json(&JsonLanguage {
                 implementations,
-                hello_world_paste: language.paste_identifier,
+                hello_world: language.hello_world,
             }),
             CACHE_CONTROL,
             "max-age=14400",

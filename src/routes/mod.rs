@@ -1,3 +1,19 @@
+// pastebin.run
+// Copyright (C) 2020 Konrad Borowski
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 mod api_language;
 mod api_v1;
 mod config;
@@ -17,9 +33,11 @@ use futures::{Future, FutureExt};
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::pin::Pin;
+use warp::filters::cors::Cors;
 use warp::filters::BoxedFilter;
 use warp::http::header::{
-    HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, CONTENT_TYPE, REFERRER_POLICY, X_FRAME_OPTIONS,
+    HeaderMap, HeaderValue, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN,
+    CONTENT_SECURITY_POLICY, CONTENT_TYPE, REFERRER_POLICY, X_FRAME_OPTIONS,
 };
 use warp::http::method::Method;
 use warp::http::{Response, StatusCode};
@@ -92,10 +110,16 @@ fn options(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 }
 
 fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    with_ext("txt")
-        .and(warp::get())
+    warp::get()
+        .and(with_ext("txt"))
         .and(connection(pool))
         .and_then(raw_paste::raw_paste)
+        .or(warp::options().and(with_ext("txt")).map(|_| {
+            Response::builder()
+                .header(ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .header(ACCESS_CONTROL_ALLOW_METHODS, "GET")
+                .body("")
+        }))
         .boxed()
 }
 
@@ -125,15 +149,15 @@ fn api_v1(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(connection(pool))
         .and_then(api_v1::pastes::insert_paste);
     path!("api" / "v1" / ..)
-        .and(
-            languages.or(pastes).with(
-                warp::cors()
-                    .allow_any_origin()
-                    .allow_methods(&[Method::GET, Method::POST])
-                    .allow_headers(&[CONTENT_TYPE]),
-            ),
-        )
+        .and(languages.or(pastes).with(cors()))
         .boxed()
+}
+
+fn cors() -> Cors {
+    warp::cors()
+        .allow_any_origin()
+        .allow_methods(&[Method::GET, Method::POST])
+        .allow_headers(&[CONTENT_TYPE])
 }
 
 fn static_dir() -> BoxedFilter<(impl Reply,)> {
@@ -339,7 +363,7 @@ mod test {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
         pub struct ApiLanguage<'a> {
-            hello_world_paste: Option<String>,
+            hello_world: String,
             #[serde(borrow)]
             implementations: Vec<Implementation<'a>>,
         }
@@ -354,40 +378,79 @@ mod test {
                 .path(&format!("/api/v0/language/{}", identifier))
                 .reply(&*ROUTES)
                 .await;
-            if let ApiLanguage {
-                hello_world_paste: Some(hello_world_paste),
+            let ApiLanguage {
+                hello_world,
                 implementations,
-            } = serde_json::from_slice(language.body()).unwrap()
-            {
-                let code = warp::test::request()
-                    .path(&format!("/{}.txt", hello_world_paste))
+            } = serde_json::from_slice(language.body()).unwrap();
+            let wrappers = implementations
+                .into_iter()
+                .flat_map(|i| i.wrappers)
+                .filter(|w| w.label == "Run");
+            for Wrapper { identifier, .. } in wrappers {
+                let body = format!("code={}&compilerOptions=&stdin=", hello_world);
+                let out = warp::test::request()
+                    .path(&format!("/api/v0/run/{}", identifier))
+                    .method("POST")
+                    .header(CONTENT_LENGTH, body.len())
+                    .body(body)
                     .reply(&*ROUTES)
                     .await;
-                let wrappers = implementations
-                    .into_iter()
-                    .flat_map(|i| i.wrappers)
-                    .filter(|w| w.label == "Run");
-                for Wrapper { identifier, .. } in wrappers {
-                    let body = format!(
-                        "code={}&compilerOptions=&stdin=",
-                        str::from_utf8(code.body()).unwrap()
-                    );
-                    let out = warp::test::request()
-                        .path(&format!("/api/v0/run/{}", identifier))
-                        .method("POST")
-                        .header(CONTENT_LENGTH, body.len())
-                        .body(body)
-                        .reply(&*ROUTES)
-                        .await;
-                    let body = str::from_utf8(out.body()).unwrap();
-                    assert!(
-                        body.contains(r#"Hello, world!\n""#),
-                        "{}: {}",
-                        identifier,
-                        body,
-                    );
-                }
+                let body = str::from_utf8(out.body()).unwrap();
+                assert!(
+                    body.contains(r#"Hello, world!\n""#),
+                    "{}: {}",
+                    identifier,
+                    body,
+                );
             }
         }
+    }
+
+    #[tokio::test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
+    async fn raw_cors() {
+        assert_eq!(
+            warp::test::request()
+                .path("/a.txt")
+                .method("OPTIONS")
+                .header("origin", "example.com")
+                .header("access-control-request-method", "GET")
+                .reply(&*ROUTES)
+                .await
+                .status(),
+            StatusCode::OK,
+        );
+    }
+
+    #[tokio::test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
+    async fn paste_no_cors() {
+        assert_eq!(
+            warp::test::request()
+                .path("/a")
+                .method("OPTIONS")
+                .header("origin", "example.com")
+                .header("access-control-request-method", "GET")
+                .reply(&*ROUTES)
+                .await
+                .status(),
+            StatusCode::METHOD_NOT_ALLOWED,
+        );
+    }
+
+    #[tokio::test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
+    async fn api_v1_cors() {
+        assert_eq!(
+            warp::test::request()
+                .path("/api/v1/languages")
+                .method("OPTIONS")
+                .header("origin", "example.com")
+                .header("access-control-request-method", "GET")
+                .reply(&*ROUTES)
+                .await
+                .status(),
+            StatusCode::OK,
+        );
     }
 }

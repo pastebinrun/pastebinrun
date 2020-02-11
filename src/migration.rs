@@ -1,6 +1,20 @@
-use crate::models::paste;
-use crate::models::paste::ExtraPasteParameters;
-use crate::schema::{implementation_wrappers, implementations, languages, pastes};
+// pastebin.run
+// Copyright (C) 2020 Konrad Borowski
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+use crate::schema::{implementation_wrappers, implementations, languages};
 use crate::Connection;
 use diesel::prelude::*;
 use diesel::sql_types::{Bool, Integer, Text};
@@ -12,7 +26,8 @@ use std::fs;
 struct JsonLanguage {
     identifier: String,
     name: String,
-    helloworld: Option<String>,
+    #[serde(default)]
+    helloworld: String,
     #[serde(default)]
     implementations: Vec<Implementation>,
 }
@@ -22,6 +37,7 @@ struct Language<'a> {
     identifier: &'a str,
     name: String,
     priority: i32,
+    hello_world: &'a str,
 }
 
 #[derive(Deserialize)]
@@ -48,7 +64,7 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
     for JsonLanguage {
         identifier: languages_identifier,
         name,
-        helloworld,
+        helloworld: hello_world,
         implementations,
     } in languages
     {
@@ -57,40 +73,20 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
                 identifier: &languages_identifier,
                 name,
                 priority: 10,
+                hello_world: &hello_world,
             })
             .on_conflict(languages::identifier)
-            .do_nothing()
+            .do_update()
+            .set(languages::hello_world.eq(&hello_world))
             .execute(connection)?;
-        if let Some(hello_world) = helloworld {
-            let paste_id: Option<i32> = languages::table
-                .filter(languages::identifier.eq(&languages_identifier))
-                .select(languages::hello_world_paste_id)
-                .get_result(connection)?;
-            if paste_id.is_none() {
-                let identifier = paste::insert(
-                    connection,
-                    None,
-                    &languages_identifier,
-                    hello_world,
-                    ExtraPasteParameters::default(),
-                )
-                .unwrap();
-                diesel::update(languages::table)
-                    .set(
-                        languages::hello_world_paste_id.eq(pastes::table
-                            .select(pastes::paste_id)
-                            .filter(pastes::identifier.eq(identifier))
-                            .single_value()),
-                    )
-                    .filter(languages::identifier.eq(&languages_identifier))
-                    .execute(connection)?;
-            }
-        }
-        for Implementation {
-            label,
-            identifier: implementation_identifier,
-            wrappers,
-        } in implementations
+        for (
+            i,
+            Implementation {
+                label,
+                identifier: implementation_identifier,
+                wrappers,
+            },
+        ) in (1..).zip(implementations)
         {
             languages::table
                 .filter(languages::identifier.eq(&languages_identifier))
@@ -98,16 +94,21 @@ pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
                     languages::language_id,
                     label.as_sql::<Text>(),
                     implementation_identifier.as_sql::<Text>(),
+                    i.as_sql::<Integer>(),
                 ))
                 .insert_into(implementations::table)
                 .into_columns((
                     implementations::language_id,
                     implementations::label,
                     implementations::identifier,
+                    implementations::ordering,
                 ))
                 .on_conflict((implementations::language_id, implementations::identifier))
                 .do_update()
-                .set(implementations::label.eq(&label))
+                .set((
+                    implementations::label.eq(&label),
+                    implementations::ordering.eq(i),
+                ))
                 .execute(connection)?;
             for (
                 i,
