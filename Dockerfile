@@ -18,7 +18,7 @@ RUN cargo build --release
 
 FROM debian:buster
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq5=11.5-1+deb10u1 libssl1.1=1.1.1d-0+deb10u2 \
+    && apt-get install -y --no-install-recommends libpq5=11.7-0+deb10u1 libssl1.1=1.1.1d-0+deb10u2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 COPY migrations migrations
