@@ -13,9 +13,12 @@ build:release: &build
   stage: test
   image: rust:latest
   script:
-  - &init rustc --version && cargo --version
+  - &init rustc --version && cargo --version && mv registry /usr/local/cargo || true
   - cargo build --release --verbose
-  - &clean_cargo cargo install cargo-cache --git https://github.com/matthiaskrgr/cargo-cache --no-default-features --features ci-autoclean && cargo-cache
+  - &clean_cargo |
+    cargo install cargo-cache --git https://github.com/matthiaskrgr/cargo-cache --no-default-features --features ci-autoclean &&
+      cargo-cache &&
+      mv /usr/local/cargo/registry .
   needs:
   - build:webpack
   artifacts:
@@ -27,6 +30,7 @@ build:release: &build
   cache:
     key: release
     paths:
+    - registry
     - target
 
 test:stable: &test
@@ -49,7 +53,8 @@ test:stable: &test
   cache:
     key: ${CI_JOB_NAME}
     paths:
-    - target/
+    - registry
+    - target
 
 test:clippy:
   <<: *test
