@@ -1,9 +1,3 @@
-include:
-- template: Auto-DevOps.gitlab-ci.yml
-
-variables:
-  DAST_DISABLED: 'true'
-
 build:webpack:
   stage: build
   image: node:12.16
