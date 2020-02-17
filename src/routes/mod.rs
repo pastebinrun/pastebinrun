@@ -110,11 +110,11 @@ fn options(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
 }
 
 fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(with_ext("txt"))
+    with_ext("txt")
+        .and(warp::get())
         .and(connection(pool))
         .and_then(raw_paste::raw_paste)
-        .or(warp::options().and(with_ext("txt")).map(|_| {
+        .or(with_ext("txt").and(warp::options()).map(|_| {
             Response::builder()
                 .header(ACCESS_CONTROL_ALLOW_ORIGIN, "*")
                 .header(ACCESS_CONTROL_ALLOW_METHODS, "GET")
@@ -452,6 +452,20 @@ mod test {
                 .await
                 .status(),
             StatusCode::OK,
+        );
+    }
+
+    #[tokio::test]
+    #[cfg_attr(not(feature = "database_tests"), ignore)]
+    async fn error_404() {
+        assert_eq!(
+            warp::test::request()
+                .path("/404")
+                .method("GET")
+                .reply(&*ROUTES)
+                .await
+                .status(),
+            StatusCode::NOT_FOUND,
         );
     }
 }
