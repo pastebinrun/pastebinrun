@@ -35,16 +35,11 @@ export const types = {
             return (await import('./views/editor-types/codemirror/codemirror')).default
         },
     },
-    monaco: {
-        name: 'Monaco (Visual Studio Code)',
-        async createView() {
-            return (await import('./views/editor-types/monaco/monaco')).default
-        }
-    },
 }
 
 export function getCurrentEditor() {
-    return localStorage.getItem('editorType') || 'codemirror'
+    const editor = localStorage.getItem('editorType') || 'codemirror'
+    return editor === 'monaco' ? 'codemirror' : editor
 }
 
 export function setCurrentEditor(newEditor) {
