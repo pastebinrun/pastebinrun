@@ -13,12 +13,8 @@ build:release: &build
   stage: test
   image: rust:latest
   script:
-  - &init rustc --version && cargo --version && mv registry /usr/local/cargo || true
+  - &init rustc --version && cargo --version
   - cargo build --release --verbose
-  - &clean_cargo |
-    cargo install cargo-cache --git https://github.com/matthiaskrgr/cargo-cache --no-default-features --features ci-autoclean &&
-      cargo-cache &&
-      mv /usr/local/cargo/registry .
   needs:
   - build:webpack
   artifacts:
@@ -27,11 +23,6 @@ build:release: &build
     - migrations
     - static
     - target/release/pastebinrun
-  cache:
-    key: release
-    paths:
-    - registry
-    - target
 
 test:stable: &test
   stage: test
@@ -47,14 +38,8 @@ test:stable: &test
   script:
   - *init
   - DATABASE_URL=postgresql://user:password@postgres/db SANDBOX_URL=http://sandbox:8888 cargo test --verbose --features=database_tests,sandbox_tests
-  - *clean_cargo
   needs:
   - build:webpack
-  cache:
-    key: ${CI_JOB_NAME}
-    paths:
-    - registry
-    - target
 
 test:clippy:
   <<: *test
@@ -62,7 +47,6 @@ test:clippy:
   - *init
   - rustup component add clippy
   - cargo clippy --verbose
-  - *clean_cargo
 
 test:1.39:
   <<: *test
