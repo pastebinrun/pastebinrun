@@ -1,6 +1,6 @@
 build:webpack:
   stage: build
-  image: node:12.16
+  image: node:12.18
   script:
   - npm ci
   - node_modules/.bin/webpack
