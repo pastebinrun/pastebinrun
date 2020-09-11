@@ -50,7 +50,7 @@ test:clippy:
 
 test:1.39:
   <<: *test
-  image: rust:1.39
+  image: rust:1.46
 
 test:nightly:
   <<: *test
