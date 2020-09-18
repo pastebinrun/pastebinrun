@@ -18,7 +18,7 @@ use crate::models::db::DbErrorExt;
 use crate::schema::implementation_wrappers;
 use crate::{blocking, Connection};
 use diesel::prelude::*;
-use futures::TryFutureExt;
+use futures_util::future::TryFutureExt;
 use once_cell::sync::Lazy;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};

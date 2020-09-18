@@ -29,7 +29,7 @@ use crate::templates;
 use crate::{blocking, Connection};
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
-use futures::{Future, FutureExt};
+use futures_util::future::{Future, FutureExt};
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::pin::Pin;
