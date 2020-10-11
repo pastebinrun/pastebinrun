@@ -25,7 +25,7 @@ module.exports = {
     new StatsWriterPlugin({
       filename: 'entry',
       transform(data) {
-        return data.assetsByChunkName.main
+        return data.assetsByChunkName.main[0]
       },
     }),
   ],
