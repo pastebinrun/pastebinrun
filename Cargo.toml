@@ -13,7 +13,7 @@ chrono = "0.4.19"
 diesel = { version = "1.4.5", features = ["chrono", "postgres", "r2d2"] }
 diesel_migrations = "1.4.0"
 env_logger = { version = "0.8.2", default-features = false }
-extension-trait = "0.2.1"
+extension-trait = "1.0.0"
 futures-util = "0.3.6"
 itertools = "0.9.0"
 log = "0.4.11"

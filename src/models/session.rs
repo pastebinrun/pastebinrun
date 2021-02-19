@@ -52,8 +52,8 @@ impl Session {
     }
 }
 
-#[extension_trait(pub)]
-impl RenderExt for Builder {
+#[extension_trait]
+pub impl RenderExt for Builder {
     fn html<F>(self, f: F) -> Result<Response<Vec<u8>>, Rejection>
     where
         F: FnOnce(&mut Vec<u8>) -> io::Result<()>,

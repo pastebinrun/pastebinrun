@@ -272,9 +272,9 @@ dependencies = [
 
 [[package]]
 name = "extension-trait"
-version = "0.2.3"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5228f8321c6e3cc4a3adf04b2e165c8eede9313430e7982b46a7881142b06106"
+checksum = "280f7cac6cd3be2272eed5312293687e574dcc21b57c1c3cf5372805e3ead611"
 dependencies = [
  "proc-macro2",
  "quote",
