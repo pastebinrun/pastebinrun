@@ -54,7 +54,7 @@ impl Paste {
     }
 }
 
-const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxzBCDFGHJKLMNPQRSTVWX-";
+const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwx-";
 
 #[derive(Insertable)]
 #[table_name = "pastes"]
@@ -90,7 +90,7 @@ pub fn insert(
     }: ExtraPasteParameters,
 ) -> Result<String, Rejection> {
     let mut rng = rand::thread_rng();
-    let identifier: String = (0..10)
+    let identifier: String = (0..12)
         .map(|_| char::from(*CHARACTERS.choose(&mut rng).expect("a random character")))
         .collect();
     let language_id = languages::table
