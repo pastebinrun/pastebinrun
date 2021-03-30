@@ -54,7 +54,7 @@ impl Paste {
     }
 }
 
-const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwx-";
+const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxz-";
 
 #[derive(Insertable)]
 #[table_name = "pastes"]
