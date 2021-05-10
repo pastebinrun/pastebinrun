@@ -19,12 +19,14 @@ use crate::models::paste::Paste;
 use crate::schema::pastes::dsl::*;
 use crate::{blocking, Connection};
 use diesel::prelude::*;
+use warp::http::StatusCode;
+use warp::reply::WithStatus;
 use warp::Rejection;
 
 pub async fn raw_paste(
     requested_identifier: String,
     connection: Connection,
-) -> Result<String, Rejection> {
+) -> Result<WithStatus<String>, Rejection> {
     blocking::run(move || {
         Paste::delete_old(&connection)?;
         pastes
@@ -32,8 +34,11 @@ pub async fn raw_paste(
             .filter(identifier.eq(requested_identifier))
             .get_result(&connection)
             .optional()
-            .into_rejection()?
-            .ok_or_else(warp::reject::not_found)
+            .into_rejection()
     })
     .await
+    .map(|reply| match reply {
+        Some(reply) => warp::reply::with_status(reply, StatusCode::OK),
+        None => warp::reply::with_status("404 Not Found".into(), StatusCode::NOT_FOUND),
+    })
 }

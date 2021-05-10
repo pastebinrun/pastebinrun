@@ -36,8 +36,8 @@ use std::pin::Pin;
 use warp::filters::cors::Cors;
 use warp::filters::BoxedFilter;
 use warp::http::header::{
-    HeaderMap, HeaderValue, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN,
-    CONTENT_SECURITY_POLICY, CONTENT_TYPE, REFERRER_POLICY, X_FRAME_OPTIONS,
+    HeaderMap, HeaderValue, ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_SECURITY_POLICY, CONTENT_TYPE,
+    REFERRER_POLICY, X_FRAME_OPTIONS,
 };
 use warp::http::method::Method;
 use warp::http::{Response, StatusCode};
@@ -114,12 +114,7 @@ fn raw_paste(pool: PgPool) -> BoxedFilter<(impl Reply,)> {
         .and(warp::get())
         .and(connection(pool))
         .and_then(raw_paste::raw_paste)
-        .or(with_ext("txt").and(warp::options()).map(|_| {
-            Response::builder()
-                .header(ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                .header(ACCESS_CONTROL_ALLOW_METHODS, "GET")
-                .body("")
-        }))
+        .map(|reply| warp::reply::with_header(reply, ACCESS_CONTROL_ALLOW_ORIGIN, "*"))
         .boxed()
 }
 
@@ -244,7 +239,7 @@ mod test {
     use std::env;
     use std::str;
     use warp::filters::BoxedFilter;
-    use warp::http::header::{CONTENT_LENGTH, LOCATION};
+    use warp::http::header::{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_LENGTH, LOCATION};
     use warp::http::StatusCode;
     use warp::reply::{Reply, Response};
     use warp::Filter;
@@ -413,13 +408,12 @@ mod test {
         assert_eq!(
             warp::test::request()
                 .path("/a.txt")
-                .method("OPTIONS")
-                .header("origin", "example.com")
-                .header("access-control-request-method", "GET")
+                .method("GET")
+                .header("origin", "http://example.com")
                 .reply(&*ROUTES)
                 .await
-                .status(),
-            StatusCode::OK,
+                .headers()[ACCESS_CONTROL_ALLOW_ORIGIN],
+            "*",
         );
     }
 
