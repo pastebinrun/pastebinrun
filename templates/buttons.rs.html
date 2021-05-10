@@ -1,5 +1,8 @@
-@()
+@(identifier: Option<String>)
 <span id="wrapper-buttons"></span>
+@if let Some(identifier) = identifier {
+    <span class="autodelete-text"> | <a href="/@(identifier).txt">raw paste</a></span>
+}
 <span id="right-buttons">
     <button type=submit name=share value=share24>Share (delete after 24 hours)</button>
     <button type=submit name=share value=share>Share</button>

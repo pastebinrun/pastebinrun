@@ -25,7 +25,7 @@ class Editor {
     wrapperButtons: WrapperButtons
     codeElement: HTMLTextAreaElement
     output: Output
-    autodeleteText: HTMLSpanElement
+    autodeleteText: HTMLElement[]
     submitButtons: HTMLInputElement[]
     detailsElement: HTMLDetailsElement
     stdinElement: HTMLTextAreaElement
@@ -47,10 +47,10 @@ class Editor {
             this.displayOutput({}, {
                 stdout: stdout.value,
                 stderr: document.querySelector<HTMLInputElement>('#dbstderr').value,
-                status: +document.querySelector<HTMLInputElement>('#dbstatus') ?.value,
+                status: +document.querySelector<HTMLInputElement>('#dbstatus')?.value,
             })
         }
-        this.autodeleteText = form.querySelector('#autodelete-text')
+        this.autodeleteText = form.querySelectorAll('.autodelete-text')
         this.submitButtons = form.querySelectorAll('[type=submit]')
         for (const submit of this.submitButtons) {
             submit.disabled = true
@@ -78,7 +78,7 @@ class Editor {
             this.changeToLookLikeNewPaste()
         })
         this.detailsElement.append(summary, this.stdinElement)
-        const dbStdin = document.querySelector<HTMLInputElement>('#dbstdin') ?.value
+        const dbStdin = document.querySelector<HTMLInputElement>('#dbstdin')?.value
         if (dbStdin) {
             this.stdinElement.value = dbStdin
             this.detailsElement.open = true
@@ -118,8 +118,8 @@ class Editor {
     changeToLookLikeNewPaste() {
         this.output.clear()
         this.editor.update()
-        if (this.autodeleteText) {
-            this.autodeleteText.style.display = 'none'
+        for (const element of this.autodeleteText) {
+            element.style.display = 'none'
         }
         for (const submit of this.submitButtons) {
             submit.disabled = false

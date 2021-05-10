@@ -11,13 +11,13 @@
         @Html(paste.markdown)
     </div>
     @if let Some(delete_at) = paste.delete_at {
-        <div id="autodelete-text">
+        <div class="autodelete-text">
             This paste will be automatically deleted on @delete_at.format("%Y-%m-%d %H:%M") UTC.
         </div>
     }
     <div id="toolbar">
         @:language_selection(selection)
-        @:buttons()
+        @:buttons(paste.identifier)
     </div>
     <div id="split">
         <div id="extrafieldsplit">

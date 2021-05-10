@@ -36,6 +36,7 @@ pub async fn display_paste(
         let paste: Paste = pastes::table
             .inner_join(languages::table.on(pastes::language_id.eq(languages::language_id)))
             .select((
+                pastes::identifier,
                 pastes::paste,
                 pastes::language_id,
                 pastes::delete_at,

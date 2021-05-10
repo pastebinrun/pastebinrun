@@ -31,10 +31,11 @@ use warp::Rejection;
 
 #[derive(Queryable)]
 pub struct Paste {
+    pub identifier: String,
     pub paste: String,
     pub language_id: i32,
     pub delete_at: Option<DateTime<Utc>>,
-    pub identifier: String,
+    pub language_identifier: String,
     pub stdin: String,
     pub exit_code: Option<i32>,
     pub stdout: Option<String>,
@@ -131,6 +132,7 @@ pub fn insert(
 
 #[derive(Default)]
 pub struct ExternPaste {
+    pub identifier: Option<String>,
     pub paste: String,
     pub language_id: i32,
     pub delete_at: Option<DateTime<Utc>>,
@@ -144,21 +146,23 @@ pub struct ExternPaste {
 impl ExternPaste {
     pub fn from_paste(paste: Paste) -> Self {
         let Paste {
+            identifier,
             paste,
             language_id,
-            identifier,
+            language_identifier,
             delete_at,
             stdin,
             exit_code,
             stdout,
             stderr,
         } = paste;
-        let markdown = if identifier == "markdown" {
+        let markdown = if language_identifier == "markdown" {
             render_markdown(&paste)
         } else {
             String::new()
         };
         Self {
+            identifier: Some(identifier),
             paste,
             language_id,
             delete_at,
