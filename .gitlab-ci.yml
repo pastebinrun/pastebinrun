@@ -48,9 +48,9 @@ test:clippy:
   - rustup component add clippy
   - cargo clippy --verbose
 
-test:1.45:
+test:1.52:
   <<: *test
-  image: rust:1.45
+  image: rust:1.52
 
 test:nightly:
   <<: *test
