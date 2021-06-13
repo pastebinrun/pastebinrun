@@ -99,6 +99,7 @@ struct DisplayPaste {
     languages: Vec<Language>,
     description: String,
     paste: String,
+    selected_id: i32,
 }
 
 #[get("/<identifier>", rank = 2)]
@@ -133,6 +134,7 @@ async fn display_paste(
                     languages,
                     description,
                     paste: paste.paste,
+                    selected_id: paste.language_id,
                 },
             )))
         } else {

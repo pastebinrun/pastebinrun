@@ -3,9 +3,11 @@
 <form method="post" action="/" id="editor">
     <div id="toolbar">
         <select id=language name=language>
-            {% for language in languages %}
-                <option value="{{ language.identifier }}">{{ language.name }}</option>
-            {% endfor %}
+            {% block languages %}
+                {% for language in languages %}
+                    <option value="{{ language.identifier }}">{{ language.name }}</option>
+                {% endfor %}
+            {% endblock languages %}
         </select>
         <span id="wrapper-buttons"></span>
         <span id="right-buttons">

@@ -1,3 +1,12 @@
 {% extends "index" %}
 {% block description %}{{ description }}{% endblock %}
 {% block code %}{{ paste }}{% endblock %}
+{% block languages %}
+    {% for language in languages %}
+        <option value="{{ language.identifier }}"
+            {% if selected_id == language.id %}
+                selected
+            {% endif %}
+        >{{ language.name }}</option>
+    {% endfor %}
+{% endblock %}
