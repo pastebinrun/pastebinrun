@@ -3,7 +3,7 @@
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>pastebin.run</title>
 <link rel=stylesheet href="/static/style-v2.css">
-<meta name=description content="{% block description %}{% endblock description %}">
+<meta name=description content="{% block description %}Compile and share code in multiple programming languages{% endblock description %}">
 <header id=header>
     <div>
         <a href="/">
