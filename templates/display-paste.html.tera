@@ -10,3 +10,4 @@
         >{{ language.name }}</option>
     {% endfor %}
 {% endblock %}
+{% block rawpaste %}<span class="autodelete-text"> | <a href="{{ raw_paste_url }}">raw paste</a></span>{% endblock %}

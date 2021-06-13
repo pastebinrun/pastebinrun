@@ -31,11 +31,15 @@ use diesel::prelude::*;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::fs::{relative, FileServer};
+use rocket::http::impl_from_uri_param_identity;
+use rocket::http::uri::fmt::{Formatter, FromUriParam, Path, UriDisplay};
+use rocket::http::uri::Origin;
 use rocket::request::FromParam;
 use rocket::response::{Debug, Redirect};
 use rocket_dyn_templates::Template;
 use rocket_sync_db_pools::database;
 use serde::Serialize;
+use std::fmt;
 
 #[database("main")]
 struct Db(PgConnection);
@@ -100,6 +104,7 @@ struct DisplayPaste {
     description: String,
     paste: String,
     selected_id: i32,
+    raw_paste_url: Origin<'static>,
 }
 
 #[get("/<identifier>", rank = 2)]
@@ -123,7 +128,7 @@ async fn display_paste(
                 pastes::stdout,
                 pastes::stderr,
             ))
-            .filter(pastes::identifier.eq(identifier))
+            .filter(pastes::identifier.eq(&identifier))
             .get_result(conn)
             .optional()?;
         if let Some(paste) = paste {
@@ -135,6 +140,7 @@ async fn display_paste(
                     description,
                     paste: paste.paste,
                     selected_id: paste.language_id,
+                    raw_paste_url: uri!(raw_paste(identifier)),
                 },
             )))
         } else {
@@ -163,6 +169,23 @@ impl<'a> FromParam<'a> for WithTxt {
         } else {
             Err(param)
         }
+    }
+}
+
+impl UriDisplay<Path> for WithTxt {
+    fn fmt(&self, f: &mut Formatter<Path>) -> fmt::Result {
+        self.0.fmt(f)?;
+        f.write_raw(".txt")
+    }
+}
+
+impl_from_uri_param_identity!([Path] WithTxt);
+
+impl FromUriParam<Path, String> for WithTxt {
+    type Target = WithTxt;
+
+    fn from_uri_param(param: String) -> WithTxt {
+        WithTxt(param.to_string())
     }
 }
 

@@ -10,6 +10,7 @@
             {% endblock languages %}
         </select>
         <span id="wrapper-buttons"></span>
+        {% block rawpaste %}{% endblock %}
         <span id="right-buttons">
             <button type=submit name=share value=share24>Share (delete after 24 hours)</button>
             <button type=submit name=share value=share>Share</button>
