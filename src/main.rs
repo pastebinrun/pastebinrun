@@ -31,6 +31,7 @@ use diesel::prelude::*;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::fs::{relative, FileServer};
+use rocket::request::FromParam;
 use rocket::response::{Debug, Redirect};
 use rocket_dyn_templates::Template;
 use rocket_sync_db_pools::database;
@@ -100,7 +101,7 @@ struct DisplayPaste {
     paste: String,
 }
 
-#[get("/<identifier>")]
+#[get("/<identifier>", rank = 2)]
 async fn display_paste(
     db: Db,
     identifier: String,
@@ -141,6 +142,36 @@ async fn display_paste(
     .await
 }
 
+struct WithTxt(String);
+
+impl<'a> FromParam<'a> for WithTxt {
+    type Error = &'a str;
+
+    fn from_param(param: &str) -> Result<Self, &str> {
+        if let Some(param) = param.strip_suffix(".txt") {
+            Ok(WithTxt(String::from_param(param)?))
+        } else {
+            Err(param)
+        }
+    }
+}
+
+#[get("/<identifier>")]
+async fn raw_paste(
+    db: Db,
+    identifier: WithTxt,
+) -> Result<Option<String>, Debug<diesel::result::Error>> {
+    db.run(move |conn| {
+        Paste::delete_old(conn)?;
+        Ok(pastes::table
+            .select(pastes::paste)
+            .filter(pastes::identifier.eq(&identifier.0))
+            .get_result(conn)
+            .optional()?)
+    })
+    .await
+}
+
 fn generate_description(paste: &str) -> String {
     let mut description = paste.chars().take(239).collect();
     if description != paste {
@@ -166,6 +197,6 @@ async fn rocket() -> _ {
                 .expect("database to be migrated");
             rocket
         }))
-        .mount("/", routes![index, insert_paste, display_paste])
+        .mount("/", routes![index, insert_paste, display_paste, raw_paste])
         .mount("/static", FileServer::from(relative!("static")))
 }
