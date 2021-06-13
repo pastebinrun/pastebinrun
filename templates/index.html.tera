@@ -15,7 +15,8 @@
     </div>
     <div id="split">
         <div id="extrafieldsplit">
-            <div id="textarea"><textarea id=code name=code></textarea></div>
+            <div id="textarea"><textarea id=code name=code>
+{% block code %}{% endblock %}</textarea></div>
             <div id="extrafields"></div>
         </div>
     </div>

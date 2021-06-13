@@ -24,9 +24,10 @@ mod models;
 mod schema;
 
 use crate::models::language::Language;
-use crate::models::paste::{self, ExtraPasteParameters, InsertionError};
+use crate::models::paste::{self, ExtraPasteParameters, InsertionError, Paste};
+use crate::schema::{languages, pastes};
 use chrono::{Duration, Utc};
-use diesel::PgConnection;
+use diesel::prelude::*;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::fs::{relative, FileServer};
@@ -92,9 +93,60 @@ async fn insert_paste(db: Db, form: Form<PasteForm>) -> Result<Redirect, Inserti
     Ok(Redirect::to(uri!(display_paste(identifier))))
 }
 
-#[get("/<_identifier>")]
-async fn display_paste(_identifier: &str) {
-    unimplemented!()
+#[derive(Serialize)]
+struct DisplayPaste {
+    languages: Vec<Language>,
+    description: String,
+    paste: String,
+}
+
+#[get("/<identifier>")]
+async fn display_paste(
+    db: Db,
+    identifier: String,
+) -> Result<Option<Template>, Debug<diesel::result::Error>> {
+    db.run(move |conn| {
+        Paste::delete_old(conn)?;
+        let languages = Language::fetch(conn)?;
+        let paste: Option<Paste> = pastes::table
+            .inner_join(languages::table.on(pastes::language_id.eq(languages::language_id)))
+            .select((
+                pastes::identifier,
+                pastes::paste,
+                pastes::language_id,
+                pastes::delete_at,
+                languages::identifier,
+                pastes::stdin,
+                pastes::exit_code,
+                pastes::stdout,
+                pastes::stderr,
+            ))
+            .filter(pastes::identifier.eq(identifier))
+            .get_result(conn)
+            .optional()?;
+        if let Some(paste) = paste {
+            let description = generate_description(&paste.paste);
+            Ok(Some(Template::render(
+                "display-paste",
+                &DisplayPaste {
+                    languages,
+                    description,
+                    paste: paste.paste,
+                },
+            )))
+        } else {
+            Ok(None)
+        }
+    })
+    .await
+}
+
+fn generate_description(paste: &str) -> String {
+    let mut description = paste.chars().take(239).collect();
+    if description != paste {
+        description += "…";
+    }
+    description
 }
 
 #[launch]
