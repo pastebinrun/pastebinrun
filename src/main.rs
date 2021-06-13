@@ -142,6 +142,14 @@ async fn display_paste(
     .await
 }
 
+fn generate_description(paste: &str) -> String {
+    let mut description = paste.chars().take(239).collect();
+    if description != paste {
+        description += "…";
+    }
+    description
+}
+
 struct WithTxt(String);
 
 impl<'a> FromParam<'a> for WithTxt {
@@ -170,14 +178,6 @@ async fn raw_paste(
             .optional()?)
     })
     .await
-}
-
-fn generate_description(paste: &str) -> String {
-    let mut description = paste.chars().take(239).collect();
-    if description != paste {
-        description += "…";
-    }
-    description
 }
 
 #[launch]
