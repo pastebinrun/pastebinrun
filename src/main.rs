@@ -20,19 +20,37 @@
 extern crate diesel;
 
 mod migration;
+mod models;
 mod schema;
 
+use crate::models::language::Language;
 use diesel::PgConnection;
 use rocket::fairing::AdHoc;
-use rocket::launch;
+use rocket::fs::{relative, FileServer};
+use rocket::response::Debug;
+use rocket::{get, launch, routes};
+use rocket_dyn_templates::Template;
 use rocket_sync_db_pools::database;
+use serde::Serialize;
 
 #[database("main")]
 struct Db(PgConnection);
 
+#[derive(Serialize)]
+struct Index {
+    languages: Vec<Language>,
+}
+
+#[get("/")]
+async fn index(db: Db) -> Result<Template, Debug<diesel::result::Error>> {
+    let languages = db.run(|conn| Language::fetch(conn)).await?;
+    Ok(Template::render("index", &Index { languages }))
+}
+
 #[launch]
 async fn rocket() -> _ {
     rocket::build()
+        .attach(Template::fairing())
         .attach(Db::fairing())
         .attach(AdHoc::on_ignite("Migrations", |rocket| async {
             Db::get_one(&rocket)
@@ -46,4 +64,6 @@ async fn rocket() -> _ {
                 .expect("database to be migrated");
             rocket
         }))
+        .mount("/", routes![index])
+        .mount("/static", FileServer::from(relative!("static")))
 }
