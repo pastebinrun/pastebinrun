@@ -1,14 +1,4 @@
 table! {
-    implementations (implementation_id) {
-        implementation_id -> Int4,
-        language_id -> Int4,
-        identifier -> Text,
-        label -> Text,
-        ordering -> Int4,
-    }
-}
-
-table! {
     implementation_wrappers (implementation_wrapper_id) {
         implementation_wrapper_id -> Int4,
         implementation_id -> Int4,
@@ -18,6 +8,16 @@ table! {
         ordering -> Int4,
         is_formatter -> Bool,
         is_asm -> Bool,
+    }
+}
+
+table! {
+    implementations (implementation_id) {
+        implementation_id -> Int4,
+        language_id -> Int4,
+        identifier -> Text,
+        label -> Text,
+        ordering -> Int4,
     }
 }
 
@@ -50,4 +50,4 @@ joinable!(implementation_wrappers -> implementations (implementation_id));
 joinable!(implementations -> languages (language_id));
 joinable!(pastes -> languages (language_id));
 
-allow_tables_to_appear_in_same_query!(implementations, implementation_wrappers, languages, pastes,);
+allow_tables_to_appear_in_same_query!(implementation_wrappers, implementations, languages, pastes,);
