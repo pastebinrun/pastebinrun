@@ -1,9 +1,0 @@
-@use crate::models::session::Session;
-@use crate::templates::{header, footer};
-
-@(session: &Session)
-
-@:header(session)
-<h1>Paste not found</h1>
-<p>It may have been automatically deleted after 24 hours.
-@:footer(session)

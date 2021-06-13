@@ -19,31 +19,31 @@
 #[macro_use]
 extern crate diesel;
 
-mod blocking;
 mod migration;
-mod models;
-mod routes;
 mod schema;
 
-use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
-use std::env;
-use std::error::Error;
+use diesel::PgConnection;
+use rocket::fairing::AdHoc;
+use rocket::launch;
+use rocket_sync_db_pools::database;
 
-type Connection = PooledConnection<ConnectionManager<PgConnection>>;
+#[database("main")]
+struct Db(PgConnection);
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    env_logger::init();
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL required");
-    let pool = Pool::new(ConnectionManager::new(database_url))
-        .expect("Couldn't create a connection connection");
-    diesel_migrations::run_pending_migrations(&pool.get()?)?;
-    migration::run(&pool.get()?)?;
-    warp::serve(routes::routes(pool))
-        .run(([127, 0, 0, 1], 8080))
-        .await;
-    Ok(())
+#[launch]
+async fn rocket() -> _ {
+    rocket::build()
+        .attach(Db::fairing())
+        .attach(AdHoc::on_ignite("Migrations", |rocket| async {
+            Db::get_one(&rocket)
+                .await
+                .expect("a database")
+                .run(|conn| {
+                    diesel_migrations::run_pending_migrations(conn)?;
+                    migration::run(conn)
+                })
+                .await
+                .expect("database to be migrated");
+            rocket
+        }))
 }
-
-include!(concat!(env!("OUT_DIR"), "/templates.rs"));

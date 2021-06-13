@@ -14,13 +14,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use ructe::{Result, Ructe};
 use std::fs;
 
-fn main() -> Result<()> {
+fn main() {
     println!(
         "cargo:rustc-env=ENTRY_FILE_PATH={}",
         fs::read_to_string("entry").expect("Please use webpack to generate JavaScript"),
     );
-    Ructe::from_env()?.compile_templates("templates")
 }
