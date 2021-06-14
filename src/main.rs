@@ -176,7 +176,7 @@ impl FromUriParam<Path, String> for WithTxt {
     type Target = WithTxt;
 
     fn from_uri_param(param: String) -> WithTxt {
-        WithTxt(param.to_string())
+        WithTxt(param)
     }
 }
 
