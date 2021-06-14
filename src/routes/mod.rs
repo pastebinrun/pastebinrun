@@ -15,5 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 mod index_route;
+mod insert_paste_route;
 
 pub use index_route::index;
+pub use insert_paste_route::insert_paste;
