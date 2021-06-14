@@ -44,5 +44,5 @@ pub async fn insert_paste(db: Db, form: Form<PasteForm>) -> Result<Redirect, Ins
             )
         })
         .await?;
-    Ok(Redirect::to(uri!(crate::display_paste(identifier))))
+    Ok(Redirect::to(uri!(super::display_paste(identifier))))
 }

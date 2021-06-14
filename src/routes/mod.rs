@@ -14,8 +14,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+mod display_paste_route;
 mod index_route;
 mod insert_paste_route;
 
-pub use index_route::index;
-pub use insert_paste_route::insert_paste;
+pub use display_paste_route::*;
+pub use index_route::*;
+pub use insert_paste_route::*;
