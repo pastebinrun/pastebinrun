@@ -21,10 +21,12 @@ extern crate rocket;
 
 mod migration;
 mod models;
+mod routes;
 mod schema;
 
 use crate::models::language::Language;
 use crate::models::paste::{self, ExtraPasteParameters, InsertionError, Paste};
+use crate::routes::index;
 use crate::schema::{languages, pastes};
 use chrono::{Duration, Utc};
 use diesel::prelude::*;
@@ -42,18 +44,7 @@ use serde::Serialize;
 use std::fmt;
 
 #[database("main")]
-struct Db(PgConnection);
-
-#[derive(Serialize)]
-struct Index {
-    languages: Vec<Language>,
-}
-
-#[get("/")]
-async fn index(db: Db) -> Result<Template, Debug<diesel::result::Error>> {
-    let languages = db.run(|conn| Language::fetch(conn)).await?;
-    Ok(Template::render("index", &Index { languages }))
-}
+pub struct Db(PgConnection);
 
 #[derive(FromForm)]
 pub struct PasteForm {
