@@ -17,7 +17,9 @@
 mod display_paste_route;
 mod index_route;
 mod insert_paste_route;
+mod raw_paste_route;
 
 pub use display_paste_route::*;
 pub use index_route::*;
 pub use insert_paste_route::*;
+pub use raw_paste_route::*;

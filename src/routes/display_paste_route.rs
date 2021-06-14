@@ -1,7 +1,8 @@
+use super::WithTxt;
 use crate::models::language::Language;
 use crate::models::paste::Paste;
 use crate::schema::{languages, pastes};
-use crate::{Db, WithTxt};
+use crate::Db;
 use diesel::prelude::*;
 use rocket::http::uri::Origin;
 use rocket::response::Debug;
@@ -50,7 +51,7 @@ pub async fn display_paste(
                     description,
                     paste: paste.paste,
                     selected_id: paste.language_id,
-                    raw_paste_url: uri!(crate::raw_paste(identifier)),
+                    raw_paste_url: uri!(super::raw_paste(identifier)),
                 },
             )))
         } else {
