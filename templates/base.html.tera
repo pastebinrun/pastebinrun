@@ -21,3 +21,4 @@
 {% block content %}
 {% endblock %}
 </article>
+<script src="/{{ js_path() }}"></script>
