@@ -28,7 +28,7 @@ use crate::routes::{display_paste, index, insert_paste, raw_paste};
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
 use rocket::fs::{relative, FileServer};
-use rocket_dyn_templates::tera::{self, Function, Value};
+use rocket_dyn_templates::tera::{self, Value};
 use rocket_dyn_templates::Template;
 use rocket_sync_db_pools::database;
 use std::collections::HashMap;
@@ -36,23 +36,19 @@ use std::collections::HashMap;
 #[database("main")]
 pub struct Db(PgConnection);
 
-struct JsPath;
-
-impl Function for JsPath {
-    fn call(&self, _: &HashMap<String, Value>) -> Result<Value, tera::Error> {
-        #[cfg(not(debug_assertions))]
-        let path = env!("ENTRY_FILE_PATH");
-        #[cfg(debug_assertions)]
-        let path = std::fs::read_to_string("entry")?;
-        Ok(path.into())
-    }
+fn js_path(_: &HashMap<String, Value>) -> Result<Value, tera::Error> {
+    #[cfg(not(debug_assertions))]
+    let path = env!("ENTRY_FILE_PATH");
+    #[cfg(debug_assertions)]
+    let path = std::fs::read_to_string("entry")?;
+    Ok(path.into())
 }
 
 #[launch]
 async fn rocket() -> _ {
     rocket::build()
         .attach(Template::custom(|engines| {
-            engines.tera.register_function("js_path", JsPath);
+            engines.tera.register_function("js_path", js_path);
         }))
         .attach(Db::fairing())
         .attach(AdHoc::on_ignite("Migrations", |rocket| async {
