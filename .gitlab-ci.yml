@@ -28,8 +28,6 @@ test:stable: &test
   stage: test
   services:
   - postgres
-  - name: registry.gitlab.com/pastebinrun/sandbox/master
-    alias: sandbox
   variables:
     POSTGRES_DB: db
     POSTGRES_USER: user
@@ -37,7 +35,7 @@ test:stable: &test
   image: rust:latest
   script:
   - *init
-  - DATABASE_URL=postgresql://user:password@postgres/db SANDBOX_URL=http://sandbox:8888 cargo test --verbose --features=database_tests,sandbox_tests
+  - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose --features=database_tests
   needs:
   - build:webpack
 
