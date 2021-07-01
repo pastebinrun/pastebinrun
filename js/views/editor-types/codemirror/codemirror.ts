@@ -70,7 +70,9 @@ class CodeMirrorEditor {
         this.editor.setValue(value)
     }
 
-    update() {}
+    update() {
+        dispatchEvent(new Event('resize'))
+    }
 
     unload() {
         this.editor.toTextArea()
