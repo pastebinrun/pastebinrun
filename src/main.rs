@@ -24,7 +24,9 @@ mod models;
 mod routes;
 mod schema;
 
-use crate::routes::{api_language, display_paste, index, insert_paste, raw_paste, run};
+use crate::routes::{
+    api_insert_paste, api_language, display_paste, index, insert_paste, raw_paste, run,
+};
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
 use rocket::fs::{relative, FileServer};
@@ -67,6 +69,7 @@ async fn rocket() -> _ {
             "/",
             routes![
                 api_language,
+                api_insert_paste,
                 run,
                 index,
                 insert_paste,
