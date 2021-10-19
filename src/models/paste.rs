@@ -26,6 +26,8 @@ use rand::seq::SliceRandom;
 use rocket::http::Status;
 use rocket::response::{self, Debug, Responder};
 use rocket::Request;
+use serde::Serialize;
+use serde_with::skip_serializing_none;
 use std::iter;
 
 #[derive(Queryable)]
@@ -134,12 +136,13 @@ pub fn insert(
     Ok(identifier)
 }
 
-#[derive(Default)]
+#[skip_serializing_none]
+#[derive(Serialize)]
 pub struct ExternPaste {
     pub identifier: Option<String>,
     pub paste: String,
     pub language_id: i32,
-    pub delete_at: Option<DateTime<Utc>>,
+    pub delete_at: Option<String>,
     pub markdown: String,
     pub stdin: String,
     pub exit_code: Option<i32>,
@@ -169,7 +172,7 @@ impl ExternPaste {
             identifier: Some(identifier),
             paste,
             language_id,
-            delete_at,
+            delete_at: delete_at.map(|delete_at| delete_at.format("%Y-%m-%d %H:%M").to_string()),
             markdown,
             stdin,
             exit_code,

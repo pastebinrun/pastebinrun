@@ -17,8 +17,8 @@
 mod api_insert_paste_route;
 mod api_language_route;
 mod api_languages_route;
-mod display_paste_route;
 mod config_route;
+mod display_paste_route;
 mod index_route;
 mod insert_paste_route;
 mod raw_paste_route;

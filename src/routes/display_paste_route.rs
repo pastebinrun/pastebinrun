@@ -16,7 +16,7 @@
 
 use super::WithTxt;
 use crate::models::language::Language;
-use crate::models::paste::Paste;
+use crate::models::paste::{ExternPaste, Paste};
 use crate::schema::{languages, pastes};
 use crate::Db;
 use diesel::prelude::*;
@@ -29,8 +29,7 @@ use serde::Serialize;
 struct DisplayPaste {
     languages: Vec<Language>,
     description: String,
-    paste: String,
-    selected_id: i32,
+    paste: ExternPaste,
     raw_paste_url: Origin<'static>,
 }
 
@@ -65,8 +64,7 @@ pub async fn display_paste(
                 &DisplayPaste {
                     languages,
                     description,
-                    paste: paste.paste,
-                    selected_id: paste.language_id,
+                    paste: ExternPaste::from_paste(paste),
                     raw_paste_url: uri!(super::raw_paste(identifier)),
                 },
             )))

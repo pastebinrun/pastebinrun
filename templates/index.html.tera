@@ -1,6 +1,7 @@
 {% extends "base" %}
 {% block content %}
 <form method="post" action="/" id="editor">
+    {% block paste_header %}{% endblock %}
     <div id="toolbar">
         <select id=language name=language>
             {% block languages %}
