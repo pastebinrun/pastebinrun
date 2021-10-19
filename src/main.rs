@@ -24,7 +24,7 @@ mod models;
 mod routes;
 mod schema;
 
-use crate::routes::{api_language, display_paste, index, insert_paste, raw_paste};
+use crate::routes::{api_language, display_paste, index, insert_paste, raw_paste, run};
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
 use rocket::fs::{relative, FileServer};
@@ -65,7 +65,14 @@ async fn rocket() -> _ {
         }))
         .mount(
             "/",
-            routes![api_language, index, insert_paste, display_paste, raw_paste],
+            routes![
+                api_language,
+                run,
+                index,
+                insert_paste,
+                display_paste,
+                raw_paste,
+            ],
         )
         .mount("/static", FileServer::from(relative!("static")))
 }
