@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2021 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,26 +14,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::db::DbErrorExt;
 use crate::schema::languages;
-use crate::{blocking, Connection};
+use crate::Db;
 use diesel::prelude::*;
+use rocket::response::Debug;
+use rocket::serde::json::Json;
 use serde::Serialize;
-use warp::{Rejection, Reply};
 
 #[derive(Queryable, Serialize)]
-struct Language {
+pub struct Language {
     identifier: String,
     name: String,
 }
 
-pub async fn languages(connection: Connection) -> Result<impl Reply, Rejection> {
-    blocking::run(move || {
-        let languages: Vec<Language> = languages::table
-            .select((languages::identifier, languages::name))
-            .load(&connection)
-            .into_rejection()?;
-        Ok(warp::reply::json(&languages))
-    })
-    .await
+#[get("/api/v1/languages")]
+pub async fn api_languages(db: Db) -> Result<Json<Vec<Language>>, Debug<diesel::result::Error>> {
+    let languages = db
+        .run(|conn| {
+            languages::table
+                .select((languages::identifier, languages::name))
+                .load(conn)
+        })
+        .await?;
+    Ok(Json(languages))
 }

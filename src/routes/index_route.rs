@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2021 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,10 +14,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::session::{RenderExt, Session};
-use crate::templates;
-use warp::{Rejection, Reply};
+use crate::models::language::Language;
+use crate::Db;
+use rocket::response::Debug;
+use rocket_dyn_templates::Template;
+use serde::Serialize;
 
-pub async fn config(session: Session) -> Result<impl Reply, Rejection> {
-    session.render().html(|o| templates::config(o, &session))
+#[derive(Serialize)]
+struct Index {
+    languages: Vec<Language>,
+}
+
+#[get("/")]
+pub async fn index(db: Db) -> Result<Template, Debug<diesel::result::Error>> {
+    let languages = db.run(|conn| Language::fetch(conn)).await?;
+    Ok(Template::render("index", &Index { languages }))
 }

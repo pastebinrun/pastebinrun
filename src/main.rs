@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2020-2021 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,36 +14,71 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#![cfg_attr(test, deny(warnings))]
-
 #[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate rocket;
 
-mod blocking;
 mod migration;
 mod models;
 mod routes;
 mod schema;
 
+use crate::routes::{
+    api_insert_paste, api_language, api_languages, config, display_paste, index, insert_paste,
+    raw_paste, run,
+};
 use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
-use std::env;
-use std::error::Error;
+use rocket::fairing::AdHoc;
+use rocket::fs::{relative, FileServer};
+use rocket_dyn_templates::tera::{self, Value};
+use rocket_dyn_templates::Template;
+use rocket_sync_db_pools::database;
+use std::collections::HashMap;
 
-type Connection = PooledConnection<ConnectionManager<PgConnection>>;
+#[database("main")]
+pub struct Db(PgConnection);
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    env_logger::init();
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL required");
-    let pool = Pool::new(ConnectionManager::new(database_url))
-        .expect("Couldn't create a connection connection");
-    diesel_migrations::run_pending_migrations(&pool.get()?)?;
-    migration::run(&pool.get()?)?;
-    warp::serve(routes::routes(pool))
-        .run(([127, 0, 0, 1], 8080))
-        .await;
-    Ok(())
+fn js_path(_: &HashMap<String, Value>) -> Result<Value, tera::Error> {
+    #[cfg(not(debug_assertions))]
+    let path = env!("ENTRY_FILE_PATH");
+    #[cfg(debug_assertions)]
+    let path = std::fs::read_to_string("entry")?;
+    Ok(path.into())
 }
 
-include!(concat!(env!("OUT_DIR"), "/templates.rs"));
+#[launch]
+async fn rocket() -> _ {
+    rocket::build()
+        .attach(Template::custom(|engines| {
+            engines.tera.register_function("js_path", js_path);
+        }))
+        .attach(Db::fairing())
+        .attach(AdHoc::on_ignite("Migrations", |rocket| async {
+            Db::get_one(&rocket)
+                .await
+                .expect("a database")
+                .run(|conn| {
+                    diesel_migrations::run_pending_migrations(conn)?;
+                    migration::run(conn)
+                })
+                .await
+                .expect("database to be migrated");
+            rocket
+        }))
+        .mount(
+            "/",
+            routes![
+                api_language,
+                api_languages,
+                api_insert_paste,
+                config,
+                run,
+                index,
+                insert_paste,
+                display_paste,
+                raw_paste,
+            ],
+        )
+        .mount("/static", FileServer::from(relative!("static")))
+}

@@ -1,8 +1,0 @@
-@use crate::models::language::Selection;
-@use crate::models::session::Session;
-@use crate::models::paste::ExternPaste;
-@use crate::templates::display_paste;
-
-@(session: &Session, selection: Selection)
-
-@:display_paste(session, ExternPaste::default(), selection)

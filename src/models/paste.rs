@@ -14,10 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::db::DbErrorExt;
-use crate::models::rejection::CustomRejection;
 use crate::schema::{languages, pastes};
-use crate::Connection;
 use ammonia::Builder;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
@@ -26,8 +23,12 @@ use log::info;
 use once_cell::sync::Lazy;
 use pulldown_cmark::{Options, Parser};
 use rand::seq::SliceRandom;
+use rocket::http::Status;
+use rocket::response::{self, Debug, Responder};
+use rocket::Request;
+use serde::Serialize;
+use serde_with::skip_serializing_none;
 use std::iter;
-use warp::Rejection;
 
 #[derive(Queryable)]
 pub struct Paste {
@@ -43,11 +44,10 @@ pub struct Paste {
 }
 
 impl Paste {
-    pub fn delete_old(connection: &Connection) -> Result<(), Rejection> {
+    pub fn delete_old(connection: &PgConnection) -> Result<(), diesel::result::Error> {
         let pastes = diesel::delete(pastes::table)
             .filter(pastes::delete_at.lt(Utc::now()))
-            .execute(connection)
-            .into_rejection()?;
+            .execute(connection)?;
         if pastes > 0 {
             info!("Deleted {} paste(s)", pastes);
         }
@@ -59,37 +59,57 @@ const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxz-";
 
 #[derive(Insertable)]
 #[table_name = "pastes"]
-struct InsertPaste {
-    identifier: String,
+struct InsertPaste<'a> {
+    identifier: &'a str,
     delete_at: Option<DateTime<Utc>>,
     language_id: i32,
-    paste: String,
-    stdin: String,
-    stdout: Option<String>,
-    stderr: Option<String>,
+    paste: &'a str,
+    stdin: &'a str,
+    stdout: Option<&'a str>,
+    stderr: Option<&'a str>,
     exit_code: Option<i32>,
 }
 
 #[derive(Default)]
-pub struct ExtraPasteParameters {
-    pub stdin: String,
-    pub stdout: Option<String>,
-    pub stderr: Option<String>,
+pub struct ExtraPasteParameters<'a> {
+    pub stdin: &'a str,
+    pub stdout: Option<&'a str>,
+    pub stderr: Option<&'a str>,
     pub exit_code: Option<i32>,
 }
 
+pub enum InsertionError {
+    Diesel(diesel::result::Error),
+    UnrecognizedLanguageIdentifier,
+}
+
+impl From<diesel::result::Error> for InsertionError {
+    fn from(e: diesel::result::Error) -> Self {
+        Self::Diesel(e)
+    }
+}
+
+impl<'r> Responder<'r, 'static> for InsertionError {
+    fn respond_to(self, request: &'r Request<'_>) -> response::Result<'static> {
+        match self {
+            Self::Diesel(e) => Debug(e).respond_to(request),
+            Self::UnrecognizedLanguageIdentifier => Err(Status::BadRequest),
+        }
+    }
+}
+
 pub fn insert(
-    connection: &Connection,
+    connection: &PgConnection,
     delete_at: Option<DateTime<Utc>>,
     language: &str,
-    paste: String,
+    paste: &str,
     ExtraPasteParameters {
         stdin,
         stdout,
         stderr,
         exit_code,
     }: ExtraPasteParameters,
-) -> Result<String, Rejection> {
+) -> Result<String, InsertionError> {
     let mut rng = rand::thread_rng();
     let identifier: String = (0..12)
         .map(|_| char::from(*CHARACTERS.choose(&mut rng).expect("a random character")))
@@ -98,23 +118,10 @@ pub fn insert(
         .select(languages::language_id)
         .filter(languages::identifier.eq(language))
         .get_result(connection)
-        .optional()
-        .into_rejection()?
-        .ok_or_else(|| warp::reject::custom(CustomRejection::UnrecognizedLanguageIdentifier))?;
-    for (field, name) in &[(&paste, "paste"), (&stdin, "stdin")] {
-        if field.len() > 1_000_000 {
-            return Err(warp::reject::custom(CustomRejection::FieldTooLarge(name)));
-        }
-    }
-    for (field, name) in &[(&stdout, "stdout"), (&stderr, "stderr")] {
-        if let Some(field) = field {
-            if field.len() > 1_000_000 {
-                return Err(warp::reject::custom(CustomRejection::FieldTooLarge(name)));
-            }
-        }
-    }
+        .optional()?
+        .ok_or(InsertionError::UnrecognizedLanguageIdentifier)?;
     let insert_paste = InsertPaste {
-        identifier,
+        identifier: &identifier,
         delete_at,
         language_id,
         paste,
@@ -125,17 +132,17 @@ pub fn insert(
     };
     diesel::insert_into(pastes::table)
         .values(&insert_paste)
-        .execute(connection)
-        .into_rejection()?;
-    Ok(insert_paste.identifier)
+        .execute(connection)?;
+    Ok(identifier)
 }
 
-#[derive(Default)]
+#[skip_serializing_none]
+#[derive(Serialize)]
 pub struct ExternPaste {
     pub identifier: Option<String>,
     pub paste: String,
     pub language_id: i32,
-    pub delete_at: Option<DateTime<Utc>>,
+    pub delete_at: Option<String>,
     pub markdown: String,
     pub stdin: String,
     pub exit_code: Option<i32>,
@@ -165,7 +172,7 @@ impl ExternPaste {
             identifier: Some(identifier),
             paste,
             language_id,
-            delete_at,
+            delete_at: delete_at.map(|delete_at| delete_at.format("%Y-%m-%d %H:%M").to_string()),
             markdown,
             stdin,
             exit_code,

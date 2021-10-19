@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2020-2021 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,13 +14,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::db::DbErrorExt;
 use crate::schema::languages::dsl::*;
-use crate::Connection;
 use diesel::prelude::*;
-use warp::Rejection;
+use serde::Serialize;
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Language {
     pub id: i32,
     pub identifier: String,
@@ -28,16 +26,10 @@ pub struct Language {
 }
 
 impl Language {
-    pub fn fetch(connection: &Connection) -> Result<Vec<Language>, Rejection> {
+    pub fn fetch(connection: &PgConnection) -> Result<Vec<Language>, diesel::result::Error> {
         languages
             .select((language_id, identifier, name))
             .order((priority.asc(), name.asc()))
             .load(connection)
-            .into_rejection()
     }
-}
-
-pub struct Selection {
-    pub languages: Vec<Language>,
-    pub selected_language: Option<i32>,
 }

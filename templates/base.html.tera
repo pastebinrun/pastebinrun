@@ -1,13 +1,9 @@
-@use crate::models::session::Session;
-
-@(session: &Session)
-
 <!DOCTYPE html>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>pastebin.run</title>
 <link rel=stylesheet href="/static/style-v2.css">
-<meta name=description content="@session.description">
+<meta name=description content="{% block description %}Compile and share code in multiple programming languages{% endblock description %}">
 <header id=header>
     <div>
         <a href="/">
@@ -22,3 +18,7 @@
     </div>
 </header>
 <article id=article>
+{% block content %}
+{% endblock %}
+</article>
+<script src="/{{ js_path() }}"></script>

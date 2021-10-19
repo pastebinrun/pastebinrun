@@ -1,0 +1,4 @@
+{% extends "base" %}
+{% block content %}
+<p id=options> This page requires a modern web browser with enabled JavaScript support.
+{% endblock content %}

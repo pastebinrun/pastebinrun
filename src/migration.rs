@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::schema::{implementation_wrappers, implementations, languages};
-use crate::Connection;
 use diesel::prelude::*;
 use diesel::sql_types::{Bool, Integer, Text};
 use serde::Deserialize;
@@ -59,7 +58,7 @@ struct Wrapper {
     is_formatter: bool,
 }
 
-pub fn run(connection: &Connection) -> Result<(), Box<dyn Error>> {
+pub fn run(connection: &PgConnection) -> Result<(), Box<dyn Error + Send + Sync>> {
     let languages: Vec<JsonLanguage> = serde_json::from_slice(&fs::read("languages.json")?)?;
     for JsonLanguage {
         identifier: languages_identifier,

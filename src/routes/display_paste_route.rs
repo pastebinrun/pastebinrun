@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2021 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,26 +14,34 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::blocking;
-use crate::models::db::DbErrorExt;
-use crate::models::language::{Language, Selection};
+use super::WithTxt;
+use crate::models::language::Language;
 use crate::models::paste::{ExternPaste, Paste};
-use crate::models::session::{RenderExt, Session};
 use crate::schema::{languages, pastes};
-use crate::templates;
+use crate::Db;
 use diesel::prelude::*;
-use std::borrow::Cow;
-use warp::{Rejection, Reply};
+use rocket::http::uri::Origin;
+use rocket::response::Debug;
+use rocket_dyn_templates::Template;
+use serde::Serialize;
 
+#[derive(Serialize)]
+struct DisplayPaste {
+    languages: Vec<Language>,
+    description: String,
+    paste: ExternPaste,
+    raw_paste_url: Origin<'static>,
+}
+
+#[get("/<identifier>", rank = 2)]
 pub async fn display_paste(
-    requested_identifier: String,
-    mut session: Session,
-) -> Result<impl Reply, Rejection> {
-    blocking::run(move || {
-        let connection = &session.connection;
-        Paste::delete_old(connection)?;
-        let languages = Language::fetch(connection)?;
-        let paste: Paste = pastes::table
+    db: Db,
+    identifier: String,
+) -> Result<Option<Template>, Debug<diesel::result::Error>> {
+    db.run(move |conn| {
+        Paste::delete_old(conn)?;
+        let languages = Language::fetch(conn)?;
+        let paste: Option<Paste> = pastes::table
             .inner_join(languages::table.on(pastes::language_id.eq(languages::language_id)))
             .select((
                 pastes::identifier,
@@ -46,29 +54,28 @@ pub async fn display_paste(
                 pastes::stdout,
                 pastes::stderr,
             ))
-            .filter(pastes::identifier.eq(requested_identifier))
-            .get_result(connection)
-            .optional()
-            .into_rejection()?
-            .ok_or_else(warp::reject::not_found)?;
-        session.description = generate_description(&paste.paste);
-        let selected_language = Some(paste.language_id);
-        session.render().html(|o| {
-            templates::display_paste(
-                o,
-                &session,
-                ExternPaste::from_paste(paste),
-                Selection {
+            .filter(pastes::identifier.eq(&identifier))
+            .get_result(conn)
+            .optional()?;
+        if let Some(paste) = paste {
+            let description = generate_description(&paste.paste);
+            Ok(Some(Template::render(
+                "display-paste",
+                &DisplayPaste {
                     languages,
-                    selected_language,
+                    description,
+                    paste: ExternPaste::from_paste(paste),
+                    raw_paste_url: uri!(super::raw_paste(identifier)),
                 },
-            )
-        })
+            )))
+        } else {
+            Ok(None)
+        }
     })
     .await
 }
 
-fn generate_description(paste: &str) -> Cow<'static, str> {
+fn generate_description(paste: &str) -> String {
     let mut description = paste.chars().take(239).collect();
     if description != paste {
         description += "…";

@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2021 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,14 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::borrow::Cow;
-#[allow(unused_imports)]
-use std::fs;
+use rocket_dyn_templates::Template;
+use serde::Serialize;
 
-pub fn path() -> Cow<'static, str> {
-    #[cfg(not(debug_assertions))]
-    let path = env!("ENTRY_FILE_PATH");
-    #[cfg(debug_assertions)]
-    let path = fs::read_to_string("entry").unwrap();
-    path.into()
+#[derive(Serialize)]
+struct Config {}
+
+#[get("/config")]
+pub async fn config() -> Template {
+    Template::render("config", Config {})
 }

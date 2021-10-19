@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2021 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,25 +14,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::db::DbErrorExt;
 use crate::schema::implementation_wrappers;
-use crate::{blocking, Connection};
+use crate::Db;
 use diesel::prelude::*;
-use futures_util::future::TryFutureExt;
 use once_cell::sync::Lazy;
 use reqwest::Client;
+use rocket::form::Form;
+use rocket::response::Debug;
+use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 use std::env;
-use warp::reject::Reject;
-use warp::{Rejection, Reply};
+use std::error::Error;
 
 static CLIENT: Lazy<Client> = Lazy::new(Client::new);
 static SANDBOX_URL: Lazy<String> = Lazy::new(|| env::var("SANDBOX_URL").unwrap());
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Form {
+#[derive(FromForm)]
+pub struct RunForm {
     code: String,
+    #[field(name = "compilerOptions")]
     compiler_options: String,
     stdin: String,
 }
@@ -51,31 +51,42 @@ struct File {
 }
 
 #[derive(Deserialize, Serialize)]
-struct Output {
+pub struct Output {
     status: Option<i32>,
     stdout: String,
     stderr: String,
 }
 
+fn error(e: impl Error + Send + 'static) -> Box<dyn Error + Send> {
+    Box::new(e)
+}
+
+#[post("/api/v0/run/<identifier>", data = "<form>")]
 pub async fn run(
-    connection: Connection,
+    db: Db,
     identifier: String,
-    Form {
+    form: Form<RunForm>,
+) -> Result<Option<Json<Output>>, Debug<Box<dyn Error + Send>>> {
+    let language_code = db
+        .run(|conn| {
+            implementation_wrappers::table
+                .filter(implementation_wrappers::identifier.eq(identifier))
+                .select(implementation_wrappers::code)
+                .get_result(conn)
+                .optional()
+        })
+        .await
+        .map_err(error)?;
+    let language_code: String = if let Some(code) = language_code {
+        code
+    } else {
+        return Ok(None);
+    };
+    let RunForm {
         code,
         compiler_options,
         stdin,
-    }: Form,
-) -> Result<impl Reply, Rejection> {
-    let language_code: String = blocking::run(move || {
-        implementation_wrappers::table
-            .filter(implementation_wrappers::identifier.eq(identifier))
-            .select(implementation_wrappers::code)
-            .get_result(&connection)
-            .optional()
-            .into_rejection()?
-            .ok_or_else(warp::reject::not_found)
-    })
-    .await?;
+    } = form.into_inner();
     let json: Output = CLIENT
         .post(SANDBOX_URL.as_str())
         .json(&Request {
@@ -87,13 +98,10 @@ pub async fn run(
             code: language_code.replace("%s", &compiler_options),
         })
         .send()
-        .and_then(|r| r.json())
-        .map_err(|e| warp::reject::custom(RemoteServerError(e)))
-        .await?;
-    Ok(warp::reply::json(&json))
+        .await
+        .map_err(error)?
+        .json()
+        .await
+        .map_err(error)?;
+    Ok(Some(Json(json)))
 }
-
-#[derive(Debug)]
-struct RemoteServerError(reqwest::Error);
-
-impl Reject for RemoteServerError {}

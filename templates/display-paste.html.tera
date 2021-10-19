@@ -1,0 +1,38 @@
+{% extends "index" %}
+
+{% block description %}{{ description }}{% endblock %}
+
+{% block paste_header %}
+    <div>
+        {{ paste.markdown | safe }}
+    </div>
+    {% if paste.delete_at %}
+        <div class="autodelete-text">
+            This paste will be automatically deleted on {{ paste.delete_at }} UTC.
+        </div>
+    {% endif %}
+
+    {% if paste.exit_code is defined %}
+        <input type=hidden id=dbstatus value="{{ paste.exit_code }}">
+    {% endif %}
+    {% if paste.stdout is defined %}
+        <input type=hidden id=dbstdout value="{{ paste.stdout }}">
+    {% endif %}
+    {% if paste.stderr is defined %}
+        <input type=hidden id=dbstderr value="{{ paste.stderr }}">
+    {% endif %}
+{% endblock %}
+
+{% block code %}{{ paste.paste }}{% endblock %}
+
+{% block languages %}
+    {% for language in languages %}
+        <option value="{{ language.identifier }}"
+            {% if paste.language_id == language.id %}
+                selected
+            {% endif %}
+        >{{ language.name }}</option>
+    {% endfor %}
+{% endblock %}
+
+{% block rawpaste %}<span class="autodelete-text"> | <a href="{{ raw_paste_url }}">raw paste</a></span>{% endblock %}
