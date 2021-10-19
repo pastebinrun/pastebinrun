@@ -1,3 +1,6 @@
+include:
+- template: Security/SAST.gitlab-ci.yml
+
 build:webpack:
   stage: build
   image: node:12.16
