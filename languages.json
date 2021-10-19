@@ -73,7 +73,7 @@
                     {
                         "identifier": "netcore",
                         "label": "Run",
-                        "code": "ln -fst . /opt/microsoft/home/csharp/bin/Debug/netcoreapp*/*; dotnet /usr/lib64/dotnet/sdk/*/Roslyn/bincore/csc.dll %s code @/opt/microsoft/home/csharp/csopts.txt >&2; dotnet project.dll"
+                        "code": "echo '<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>netcoreapp5.0</TargetFramework></PropertyGroup></Project>' > project.csproj; mv code code.cs; dotnet run %s"
                     }
                 ]
             }
@@ -137,7 +137,7 @@
                     {
                         "identifier": "openjdk8",
                         "label": "Run",
-                        "code": "mv code code.java; /etc/alternatives/java_sdk_1.8.0/bin/javac %s code.java; /etc/alternatives/java_sdk_1.8.0/bin/java \"$(perl -e 'my @classes = grep { !/\\$/ } glob q[*.class]; if (@classes == 1) { my $class = $classes[0]; $class =~ s/\\.class\\z//; print $class } else { print q[Main] }')\""
+                        "code": "mv code code.java; $JAVA8/bin/javac %s code.java; $JAVA8/bin/java \"$(perl -e 'my @classes = grep { !/\\$/ } glob q[*.class]; if (@classes == 1) { my $class = $classes[0]; $class =~ s/\\.class\\z//; print $class } else { print q[Main] }')\""
                     }
                 ]
             },
@@ -148,7 +148,7 @@
                     {
                         "identifier": "openjdk11",
                         "label": "Run",
-                        "code": "mv code code.java; /etc/alternatives/java_sdk_11/bin/javac %s code.java; /etc/alternatives/java_sdk_11/bin/java \"$(perl -e 'my @classes = grep { !/\\$/ } glob q[*.class]; if (@classes == 1) { my $class = $classes[0]; $class =~ s/\\.class\\z//; print $class } else { print q[Main] }')\""
+                        "code": "mv code code.java; $JAVA11/bin/javac %s code.java; $JAVA11/bin/java \"$(perl -e 'my @classes = grep { !/\\$/ } glob q[*.class]; if (@classes == 1) { my $class = $classes[0]; $class =~ s/\\.class\\z//; print $class } else { print q[Main] }')\""
                     }
                 ]
             }
@@ -278,24 +278,24 @@
                     {
                         "identifier": "rustc-stable",
                         "label": "Run",
-                        "code": "/opt/util/rust-run stable %s"
+                        "code": "mv code code.rs; rustc %s code.rs && ./code"
                     },
                     {
                         "identifier": "rustc-asm-stable",
                         "label": "ASM",
-                        "code": "/opt/util/rust-asm stable %s",
+                        "code": "rustc --emit asm --crate-type rlib %s code && cat code.s",
                         "is_asm": true
                     },
                     {
                         "identifier": "rustfmt-stable",
                         "label": "Rustfmt",
-                        "code": "/opt/util/rust-fmt stable",
+                        "code": "rustfmt code; cat code",
                         "is_formatter": true
                     },
                     {
                         "identifier": "clippy-stable",
                         "label": "Clippy",
-                        "code": "/opt/util/rust-clippy stable"
+                        "code": "cargo init; mv code src/main.rs; cargo clippy"
                     }
                 ]
             },
@@ -306,24 +306,24 @@
                     {
                         "identifier": "rustc-beta",
                         "label": "Run",
-                        "code": "/opt/util/rust-run beta %s"
+                        "code": "mv code code.rs; $RUST_BETA/bin/rustc %s code.rs && ./code"
                     },
                     {
                         "identifier": "rustc-asm-beta",
                         "label": "ASM",
-                        "code": "/opt/util/rust-asm beta %s",
+                        "code": "$RUST_BETA/bin/rustc --emit asm --crate-type rlib %s code && cat code.s",
                         "is_asm": true
                     },
                     {
                         "identifier": "rustfmt-beta",
                         "label": "Rustfmt",
-                        "code": "/opt/util/rust-fmt beta",
+                        "code": "$RUST_BETA/bin/rustfmt code; cat code",
                         "is_formatter": true
                     },
                     {
                         "identifier": "clippy-beta",
                         "label": "Clippy",
-                        "code": "/opt/util/rust-clippy beta"
+                        "code": "$RUST_BETA/bin/cargo init; mv code src/main.rs; $RUST_BETA/bin/cargo clippy"
                     }
                 ]
             },
@@ -334,24 +334,24 @@
                     {
                         "identifier": "rustc-nightly",
                         "label": "Run",
-                        "code": "/opt/util/rust-run nightly %s"
+                        "code": "mv code code.rs; $RUST_NIGHTLY/bin/rustc %s code.rs && ./code"
                     },
                     {
                         "identifier": "rustc-asm-nightly",
                         "label": "ASM",
-                        "code": "/opt/util/rust-asm nightly %s",
+                        "code": "$RUST_NIGHTLY/bin/rustc --emit asm --crate-type rlib %s code && cat code.s",
                         "is_asm": true
                     },
                     {
                         "identifier": "rustfmt-nightly",
                         "label": "Rustfmt",
-                        "code": "/opt/util/rust-fmt nightly",
+                        "code": "$RUST_NIGHTLY/bin/rustfmt code; cat code",
                         "is_formatter": true
                     },
                     {
                         "identifier": "clippy-nightly",
                         "label": "Clippy",
-                        "code": "/opt/util/rust-clippy nightly"
+                        "code": "$RUST_NIGHTLY/bin/cargo init; mv code src/main.rs; $RUST_NIGHTLY/bin/cargo clippy"
                     }
                 ]
             }
@@ -409,7 +409,7 @@
                     {
                         "identifier": "typescript-nodejs",
                         "label": "Run",
-                        "code": "mv code code.ts; /usr/local/bin/tsc %s code.ts && node code"
+                        "code": "mv code code.ts; tsc %s code.ts && node code"
                     }
                 ]
             }
