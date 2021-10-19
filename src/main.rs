@@ -30,7 +30,7 @@ use crate::routes::{
 };
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
-use rocket::fs::{relative, FileServer};
+use rocket::fs::FileServer;
 use rocket_dyn_templates::tera::{self, Value};
 use rocket_dyn_templates::Template;
 use rocket_sync_db_pools::database;
@@ -80,5 +80,5 @@ async fn rocket() -> _ {
                 raw_paste,
             ],
         )
-        .mount("/static", FileServer::from(relative!("static")))
+        .mount("/static", FileServer::from("static"))
 }
