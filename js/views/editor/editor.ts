@@ -88,7 +88,6 @@ class Editor {
         form.querySelector('#extrafields').append(this.detailsElement)
         this.assignEvents()
         this.updateLanguage()
-        addEventListener('resize', () => this.editor.update())
     }
 
     async initConfiguredEditor() {
