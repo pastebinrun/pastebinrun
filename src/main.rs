@@ -25,7 +25,8 @@ mod routes;
 mod schema;
 
 use crate::routes::{
-    api_insert_paste, api_language, display_paste, index, insert_paste, raw_paste, run,
+    api_insert_paste, api_language, api_languages, display_paste, index, insert_paste, raw_paste,
+    run,
 };
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
@@ -69,6 +70,7 @@ async fn rocket() -> _ {
             "/",
             routes![
                 api_language,
+                api_languages,
                 api_insert_paste,
                 run,
                 index,
