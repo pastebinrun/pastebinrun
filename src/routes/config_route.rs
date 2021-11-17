@@ -21,6 +21,6 @@ use serde::Serialize;
 struct Config {}
 
 #[get("/config")]
-pub async fn config() -> Template {
+pub fn config() -> Template {
     Template::render("config", Config {})
 }
