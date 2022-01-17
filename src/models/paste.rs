@@ -189,6 +189,17 @@ fn render_markdown(markdown: &str) -> String {
         builder.add_generic_attributes(iter::once("class"));
         builder.attribute_filter(|_, attribute, value| {
             if attribute == "class" {
+                // class attribute must have a value that is a set of space-separate tokens
+                // https://html.spec.whatwg.org/#global-attributes
+                //
+                // A set of space-separated tokens is a string containing zero or more words
+                // (known as tokens) separated by one or more ASCII whitespace, where words
+                // consist of any string of one or more characters, none of which are ASCII
+                // whitespace.
+                // https://html.spec.whatwg.org/#space-separated-tokens
+                //
+                // Rust uses the WhatWG Infra Standard’s definition of ASCII whitespace.
+                // https://doc.rust-lang.org/stable/std/primitive.char.html#method.is_ascii_whitespace
                 Some(
                     value
                         .split_ascii_whitespace()
