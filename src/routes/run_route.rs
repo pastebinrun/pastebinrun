@@ -46,7 +46,7 @@ struct Request {
 
 #[derive(Serialize)]
 struct Files {
-    input: File,
+    code: File,
 }
 
 #[derive(Serialize)]
@@ -91,7 +91,7 @@ pub async fn run(
             .post(SANDBOX_URL.as_str())
             .json(&Request {
                 files: Files {
-                    input: File { contents: code },
+                    code: File { contents: code },
                 },
                 stdin,
                 code: language_code.replace("%s", &compiler_options),
