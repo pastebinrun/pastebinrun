@@ -39,14 +39,18 @@ pub struct RunForm {
 
 #[derive(Serialize)]
 struct Request {
-    files: Vec<File>,
+    files: Files,
     stdin: String,
     code: String,
 }
 
 #[derive(Serialize)]
+struct Files {
+    input: File,
+}
+
+#[derive(Serialize)]
 struct File {
-    name: &'static str,
     contents: String,
 }
 
@@ -86,10 +90,9 @@ pub async fn run(
         let json: Output = CLIENT
             .post(SANDBOX_URL.as_str())
             .json(&Request {
-                files: vec![File {
-                    name: "code",
-                    contents: code,
-                }],
+                files: Files {
+                    input: File { contents: code },
+                },
                 stdin,
                 code: language_code.replace("%s", &compiler_options),
             })
