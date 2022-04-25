@@ -42,10 +42,10 @@ class Editor {
         onChange(editor => this.changeEditor(editor))
         this.initConfiguredEditor()
         this.output = Output.addTo(form.querySelector('#split'))
-        const stdout = document.querySelector<HTMLInputElement>('#dboutput')
-        if (stdout) {
+        const output = document.querySelector<HTMLInputElement>('#dboutput')
+        if (output) {
             this.displayOutput({}, {
-                output: stdout.value,
+                output: output.value,
                 status: +document.querySelector<HTMLInputElement>('#dbstatus')?.value,
             })
         }
@@ -183,7 +183,7 @@ class Editor {
             throw e
         }
         if (wrapper.isFormatter) {
-            this.editor.setValue(response.stdout)
+            this.editor.setValue(response.output.replace(/\x7FE[^]*?(?:\x7FO|$)/g, ""))
         }
         this.displayOutput(wrapper, response)
     }

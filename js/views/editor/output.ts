@@ -74,53 +74,57 @@ export default class Output {
         let { output, status } = this.json
         this.clear()
         this.split.append(this.outputContainer)
-        if (!this.wrapper.isFormatter) {
-            const outputHeader = document.createElement('div')
-            outputHeader.className = 'stdout-header'
-            if (status) {
-                const outputHeaderH2 = document.createElement('h2')
-                outputHeaderH2.textContent += `Output (exit code ${status})`
-                outputHeader.append(outputHeaderH2)
+        const outputHeader = document.createElement('div')
+        outputHeader.className = 'stdout-header'
+        if (status) {
+            const outputHeaderH2 = document.createElement('h2')
+            outputHeaderH2.textContent += `Output (exit code ${status})`
+            outputHeader.append(outputHeaderH2)
+        }
+        const { isAsm, isFormatter } = this.wrapper
+        if (isAsm) {
+            outputHeader.append(this.filterAsm)
+        }
+        const stdoutElement = document.createElement('pre')
+        let anyError = false
+        if (output) {
+            if (isAsm && this.filterAsmCheckbox.checked) {
+                output = output.replace(filterRegex, "")
             }
-            if (this.wrapper.isAsm) {
-                outputHeader.append(this.filterAsm)
-            }
-            const stdoutElement = document.createElement('pre')
-            if (output) {
-                if (this.wrapper.isAsm && this.filterAsmCheckbox.checked) {
-                    output = output.replace(filterRegex, "")
+            const rootElement = isFormatter ? document.createElement('span') : stdoutElement
+            let currentElem: HTMLElement = rootElement
+            const iter = output[Symbol.iterator]()
+            while (true) {
+                const next = iter.next()
+                if (next.done) {
+                    break
                 }
-                let currentElem: HTMLElement = stdoutElement
-                const iter = output[Symbol.iterator]()
-                while (true) {
-                    const next = iter.next()
-                    if (next.done) {
-                        break
+                if (next.value === '\x7F') {
+                    switch (iter.next().value) {
+                        case 'E':
+                            anyError = true
+                            const error = document.createElement('span')
+                            error.className = 'error'
+                            stdoutElement.append(error)
+                            currentElem = error
+                            break
+                        case 'O':
+                            currentElem = rootElement
+                            break
+                        case '\x7F':
+                            currentElem.append('\x7F')
+                            break
                     }
-                    if (next.value === '\x7F') {
-                        switch (iter.next().value) {
-                            case 'E':
-                                const error = document.createElement('span')
-                                error.className = 'error'
-                                stdoutElement.append(error)
-                                currentElem = error
-                                break
-                            case 'O':
-                                currentElem = stdoutElement
-                                break
-                            case '\x7F':
-                                currentElem.append('\x7F')
-                                break
-                        }
-                    } else {
-                        currentElem.append(next.value)
-                    }
+                } else {
+                    currentElem.append(next.value)
                 }
-            } else {
-                const italic = document.createElement('i')
-                italic.textContent = '(no output)'
-                stdoutElement.append(italic)
             }
+        } else {
+            const italic = document.createElement('i')
+            italic.textContent = '(no output)'
+            stdoutElement.append(italic)
+        }
+        if (anyError || !isFormatter) {
             this.output.append(outputHeader, stdoutElement)
         }
     }
