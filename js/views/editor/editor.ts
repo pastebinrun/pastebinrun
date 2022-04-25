@@ -42,11 +42,10 @@ class Editor {
         onChange(editor => this.changeEditor(editor))
         this.initConfiguredEditor()
         this.output = Output.addTo(form.querySelector('#split'))
-        const stdout = document.querySelector<HTMLInputElement>('#dbstdout')
+        const stdout = document.querySelector<HTMLInputElement>('#dboutput')
         if (stdout) {
             this.displayOutput({}, {
-                stdout: stdout.value,
-                stderr: document.querySelector<HTMLInputElement>('#dbstderr').value,
+                output: stdout.value,
                 status: +document.querySelector<HTMLInputElement>('#dbstatus')?.value,
             })
         }
@@ -57,8 +56,8 @@ class Editor {
         }
         form.addEventListener('submit', () => {
             if (this.output.json && !this.output.wrapper.isFormatter) {
-                for (const name of ['stdout', 'stderr', 'status']) {
-                    const elem = form.querySelector(`#${name}`) || document.createElement('input')
+                for (const name of ['output', 'status']) {
+                    const elem = form.querySelector(`[name=${name}]`) || document.createElement('input')
                     elem.type = 'hidden'
                     elem.name = name
                     elem.value = this.output.json[name]

@@ -70,8 +70,7 @@ pub async fn api_insert_paste(
                 &form.code,
                 ExtraPasteParameters {
                     stdin: "",
-                    stdout: None,
-                    stderr: None,
+                    output: None,
                     exit_code: None,
                 },
             )

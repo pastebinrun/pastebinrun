@@ -57,8 +57,7 @@ struct File {
 #[derive(Deserialize, Serialize)]
 pub struct Output {
     status: Option<i32>,
-    stdout: String,
-    stderr: String,
+    output: String,
 }
 
 #[post("/api/v0/run/<identifier>", data = "<form>")]

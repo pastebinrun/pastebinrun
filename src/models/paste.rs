@@ -39,8 +39,7 @@ pub struct Paste {
     pub language_identifier: String,
     pub stdin: String,
     pub exit_code: Option<i32>,
-    pub stdout: Option<String>,
-    pub stderr: Option<String>,
+    pub output: Option<String>,
 }
 
 impl Paste {
@@ -65,16 +64,14 @@ struct InsertPaste<'a> {
     language_id: i32,
     paste: &'a str,
     stdin: &'a str,
-    stdout: Option<&'a str>,
-    stderr: Option<&'a str>,
+    output: Option<&'a str>,
     exit_code: Option<i32>,
 }
 
 #[derive(Default)]
 pub struct ExtraPasteParameters<'a> {
     pub stdin: &'a str,
-    pub stdout: Option<&'a str>,
-    pub stderr: Option<&'a str>,
+    pub output: Option<&'a str>,
     pub exit_code: Option<i32>,
 }
 
@@ -105,8 +102,7 @@ pub fn insert(
     paste: &str,
     ExtraPasteParameters {
         stdin,
-        stdout,
-        stderr,
+        output,
         exit_code,
     }: ExtraPasteParameters,
 ) -> Result<String, InsertionError> {
@@ -126,8 +122,7 @@ pub fn insert(
         language_id,
         paste,
         stdin,
-        stdout,
-        stderr,
+        output,
         exit_code,
     };
     diesel::insert_into(pastes::table)
@@ -146,8 +141,7 @@ pub struct ExternPaste {
     pub markdown: String,
     pub stdin: String,
     pub exit_code: Option<i32>,
-    pub stdout: Option<String>,
-    pub stderr: Option<String>,
+    pub output: Option<String>,
 }
 
 impl ExternPaste {
@@ -160,8 +154,7 @@ impl ExternPaste {
             delete_at,
             stdin,
             exit_code,
-            stdout,
-            stderr,
+            output,
         } = paste;
         let markdown = if language_identifier == "markdown" {
             render_markdown(&paste)
@@ -176,8 +169,7 @@ impl ExternPaste {
             markdown,
             stdin,
             exit_code,
-            stdout,
-            stderr,
+            output,
         }
     }
 }

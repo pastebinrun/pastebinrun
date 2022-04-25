@@ -27,8 +27,7 @@ pub struct PasteForm {
     share: Share,
     #[field(default = "")]
     stdin: String,
-    stdout: Option<String>,
-    stderr: Option<String>,
+    output: Option<String>,
     status: Option<i32>,
 }
 
@@ -53,8 +52,7 @@ pub async fn insert_paste(db: Db, form: Form<PasteForm>) -> Result<Redirect, Ins
                 &form.code,
                 ExtraPasteParameters {
                     stdin: &form.stdin,
-                    stdout: form.stdout.as_deref(),
-                    stderr: form.stderr.as_deref(),
+                    output: form.output.as_deref(),
                     exit_code: form.status,
                 },
             )

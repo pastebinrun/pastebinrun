@@ -26,7 +26,7 @@ export default class Output {
     filterAsm = document.createElement('label')
     filterAsmCheckbox = document.createElement('input')
     wrapper: Wrapper | null = null
-    json: { stdout: string, stderr: string, status: number | null } | null = null
+    json: { output: string, status: number | null } | null = null
 
     static addTo(split: HTMLDivElement) {
         const outputContainer = document.createElement('div')
@@ -71,41 +71,57 @@ export default class Output {
     }
 
     update() {
-        const { stdout, stderr, status } = this.json
+        let { output, status } = this.json
         this.clear()
         this.split.append(this.outputContainer)
-        if (stderr) {
-            const stderrHeader = document.createElement('h2')
-            stderrHeader.textContent = 'Standard error'
-            const stderrElement = document.createElement('pre')
-            stderrElement.textContent = stderr
-            this.output.append(stderrHeader, stderrElement)
-        }
         if (!this.wrapper.isFormatter) {
-            const stdoutHeader = document.createElement('div')
-            stdoutHeader.className = 'stdout-header'
-            const stdoutHeaderH2 = document.createElement('h2')
-            stdoutHeaderH2.textContent = 'Standard output'
+            const outputHeader = document.createElement('div')
+            outputHeader.className = 'stdout-header'
             if (status) {
-                stdoutHeaderH2.textContent += ` (exit code ${status})`
+                const outputHeaderH2 = document.createElement('h2')
+                outputHeaderH2.textContent += `Output (exit code ${status})`
+                outputHeader.append(outputHeaderH2)
             }
-            stdoutHeader.append(stdoutHeaderH2)
             if (this.wrapper.isAsm) {
-                stdoutHeader.append(this.filterAsm)
+                outputHeader.append(this.filterAsm)
             }
             const stdoutElement = document.createElement('pre')
-            if (stdout) {
+            if (output) {
                 if (this.wrapper.isAsm && this.filterAsmCheckbox.checked) {
-                    stdoutElement.textContent = stdout.replace(filterRegex, "")
-                } else {
-                    stdoutElement.textContent = stdout
+                    output = output.replace(filterRegex, "")
+                }
+                let currentElem: HTMLElement = stdoutElement
+                const iter = output[Symbol.iterator]()
+                while (true) {
+                    const next = iter.next()
+                    if (next.done) {
+                        break
+                    }
+                    if (next.value === '\x7F') {
+                        switch (iter.next().value) {
+                            case 'E':
+                                const error = document.createElement('span')
+                                error.className = 'error'
+                                stdoutElement.append(error)
+                                currentElem = error
+                                break
+                            case 'O':
+                                currentElem = stdoutElement
+                                break
+                            case '\x7F':
+                                currentElem.append('\x7F')
+                                break
+                        }
+                    } else {
+                        currentElem.append(next.value)
+                    }
                 }
             } else {
                 const italic = document.createElement('i')
                 italic.textContent = '(no output)'
                 stdoutElement.append(italic)
             }
-            this.output.append(stdoutHeader, stdoutElement)
+            this.output.append(outputHeader, stdoutElement)
         }
     }
 }

@@ -41,8 +41,7 @@ table! {
         paste -> Text,
         stdin -> Text,
         exit_code -> Nullable<Int4>,
-        stdout -> Nullable<Text>,
-        stderr -> Nullable<Text>,
+        output -> Nullable<Text>,
     }
 }
 
@@ -50,4 +49,9 @@ joinable!(implementation_wrappers -> implementations (implementation_id));
 joinable!(implementations -> languages (language_id));
 joinable!(pastes -> languages (language_id));
 
-allow_tables_to_appear_in_same_query!(implementation_wrappers, implementations, languages, pastes,);
+allow_tables_to_appear_in_same_query!(
+    implementation_wrappers,
+    implementations,
+    languages,
+    pastes,
+);

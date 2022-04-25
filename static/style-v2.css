@@ -137,3 +137,6 @@ img {
 .stdout-header label {
     padding-left: 1em;
 }
+.error {
+    color: #b21818;
+}

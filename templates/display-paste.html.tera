@@ -15,11 +15,8 @@
     {% if paste.exit_code is defined %}
         <input type=hidden id=dbstatus value="{{ paste.exit_code }}">
     {% endif %}
-    {% if paste.stdout is defined %}
-        <input type=hidden id=dbstdout value="{{ paste.stdout }}">
-    {% endif %}
-    {% if paste.stderr is defined %}
-        <input type=hidden id=dbstderr value="{{ paste.stderr }}">
+    {% if paste.output is defined %}
+        <input type=hidden id=dboutput value="{{ paste.output }}">
     {% endif %}
 {% endblock %}
 

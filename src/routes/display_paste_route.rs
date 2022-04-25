@@ -51,8 +51,7 @@ pub async fn display_paste(
                 languages::identifier,
                 pastes::stdin,
                 pastes::exit_code,
-                pastes::stdout,
-                pastes::stderr,
+                pastes::output,
             ))
             .filter(pastes::identifier.eq(&identifier))
             .get_result(conn)
