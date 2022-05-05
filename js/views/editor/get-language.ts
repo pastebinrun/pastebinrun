@@ -14,25 +14,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const cache = new Map
+const cache = new Map();
 
 async function fetchLanguage(identifier) {
-    const response = await fetch(`/api/v0/language/${identifier}`)
-    return await response.json()
+  const response = await fetch(`/api/v0/language/${identifier}`);
+  return await response.json();
 }
 
 export default async function getLanguage(identifier, shouldRetry) {
-    if (cache.has(identifier)) {
-        return cache.get(identifier)
+  if (cache.has(identifier)) {
+    return cache.get(identifier);
+  }
+  while (shouldRetry()) {
+    try {
+      const response = await fetchLanguage(identifier);
+      cache.set(identifier, response);
+      return response;
+    } catch (e) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-    while (shouldRetry()) {
-        try {
-            const response = await fetchLanguage(identifier)
-            cache.set(identifier, response)
-            return response
-        } catch (e) {
-            await new Promise(resolve => setTimeout(resolve, 1000))
-        }
-    }
-    await new Promise(() => { })
+  }
+  await new Promise(() => {});
 }

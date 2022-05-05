@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as Prism from 'prismjs'
-import 'prismjs/plugins/autoloader/prism-autoloader'
-import 'prismjs/themes/prism.css'
+import * as Prism from "prismjs";
+import "prismjs/plugins/autoloader/prism-autoloader";
+import "prismjs/themes/prism.css";
 
-Prism.plugins.autoloader.languages_path = '/static/js/'
-Prism.highlightAll()
+Prism.plugins.autoloader.languages_path = "/static/js/";
+Prism.highlightAll();

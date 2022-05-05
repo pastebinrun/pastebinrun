@@ -15,41 +15,49 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 export interface EditorType {
-    setLanguage(identifier: string): void
-    getValue(): string
-    setValue(text: string): void
-    update(): void
-    unload(): void
+  setLanguage(identifier: string): void;
+  getValue(): string;
+  setValue(text: string): void;
+  update(): void;
+  unload(): void;
 }
 
 export const types = {
-    textarea: {
-        name: 'Textarea',
-        async createView() {
-            return (await import('./views/editor-types/textarea')).default
-        },
+  textarea: {
+    name: "Textarea",
+    async createView() {
+      return (await import("./views/editor-types/textarea")).default;
     },
-    codemirror: {
-        name: 'CodeMirror',
-        async createView() {
-            return (await import('./views/editor-types/codemirror/codemirror')).default
-        },
+  },
+  codemirror: {
+    name: "CodeMirror",
+    async createView() {
+      return (await import("./views/editor-types/codemirror/codemirror"))
+        .default;
     },
-}
+  },
+};
 
 export function getCurrentEditor() {
-    const editor = localStorage.getItem('editorType') || 'codemirror'
-    return editor === 'monaco' ? 'codemirror' : editor
+  const editor = localStorage.getItem("editorType") || "codemirror";
+  return editor === "monaco" ? "codemirror" : editor;
 }
 
 export function setCurrentEditor(newEditor) {
-    return localStorage.setItem('editorType', newEditor)
+  return localStorage.setItem("editorType", newEditor);
 }
 
-export function onChange(callback: (createEditor: (textArea: HTMLTextAreaElement, onChange: () => void) => EditorType) => void) {
-    addEventListener('storage', async ({ key, newValue }) => {
-        if (key === 'editorType') {
-            callback(await types[newValue].createView())
-        }
-    })
+export function onChange(
+  callback: (
+    createEditor: (
+      textArea: HTMLTextAreaElement,
+      onChange: () => void
+    ) => EditorType
+  ) => void
+) {
+  addEventListener("storage", async ({ key, newValue }) => {
+    if (key === "editorType") {
+      callback(await types[newValue].createView());
+    }
+  });
 }

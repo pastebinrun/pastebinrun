@@ -2,49 +2,49 @@ build:webpack:
   stage: build
   image: node:12.16
   script:
-  - npm ci
-  - node_modules/.bin/webpack
+    - npm ci
+    - node_modules/.bin/webpack
   artifacts:
     paths:
-    - static
-    - entry
+      - static
+      - entry
 
 build:release: &build
   stage: test
   image: rust:latest
   script:
-  - &init rustc --version && cargo --version
-  - cargo build --release --verbose
+    - &init rustc --version && cargo --version
+    - cargo build --release --verbose
   needs:
-  - build:webpack
+    - build:webpack
   artifacts:
     paths:
-    - languages.json
-    - migrations
-    - static
-    - target/release/pastebinrun
+      - languages.json
+      - migrations
+      - static
+      - target/release/pastebinrun
 
 test:stable: &test
   stage: test
   services:
-  - postgres
+    - postgres
   variables:
     POSTGRES_DB: db
     POSTGRES_USER: user
     POSTGRES_PASSWORD: password
   image: rust:latest
   script:
-  - *init
-  - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose --features=database_tests
+    - *init
+    - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose --features=database_tests
   needs:
-  - build:webpack
+    - build:webpack
 
 test:clippy:
   <<: *test
   script:
-  - *init
-  - rustup component add clippy
-  - cargo clippy --verbose
+    - *init
+    - rustup component add clippy
+    - cargo clippy --verbose
 
 test:1.52:
   <<: *test
