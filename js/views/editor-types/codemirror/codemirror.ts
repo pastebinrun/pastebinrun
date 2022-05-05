@@ -14,60 +14,72 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as CodeMirror from 'codemirror'
-import 'codemirror/lib/codemirror.css'
+import { EditorView, EditorState, basicSetup } from '@codemirror/basic-setup'
+import { indentWithTab } from '@codemirror/commands'
+import { indentUnit, StreamLanguage } from '@codemirror/language'
+import { Compartment, Extension } from '@codemirror/state'
+import { keymap } from '@codemirror/view'
 import './codemirror.css'
 
-const languagesMap = {
-    c: [() => import('codemirror/mode/clike/clike'), 'text/x-csrc'],
-    cpp: [() => import('codemirror/mode/clike/clike'), 'text/x-c++src'],
-    csharp: [() => import('codemirror/mode/clike/clike'), 'text/x-csharp'],
-    go: [() => import('codemirror/mode/go/go'), 'text/x-go'],
-    haskell: [() => import('codemirror/mode/haskell/haskell'), 'text/x-haskell'],
-    html: [() => import('codemirror/mode/htmlmixed/htmlmixed'), 'text/html'],
-    java: [() => import('codemirror/mode/clike/clike'), 'text/x-java'],
-    javascript: [() => import('codemirror/mode/javascript/javascript'), 'text/javascript'],
-    jinja2: [() => import('codemirror/mode/jinja2/jinja2'), 'text/jinja2'],
-    jsx: [() => import('codemirror/mode/jsx/jsx'), 'text/jsx'],
-    markdown: [() => import('codemirror/mode/markdown/markdown'), 'text/x-markdown'],
-    perl: [() => import('codemirror/mode/perl/perl'), 'text/x-perl'],
-    php: [() => import('codemirror/mode/php/php'), 'application/x-httpd-php'],
-    plaintext: [() => { }, 'text/plain'],
-    postgresql: [() => import('codemirror/mode/sql/sql'), 'text/x-pgsql'],
-    python: [() => import('codemirror/mode/python/python'), 'text/x-python'],
-    raku: [() => import('./raku'), 'text/x-raku'],
-    rust: [() => import('codemirror/mode/rust/rust'), 'text/x-rustsrc'],
-    sh: [() => import('codemirror/mode/shell/shell'), 'text/x-sh'],
-    sql: [() => import('codemirror/mode/sql/sql'), 'text/x-sql'],
-    sqlite: [() => import('codemirror/mode/sql/sql'), 'text/x-sqlite'],
-    typescript: [() => import('codemirror/mode/javascript/javascript'), 'application/typescript'],
-    tsx: [() => import('codemirror/mode/jsx/jsx'), 'text/typescript-jsx'],
+const languagesMap: { [name: string]: () => Promise<Extension> } = {
+    c: async () => (await import('@codemirror/lang-cpp')).cpp(),
+    cpp: async () => (await import('@codemirror/lang-cpp')).cpp(),
+    csharp: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/clike')).csharp),
+    go: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/go')).go),
+    haskell: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/haskell')).haskell),
+    html: async () => (await import('@codemirror/lang-html')).html(),
+    java: async () => (await import('@codemirror/lang-java')).java(),
+    javascript: async () => (await import('@codemirror/lang-javascript')).javascript(),
+    jinja2: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/jinja2')).jinja2),
+    jsx: async () => (await import('@codemirror/lang-javascript')).javascript({ jsx: true }),
+    markdown: async () => (await import('@codemirror/lang-markdown')).markdown(),
+    perl: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/perl')).perl),
+    php: async () => (await import('@codemirror/lang-php')).php(),
+    async postgresql() {
+        const { sql, PostgreSQL } = await import('@codemirror/lang-sql');
+        return sql({ dialect: PostgreSQL });
+    },
+    python: async () => (await import('@codemirror/lang-python')).python(),
+    rust: async () => (await import('@codemirror/lang-rust')).rust(),
+    sh: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/shell')).shell),
+    sql: async () => (await import('@codemirror/lang-sql')).sql(),
+    async sqlite() {
+        const { sql, SQLite } = await import('@codemirror/lang-sql');
+        return sql({ dialect: SQLite });
+    },
+    typescript: async () => (await import('@codemirror/lang-javascript')).javascript({ typescript: true }),
+    tsx: async () => (await import('@codemirror/lang-javascript')).javascript({ jsx: true, typescript: true }),
 }
 
 class CodeMirrorEditor {
-    editor: CodeMirror.EditorFromTextArea
+    language: Compartment
+    view: EditorView
+    textarea: HTMLTextAreaElement
+    submitListener: () => void
     currentIdentifier: string | null = null
 
-    constructor(editor) {
-        this.editor = editor
+    constructor(language: Compartment, editor: EditorView, textarea: HTMLTextAreaElement, submitListener: () => void) {
+        this.language = language
+        this.view = editor
+        this.textarea = textarea
+        this.submitListener = submitListener
     }
 
-    async setLanguage(identifier) {
+    async setLanguage(identifier: string) {
         this.currentIdentifier = identifier
-        const [importFn, mime] = languagesMap[identifier]
-        this.editor.setOption('mode', mime)
-        await importFn()
+        const callback = languagesMap[identifier]
+        const extension = callback ? await callback() : []
         if (this.currentIdentifier === identifier) {
-            this.editor.setOption('mode', mime)
+            this.view.dispatch({ effects: this.language.reconfigure(extension) })
         }
     }
 
     getValue() {
-        return this.editor.getValue()
+        return this.view.state.doc.toString()
     }
 
-    setValue(value) {
-        this.editor.setValue(value)
+    setValue(value: string) {
+        this.view.dispatch({ changes: { from: 0, to: this.view.state.doc.length, insert: value } })
     }
 
     update() {
@@ -75,15 +87,36 @@ class CodeMirrorEditor {
     }
 
     unload() {
-        this.editor.toTextArea()
+        this.textarea.value = this.getValue()
+        this.textarea.style.display = ""
+        this.textarea.form.removeEventListener('submit', this.submitListener)
+        this.view.destroy()
     }
 }
 
-export default function createTextareaEditor(textarea, onChange) {
-    const editor = CodeMirror.fromTextArea(textarea, {
-        lineNumbers: true,
-        lineWrapping: true,
+export default function createTextareaEditor(textarea: HTMLTextAreaElement, onChange: () => void) {
+    const language = new Compartment
+    let view = new EditorView({
+        state: EditorState.create({
+            doc: textarea.value,
+            extensions: [
+                keymap.of([indentWithTab, { key: "Ctrl-Enter", run: () => true }]),
+                basicSetup,
+                EditorView.updateListener.of(v => {
+                    if (v.docChanged) {
+                        onChange()
+                    }
+                }),
+                EditorView.lineWrapping,
+                indentUnit.of(" ".repeat(4)),
+                language.of([]),
+            ]
+        })
     })
-    editor.on('change', onChange)
-    return new CodeMirrorEditor(editor)
+    textarea.parentNode.insertBefore(view.dom, textarea)
+    textarea.style.display = 'none'
+    const submitListener = () => textarea.value = editor.getValue()
+    textarea.form.addEventListener('submit', submitListener)
+    const editor = new CodeMirrorEditor(language, view, textarea, submitListener)
+    return editor
 }
