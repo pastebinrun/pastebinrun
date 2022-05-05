@@ -1,12 +1,12 @@
-version: '3.7'
+version: "3.7"
 services:
   pastebinrun:
     depends_on:
-    - db
-    - sandbox
+      - db
+      - sandbox
     build: .
     ports:
-    - 127.0.0.1:8080:8080
+      - 127.0.0.1:8080:8080
     restart: always
     environment:
       DATABASE_URL: postgresql://postgres@db

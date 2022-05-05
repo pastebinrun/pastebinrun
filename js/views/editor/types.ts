@@ -15,8 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 export interface Wrapper {
-    identifier: string,
-    label: string,
-    isAsm: boolean,
-    isFormatter: boolean,
+  identifier: string;
+  label: string;
+  isAsm: boolean;
+  isFormatter: boolean;
 }

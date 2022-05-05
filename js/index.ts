@@ -14,24 +14,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import addOptionsLink from './views/config-link'
-import createSettings from './views/config-page/config-page'
-import createEditor from './views/editor/editor'
+import addOptionsLink from "./views/config-link";
+import createSettings from "./views/config-page/config-page";
+import createEditor from "./views/editor/editor";
 
-addOptionsLink()
+addOptionsLink();
 
 const convertedNodes = [
-    { id: 'options', view: createSettings },
-    { id: 'editor', view: createEditor },
-]
+  { id: "options", view: createSettings },
+  { id: "editor", view: createEditor },
+];
 
 for (const { id, view } of convertedNodes) {
-    const node = document.getElementById(id)
-    if (node !== null) {
-        view(node)
-    }
+  const node = document.getElementById(id);
+  if (node !== null) {
+    view(node);
+  }
 }
 
-if (document.querySelector('[class*=language-]')) {
-    import('./highlight-all')
+if (document.querySelector("[class*=language-]")) {
+  import("./highlight-all");
 }
