@@ -141,7 +141,7 @@ class CodeMirrorEditor {
       }
       this.view.dispatch({
         effects: this.tabIndentation.reconfigure(
-          getTabIndentationExtension(newValue)
+          getTabIndentationExtension(newValue === "true")
         ),
       });
     };
