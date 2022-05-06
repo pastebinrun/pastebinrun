@@ -5,7 +5,7 @@ COPY js js
 COPY tsconfig.json webpack.config.js ./
 RUN node_modules/.bin/webpack
 
-FROM rust:1.40 AS rust
+FROM rust:1.56 AS rust
 WORKDIR /build
 COPY Cargo.lock Cargo.toml ./
 RUN mkdir src
