@@ -4,6 +4,7 @@
 <title>pastebin.run</title>
 <link rel=stylesheet href="/static/style-v2.css">
 <meta name=description content="{% block description %}Compile and share code in multiple programming languages{% endblock description %}">
+<script src="/{{ js_path() }}" defer></script>
 <header id=header>
     <div>
         <a href="/">
@@ -21,4 +22,3 @@
 {% block content %}
 {% endblock %}
 </article>
-<script src="/{{ js_path() }}"></script>
