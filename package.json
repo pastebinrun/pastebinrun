@@ -19,7 +19,7 @@
     "@codemirror/view": "^0.20.4",
     "@types/prismjs": "^1.26.0",
     "css-loader": "^6.7.1",
-    "glob": "^7.2.0",
+    "glob": "^8.0.1",
     "prettier": "^2.6.2",
     "prismjs": "^1.28.0",
     "style-loader": "^3.3.1",
