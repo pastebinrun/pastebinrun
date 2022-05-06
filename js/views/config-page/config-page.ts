@@ -17,7 +17,7 @@
 import { getCurrentEditor, setCurrentEditor, types } from "../../editor-types";
 import "./config-page.css";
 
-export default async function createSettings(node) {
+export default async function createSettings(node: HTMLElement) {
   node.textContent = "Loading settings\u2026";
   const currentEditor = getCurrentEditor();
   node.textContent = "Editor type: ";

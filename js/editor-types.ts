@@ -22,7 +22,14 @@ export interface EditorType {
   unload(): void;
 }
 
-export const types = {
+export const types: {
+  [name: string]: {
+    name: string;
+    createView(): Promise<
+      (textarea: HTMLTextAreaElement, onChange: () => void) => EditorType
+    >;
+  };
+} = {
   textarea: {
     name: "Textarea",
     async createView() {
@@ -43,7 +50,7 @@ export function getCurrentEditor() {
   return editor === "monaco" ? "codemirror" : editor;
 }
 
-export function setCurrentEditor(newEditor) {
+export function setCurrentEditor(newEditor: string) {
   return localStorage.setItem("editorType", newEditor);
 }
 

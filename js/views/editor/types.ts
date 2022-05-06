@@ -20,3 +20,8 @@ export interface Wrapper {
   isAsm: boolean;
   isFormatter: boolean;
 }
+
+export interface OutputWrapper {
+  isAsm?: boolean;
+  isFormatter?: boolean;
+}

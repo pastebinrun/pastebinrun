@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import "./spinner.css";
-import { Wrapper } from "./types";
+import { OutputWrapper } from "./types";
 
 const filterRegex =
   /(?:\t\.(?:text|file|section|globl|p2align|type|cfi_.*|size|section)\b|.Lfunc_end).*\n?/g;
@@ -26,7 +26,7 @@ export default class Output {
   output: HTMLDivElement;
   filterAsm = document.createElement("label");
   filterAsmCheckbox = document.createElement("input");
-  wrapper: Wrapper | null = null;
+  wrapper: OutputWrapper | null = null;
   json: { output: string; status: number | null } | null = null;
 
   static addTo(split: HTMLDivElement) {
@@ -66,7 +66,13 @@ export default class Output {
       "An error occured while running the code. Try again.";
   }
 
-  display(wrapper, json) {
+  display(
+    wrapper: OutputWrapper,
+    json: {
+      output: string;
+      status: number;
+    }
+  ) {
     this.wrapper = wrapper;
     this.json = json;
     this.update();

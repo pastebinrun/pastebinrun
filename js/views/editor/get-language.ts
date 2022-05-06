@@ -16,12 +16,15 @@
 
 const cache = new Map();
 
-async function fetchLanguage(identifier) {
+async function fetchLanguage(identifier: string) {
   const response = await fetch(`/api/v0/language/${identifier}`);
   return await response.json();
 }
 
-export default async function getLanguage(identifier, shouldRetry) {
+export default async function getLanguage(
+  identifier: string,
+  shouldRetry: () => boolean
+) {
   if (cache.has(identifier)) {
     return cache.get(identifier);
   }

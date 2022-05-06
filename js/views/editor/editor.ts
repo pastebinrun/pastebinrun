@@ -24,14 +24,15 @@ import {
   getCurrentEditor,
   onChange,
 } from "../../editor-types";
+import { OutputWrapper, Wrapper } from "./types";
 
 class Editor {
   languageSelector: HTMLSelectElement;
   wrapperButtons: WrapperButtons;
   codeElement: HTMLTextAreaElement;
   output: Output;
-  autodeleteText: HTMLElement[];
-  submitButtons: HTMLInputElement[];
+  autodeleteText: NodeListOf<HTMLElement>;
+  submitButtons: NodeListOf<HTMLInputElement>;
   detailsElement: HTMLDetailsElement;
   stdinElement: HTMLTextAreaElement;
   editor: EditorType;
@@ -39,7 +40,7 @@ class Editor {
   abortEval: AbortController | null = null;
   isHelloWorld: boolean = false;
 
-  initialize(form) {
+  initialize(form: HTMLElement) {
     this.languageSelector = form.querySelector("#language");
     this.wrapperButtons = new WrapperButtons(
       form.querySelector("#wrapper-buttons"),
@@ -67,13 +68,14 @@ class Editor {
     }
     form.addEventListener("submit", () => {
       if (this.output.json && !this.output.wrapper.isFormatter) {
-        for (const name of ["output", "status"]) {
+        const types: ("output" | "status")[] = ["output", "status"];
+        for (const name of types) {
           const elem =
-            form.querySelector(`[name=${name}]`) ||
+            form.querySelector<HTMLInputElement>(`[name=${name}]`) ||
             document.createElement("input");
           elem.type = "hidden";
           elem.name = name;
-          elem.value = this.output.json[name];
+          elem.value = this.output.json[name].toString();
           form.append(elem);
         }
       } else {
@@ -106,12 +108,22 @@ class Editor {
     this.changeEditor(await types[getCurrentEditor()].createView());
   }
 
-  changeEditor(createEditor) {
+  changeEditor(
+    createEditor: (
+      textArea: HTMLTextAreaElement,
+      onChange: () => void
+    ) => EditorType
+  ) {
     this.editor.unload();
     this.initializeEditor(createEditor);
   }
 
-  initializeEditor(createEditor) {
+  initializeEditor(
+    createEditor: (
+      textArea: HTMLTextAreaElement,
+      onChange: () => void
+    ) => EditorType
+  ) {
     this.editor = createEditor(this.codeElement, () => {
       this.changeToLookLikeNewPaste();
       this.isHelloWorld = false;
@@ -121,7 +133,7 @@ class Editor {
     }
   }
 
-  setLanguage(language) {
+  setLanguage(language: string) {
     this.currentLanguage = language;
     this.editor.setLanguage(language);
   }
@@ -167,7 +179,7 @@ class Editor {
     return this.languageSelector.selectedOptions[0].value;
   }
 
-  async run(wrapper, compilerOptions) {
+  async run(wrapper: Wrapper, compilerOptions: string) {
     this.output.spin();
     this.editor.update();
     if (this.abortEval) {
@@ -205,12 +217,15 @@ class Editor {
     this.displayOutput(wrapper, response);
   }
 
-  displayOutput(wrapper, response) {
+  displayOutput(
+    wrapper: OutputWrapper,
+    response: { output: string; status: number }
+  ) {
     this.output.display(wrapper, response);
     this.editor.update();
   }
 }
 
-export default function createEditor(form) {
+export default function createEditor(form: HTMLElement) {
   new Editor().initialize(form);
 }

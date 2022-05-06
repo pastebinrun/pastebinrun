@@ -18,7 +18,7 @@ class TextAreaEditor {
   textarea: HTMLTextAreaElement;
   onChange: () => void;
 
-  constructor(textarea, onChange) {
+  constructor(textarea: HTMLTextAreaElement, onChange: () => void) {
     this.textarea = textarea;
     this.onChange = onChange;
   }
@@ -29,7 +29,7 @@ class TextAreaEditor {
     return this.textarea.value;
   }
 
-  setValue(value) {
+  setValue(value: string) {
     this.textarea.value = value;
   }
 
@@ -40,7 +40,10 @@ class TextAreaEditor {
   }
 }
 
-export default function createTextareaEditor(textarea, onChange) {
+export default function createTextareaEditor(
+  textarea: HTMLTextAreaElement,
+  onChange: () => void
+) {
   textarea.addEventListener("input", onChange);
   const textAreaEditor = new TextAreaEditor(textarea, onChange);
   return textAreaEditor;

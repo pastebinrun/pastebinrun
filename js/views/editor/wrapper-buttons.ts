@@ -29,7 +29,10 @@ export default class WrapperButtons {
   >();
   globalKeyEvent: (e: KeyboardEvent) => void | null = null;
 
-  constructor(buttonsContainer, run) {
+  constructor(
+    buttonsContainer: HTMLSpanElement,
+    run: (wrapper: Wrapper, compilerOptions: string) => void
+  ) {
     this.buttonsContainer = buttonsContainer;
     this.compilerOptions = document.createElement("input");
     this.compilerOptions.placeholder = "Compiler options";
@@ -38,7 +41,13 @@ export default class WrapperButtons {
     this.abortController = null;
   }
 
-  update(implementations) {
+  update(
+    implementations: {
+      label: string;
+      identifier: string;
+      wrappers: Wrapper[];
+    }[]
+  ) {
     this.clear();
     this.select = document.createElement("select");
     for (const { label, identifier, wrappers } of implementations) {
