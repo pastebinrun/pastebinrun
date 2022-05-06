@@ -35,7 +35,7 @@
   {
     "identifier": "cpp",
     "name": "C++",
-    "helloworld": "#include <iostream>\n\nint main(void) {\n    std::cout << \"Hello, world!\\n\";\n}",
+    "helloworld": "#include <iostream>\n\nint main() {\n    std::cout << \"Hello, world!\\n\";\n}",
     "implementations": [
       {
         "label": "Clang",
