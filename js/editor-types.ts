@@ -68,3 +68,7 @@ export function onChange(
     }
   });
 }
+
+export function getTabIndentationConfiguration() {
+  return localStorage.getItem("tabIndentation") === "true";
+}

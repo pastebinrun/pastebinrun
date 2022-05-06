@@ -1,4 +1,6 @@
 {% extends "base" %}
 {% block content %}
-<p id=options> This page requires a modern web browser with enabled JavaScript support.
+<div id=options>
+<p> This page requires a modern web browser with enabled JavaScript support.
+</div>
 {% endblock content %}

@@ -14,33 +14,61 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { getCurrentEditor, setCurrentEditor, types } from "../../editor-types";
+import {
+  getCurrentEditor,
+  getTabIndentationConfiguration,
+  setCurrentEditor,
+  types,
+} from "../../editor-types";
 import "./config-page.css";
 
 export default async function createSettings(node: HTMLElement) {
-  node.textContent = "Loading settings\u2026";
-  const currentEditor = getCurrentEditor();
-  node.textContent = "Editor type: ";
+  function showConfigurationSuccess() {
+    const success = document.createElement("p");
+    success.className = "success";
+    success.textContent = "Configuration was updated";
+    node.append(success);
+    setTimeout(() => {
+      success.style.opacity = "0";
+      setTimeout(() => {
+        success.remove();
+      }, 1 * 1000);
+    }, 3 * 1000);
+  }
+  function showTabIndentation(editor: string) {
+    tabIndentation.style.display = editor === "codemirror" ? "" : "none";
+  }
+  node.textContent = "";
+  let currentEditor = getCurrentEditor();
+  const editorType = document.createElement("p");
+  editorType.textContent = "Editor type: ";
   for (const id in types) {
     const label = document.createElement("label");
     const radio = document.createElement("input");
     radio.type = "radio";
     radio.name = "current-editor";
     radio.checked = id === currentEditor;
-    radio.addEventListener("change", async () => {
-      await setCurrentEditor(id);
-      const success = document.createElement("p");
-      success.className = "success";
-      success.textContent = "Configuration was updated";
-      node.append(success);
-      setTimeout(() => {
-        success.style.opacity = "0";
-        setTimeout(() => {
-          success.remove();
-        }, 1 * 1000);
-      }, 3 * 1000);
+    radio.addEventListener("change", () => {
+      setCurrentEditor(id);
+      showTabIndentation(id);
+      showConfigurationSuccess();
     });
     label.append(radio, ` ${types[id].name}`);
-    node.append(label);
+    editorType.append(label);
   }
+  const tabIndentation = document.createElement("p");
+  const tabIndentationLabel = document.createElement("label");
+  tabIndentationLabel.title =
+    "Indenting with Ctrl+] is always possible, even if this option is disabled.";
+  const tabIndentationInput = document.createElement("input");
+  tabIndentationInput.type = "checkbox";
+  tabIndentationInput.checked = getTabIndentationConfiguration();
+  tabIndentationInput.addEventListener("change", function () {
+    localStorage.setItem("tabIndentation", this.checked ? "true" : "false");
+    showConfigurationSuccess();
+  });
+  tabIndentationLabel.append(tabIndentationInput, " Indent with tab");
+  tabIndentation.append(tabIndentationLabel);
+  showTabIndentation(currentEditor);
+  node.append(editorType, tabIndentation);
 }

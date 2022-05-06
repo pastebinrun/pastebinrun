@@ -19,7 +19,10 @@ import { indentWithTab } from "@codemirror/commands";
 import { indentUnit, StreamLanguage } from "@codemirror/language";
 import { Compartment, Extension } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
+import { getTabIndentationConfiguration } from "../../../editor-types";
 import "./codemirror.css";
+
+const tabIndentation = new Compartment();
 
 const languagesMap: { [name: string]: () => Promise<Extension> } = {
   async c() {
@@ -108,22 +111,41 @@ const languagesMap: { [name: string]: () => Promise<Extension> } = {
   },
 };
 
+function getTabIndentationExtension(value: boolean) {
+  return value ? keymap.of([indentWithTab]) : [];
+}
+
 class CodeMirrorEditor {
+  tabIndentation: Compartment;
   language: Compartment;
   view: EditorView;
   textarea: HTMLTextAreaElement;
+  storageListener: (e: StorageEvent) => void;
   submitListener: () => void;
   currentIdentifier: string | null = null;
 
   constructor(
+    tabIndentation: Compartment,
     language: Compartment,
     editor: EditorView,
     textarea: HTMLTextAreaElement,
     submitListener: () => void
   ) {
+    this.tabIndentation = tabIndentation;
     this.language = language;
     this.view = editor;
     this.textarea = textarea;
+    this.storageListener = ({ key, newValue }) => {
+      if (key !== "tabIndentation") {
+        return;
+      }
+      this.view.dispatch({
+        effects: this.tabIndentation.reconfigure(
+          getTabIndentationExtension(newValue)
+        ),
+      });
+    };
+    addEventListener("storage", this.storageListener);
     this.submitListener = submitListener;
   }
 
@@ -154,6 +176,7 @@ class CodeMirrorEditor {
     this.textarea.value = this.getValue();
     this.textarea.style.display = "";
     this.textarea.form.removeEventListener("submit", this.submitListener);
+    removeEventListener("storage", this.storageListener);
     this.view.destroy();
   }
 }
@@ -167,7 +190,10 @@ export default function createTextareaEditor(
     state: EditorState.create({
       doc: textarea.value,
       extensions: [
-        keymap.of([indentWithTab, { key: "Ctrl-Enter", run: () => true }]),
+        tabIndentation.of(
+          getTabIndentationExtension(getTabIndentationConfiguration())
+        ),
+        keymap.of([{ key: "Ctrl-Enter", run: () => true }]),
         basicSetup,
         EditorView.updateListener.of((v) => {
           if (v.docChanged) {
@@ -184,6 +210,12 @@ export default function createTextareaEditor(
   textarea.style.display = "none";
   const submitListener = () => (textarea.value = editor.getValue());
   textarea.form.addEventListener("submit", submitListener);
-  const editor = new CodeMirrorEditor(language, view, textarea, submitListener);
+  const editor = new CodeMirrorEditor(
+    tabIndentation,
+    language,
+    view,
+    textarea,
+    submitListener
+  );
   return editor;
 }
