@@ -22,60 +22,90 @@ import { keymap } from "@codemirror/view";
 import "./codemirror.css";
 
 const languagesMap: { [name: string]: () => Promise<Extension> } = {
-  c: async () => (await import("@codemirror/lang-cpp")).cpp(),
-  cpp: async () => (await import("@codemirror/lang-cpp")).cpp(),
-  csharp: async () =>
-    StreamLanguage.define(
+  async c() {
+    return (await import("@codemirror/lang-cpp")).cpp();
+  },
+  async cpp() {
+    return (await import("@codemirror/lang-cpp")).cpp();
+  },
+  async csharp() {
+    return StreamLanguage.define(
       (await import("@codemirror/legacy-modes/mode/clike")).csharp
-    ),
-  go: async () =>
-    StreamLanguage.define(
+    );
+  },
+  async go() {
+    return StreamLanguage.define(
       (await import("@codemirror/legacy-modes/mode/go")).go
-    ),
-  haskell: async () =>
-    StreamLanguage.define(
+    );
+  },
+  async haskell() {
+    return StreamLanguage.define(
       (await import("@codemirror/legacy-modes/mode/haskell")).haskell
-    ),
-  html: async () => (await import("@codemirror/lang-html")).html(),
-  java: async () => (await import("@codemirror/lang-java")).java(),
-  javascript: async () =>
-    (await import("@codemirror/lang-javascript")).javascript(),
-  jinja2: async () =>
-    StreamLanguage.define(
+    );
+  },
+  async html() {
+    return (await import("@codemirror/lang-html")).html();
+  },
+  async java() {
+    return (await import("@codemirror/lang-java")).java();
+  },
+  async javascript() {
+    return (await import("@codemirror/lang-javascript")).javascript();
+  },
+  async jinja2() {
+    return StreamLanguage.define(
       (await import("@codemirror/legacy-modes/mode/jinja2")).jinja2
-    ),
-  jsx: async () =>
-    (await import("@codemirror/lang-javascript")).javascript({ jsx: true }),
-  markdown: async () => (await import("@codemirror/lang-markdown")).markdown(),
-  perl: async () =>
-    StreamLanguage.define(
+    );
+  },
+  async jsx() {
+    return (await import("@codemirror/lang-javascript")).javascript({
+      jsx: true,
+    });
+  },
+  async markdown() {
+    return (await import("@codemirror/lang-markdown")).markdown();
+  },
+  async perl() {
+    return StreamLanguage.define(
       (await import("@codemirror/legacy-modes/mode/perl")).perl
-    ),
-  php: async () => (await import("@codemirror/lang-php")).php(),
+    );
+  },
+  async php() {
+    return (await import("@codemirror/lang-php")).php();
+  },
   async postgresql() {
     const { sql, PostgreSQL } = await import("@codemirror/lang-sql");
     return sql({ dialect: PostgreSQL });
   },
-  python: async () => (await import("@codemirror/lang-python")).python(),
-  rust: async () => (await import("@codemirror/lang-rust")).rust(),
-  sh: async () =>
-    StreamLanguage.define(
+  async python() {
+    return (await import("@codemirror/lang-python")).python();
+  },
+  async rust() {
+    return (await import("@codemirror/lang-rust")).rust();
+  },
+  async sh() {
+    return StreamLanguage.define(
       (await import("@codemirror/legacy-modes/mode/shell")).shell
-    ),
-  sql: async () => (await import("@codemirror/lang-sql")).sql(),
+    );
+  },
+  async sql() {
+    return (await import("@codemirror/lang-sql")).sql();
+  },
   async sqlite() {
     const { sql, SQLite } = await import("@codemirror/lang-sql");
     return sql({ dialect: SQLite });
   },
-  typescript: async () =>
-    (await import("@codemirror/lang-javascript")).javascript({
+  async typescript() {
+    return (await import("@codemirror/lang-javascript")).javascript({
       typescript: true,
-    }),
-  tsx: async () =>
-    (await import("@codemirror/lang-javascript")).javascript({
+    });
+  },
+  async tsx() {
+    return (await import("@codemirror/lang-javascript")).javascript({
       jsx: true,
       typescript: true,
-    }),
+    });
+  },
 };
 
 class CodeMirrorEditor {
