@@ -4,7 +4,6 @@ version = "0.1.0"
 authors = ["Konrad Borowski <konrad@borowski.pw>"]
 edition = "2021"
 license = "AGPL-3.0-or-later"
-build = "src/build.rs"
 
 [dependencies]
 ammonia = "3.1.1"
@@ -24,6 +23,10 @@ serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
 serde_with = "1.11.0"
 time-parse = "0.2.0"
+
+[build-dependencies]
+serde = { version = "1.0.126", features = ["derive"] }
+serde_json = "1.0.64"
 
 [features]
 database_tests = []

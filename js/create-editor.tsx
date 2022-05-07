@@ -15,20 +15,25 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { render } from "solid-js/web";
-import createEditor from "./create-editor";
-import createOptionsLink from "./create-options-link";
-import Options from "./views/Options";
-import "../static/style-v2.css";
+import App from "./views/App";
 
-createOptionsLink();
-
-const editor = document.getElementById("editor");
-if (editor) {
-  createEditor(editor);
-}
-
-const options = document.getElementById("options");
-if (options) {
-  options.textContent = "";
-  render(Options, options);
+export default function createEditor(editor: Element) {
+  const markdown = editor.querySelector("#markdown");
+  const languages = editor.querySelector("select")!;
+  const autoDelete = editor.querySelector(".autodelete-text");
+  const rawPasteElement = editor.querySelector(".rawpaste-text");
+  const code = editor.querySelector("textarea")!.value;
+  editor.textContent = "";
+  render(
+    () => (
+      <App
+        markdown={markdown}
+        languages={languages}
+        autoDelete={autoDelete}
+        rawPasteElement={rawPasteElement}
+        code={code}
+      />
+    ),
+    editor
+  );
 }

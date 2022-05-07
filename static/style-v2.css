@@ -50,6 +50,7 @@ body {
   padding: 0 1em 1em;
   position: relative;
 }
+#editor,
 form {
   display: flex;
   flex: 1;

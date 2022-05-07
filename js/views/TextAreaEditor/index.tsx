@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2022 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,11 +14,38 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::fs;
+import { Setter } from "solid-js";
+import CodeView from "../../models/CodeView";
 
-fn main() {
-    println!(
-        "cargo:rustc-env=ENTRY_FILE_PATH={}",
-        fs::read_to_string("entry").expect("Please use webpack to generate JavaScript"),
-    );
+export default function TextAreaEditor({
+  onInput,
+  code,
+  setCode,
+  setCodeView,
+}: {
+  onInput: () => void;
+  code: string;
+  setCode: Setter<string>;
+  setCodeView: Setter<CodeView>;
+}) {
+  let textarea: HTMLTextAreaElement;
+  setCodeView({
+    get code() {
+      return textarea.value;
+    },
+    set code(code: string) {
+      textarea.value = code;
+    },
+  });
+  return (
+    <textarea
+      onInput={(e) => {
+        onInput();
+        setCode(e.currentTarget.value);
+      }}
+      ref={textarea}
+    >
+      {code}
+    </textarea>
+  );
 }

@@ -3,7 +3,7 @@
 {% block description %}{{ description }}{% endblock %}
 
 {% block paste_header %}
-    <div>
+    <div id=markdown>
         {{ paste.markdown | safe }}
     </div>
     {% if paste.delete_at %}
@@ -32,4 +32,4 @@
     {% endfor %}
 {% endblock %}
 
-{% block rawpaste %}<span class="autodelete-text"> | <a href="{{ raw_paste_url }}">raw paste</a></span>{% endblock %}
+{% block rawpaste %}<span class="rawpaste-text"> | <a href="{{ raw_paste_url }}">raw paste</a></span>{% endblock %}
