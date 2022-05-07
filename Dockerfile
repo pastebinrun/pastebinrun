@@ -1,4 +1,4 @@
-FROM node:12 AS node
+FROM node:16 AS node
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY js js
