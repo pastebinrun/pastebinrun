@@ -19,7 +19,7 @@
         </nav>
     </div>
 </header>
-<article id=article>
+<main>
 {% block content %}
 {% endblock %}
-</article>
+</main>
