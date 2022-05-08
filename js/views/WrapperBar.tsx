@@ -92,17 +92,20 @@ export default function WrapperBar({
           {data().implementations.length > 1 && (
             <>
               {" "}
-              <select
-                onChange={(e) =>
-                  setCurrentImplementationIndex(+e.currentTarget.value)
-                }
-              >
-                <For each={data().implementations}>
-                  {({ label }, index) => (
-                    <option value={index()}>{label}</option>
-                  )}
-                </For>
-              </select>
+              <label>
+                {"Implementation: "}
+                <select
+                  onChange={(e) =>
+                    setCurrentImplementationIndex(+e.currentTarget.value)
+                  }
+                >
+                  <For each={data().implementations}>
+                    {({ label }, index) => (
+                      <option value={index()}>{label}</option>
+                    )}
+                  </For>
+                </select>
+              </label>
             </>
           )}
           {data().implementations.length && (

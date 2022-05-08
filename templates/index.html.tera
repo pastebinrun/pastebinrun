@@ -4,13 +4,13 @@
     <form method="post" action="/">
         {% block paste_header %}{% endblock %}
         <div id="toolbar">
-            <select id=language name=language>
+            <label>Language: <select id=language name=language>
                 {% block languages %}
                     {% for language in languages %}
                         <option value="{{ language.identifier }}">{{ language.name }}</option>
                     {% endfor %}
                 {% endblock languages %}
-            </select>
+            </select></label>
             <span id="wrapper-buttons"></span>
             {% block rawpaste %}{% endblock %}
             <span id="right-buttons">
