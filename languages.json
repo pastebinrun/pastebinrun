@@ -123,7 +123,21 @@
   },
   {
     "identifier": "html",
-    "name": "HTML"
+    "name": "HTML",
+    "implementations": [
+      {
+        "label": "Prettier",
+        "identifier": "prettier",
+        "wrappers": [
+          {
+            "identifier": "html-prettier",
+            "label": "Format (prettier)",
+            "code": "mv code{,.html}; prettier code.html || cat code.html",
+            "is_formatter": true
+          }
+        ]
+      }
+    ]
   },
   {
     "identifier": "java",
@@ -167,6 +181,12 @@
             "identifier": "nodejs",
             "label": "Run",
             "code": "node %s code"
+          },
+          {
+            "identifier": "nodejs-prettier",
+            "label": "Format (prettier)",
+            "code": "mv code{,.js}; prettier code.js || cat code.js",
+            "is_formatter": true
           }
         ]
       }
@@ -178,11 +198,39 @@
   },
   {
     "identifier": "jsx",
-    "name": "JSX"
+    "name": "JSX",
+    "implementations": [
+      {
+        "label": "Node.js",
+        "identifier": "nodejs",
+        "wrappers": [
+          {
+            "identifier": "jsx-prettier",
+            "label": "Format (prettier)",
+            "code": "mv code{,.jsx}; prettier code.jsx || cat code.jsx",
+            "is_formatter": true
+          }
+        ]
+      }
+    ]
   },
   {
     "identifier": "markdown",
-    "name": "Markdown"
+    "name": "Markdown",
+    "implementations": [
+      {
+        "label": "Prettier",
+        "identifier": "prettier",
+        "wrappers": [
+          {
+            "identifier": "markdown-prettier",
+            "label": "Format (prettier)",
+            "code": "mv code{,.md}; prettier code.md || cat code.md",
+            "is_formatter": true
+          }
+        ]
+      }
+    ]
   },
   {
     "identifier": "perl",
@@ -410,6 +458,12 @@
             "identifier": "typescript-nodejs",
             "label": "Run",
             "code": "mv code code.ts; tsc %s code.ts && node code"
+          },
+          {
+            "identifier": "typescript-prettier",
+            "label": "Format (prettier)",
+            "code": "mv code{,.ts}; prettier code.ts || cat code.ts",
+            "is_formatter": true
           }
         ]
       }
@@ -417,6 +471,20 @@
   },
   {
     "identifier": "tsx",
-    "name": "TypeScript-JSX"
+    "name": "TypeScript-JSX",
+    "implementations": [
+      {
+        "label": "Node.js",
+        "identifier": "nodejs",
+        "wrappers": [
+          {
+            "identifier": "tsx-prettier",
+            "label": "Format (prettier)",
+            "code": "mv code{,.tsx}; prettier code.tsx || cat code.tsx",
+            "is_formatter": true
+          }
+        ]
+      }
+    ]
   }
 ]
