@@ -53,6 +53,7 @@ export default function CodeMirrorEditor({
     state: EditorState.create({
       doc: code(),
       extensions: [
+        EditorView.contentAttributes.of({ "aria-labelledby": "code-label" }),
         tabIndentation.of(getTabIndentationExtension()),
         keymap.of([{ key: "Ctrl-Enter", run: () => true }]),
         basicSetup,
@@ -99,5 +100,12 @@ export default function CodeMirrorEditor({
     submitCallback();
     view.destroy();
   });
-  return view.dom;
+  return (
+    <>
+      <label id="code-label" onClick={() => view.focus()}>
+        {"Code: "}
+      </label>
+      {view.dom}
+    </>
+  );
 }

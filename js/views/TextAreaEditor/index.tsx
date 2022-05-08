@@ -38,14 +38,17 @@ export default function TextAreaEditor({
     },
   });
   return (
-    <textarea
-      onInput={(e) => {
-        onInput();
-        setCode(e.currentTarget.value);
-      }}
-      ref={textarea}
-    >
-      {code}
-    </textarea>
+    <label>
+      {"Code: "}
+      <textarea
+        onInput={(e) => {
+          onInput();
+          setCode(e.currentTarget.value);
+        }}
+        ref={textarea}
+      >
+        {code}
+      </textarea>
+    </label>
   );
 }
