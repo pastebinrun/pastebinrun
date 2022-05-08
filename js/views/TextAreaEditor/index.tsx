@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Setter } from "solid-js";
+import { createUniqueId, JSXElement, Setter } from "solid-js";
 import CodeView from "../../models/CodeView";
 
 export default function TextAreaEditor({
@@ -22,12 +22,16 @@ export default function TextAreaEditor({
   code,
   setCode,
   setCodeView,
+  setLabel,
 }: {
   onInput: () => void;
   code: string;
   setCode: Setter<string>;
   setCodeView: Setter<CodeView>;
+  setTextareaId: Setter<string>;
+  setLabel: Setter<JSXElement>;
 }) {
+  let id = createUniqueId();
   let textarea: HTMLTextAreaElement;
   setCodeView({
     get code() {
@@ -37,18 +41,17 @@ export default function TextAreaEditor({
       textarea.value = code;
     },
   });
+  setLabel(<label for={id}>{"Code: "}</label>);
   return (
-    <label>
-      {"Code: "}
-      <textarea
-        onInput={(e) => {
-          onInput();
-          setCode(e.currentTarget.value);
-        }}
-        ref={textarea}
-      >
-        {code}
-      </textarea>
-    </label>
+    <textarea
+      onInput={(e) => {
+        onInput();
+        setCode(e.currentTarget.value);
+      }}
+      ref={textarea}
+      id={id}
+    >
+      {code}
+    </textarea>
   );
 }

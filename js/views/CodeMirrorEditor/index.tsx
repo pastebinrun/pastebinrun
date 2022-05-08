@@ -19,7 +19,14 @@ import { indentWithTab } from "@codemirror/commands";
 import { indentUnit } from "@codemirror/language";
 import { Compartment } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
-import { Accessor, createEffect, onCleanup, Setter } from "solid-js";
+import {
+  Accessor,
+  createEffect,
+  createUniqueId,
+  JSXElement,
+  onCleanup,
+  Setter,
+} from "solid-js";
 import CodeView from "../../models/CodeView";
 import { getTabIndentationSignal } from "../../options";
 import "./codemirror.css";
@@ -32,6 +39,7 @@ export default function CodeMirrorEditor({
   currentLanguage,
   form,
   setCodeView,
+  setLabel,
 }: {
   code: Accessor<string>;
   setCode: Setter<string>;
@@ -39,6 +47,7 @@ export default function CodeMirrorEditor({
   currentLanguage: Accessor<string>;
   form: HTMLFormElement;
   setCodeView: Setter<CodeView>;
+  setLabel: Setter<JSXElement>;
 }) {
   const [tabIndentationConfiguration] = getTabIndentationSignal();
   function getTabIndentationExtension() {
@@ -49,11 +58,12 @@ export default function CodeMirrorEditor({
   const tabIndentation = new Compartment();
   const language = new Compartment();
   let avoidChangeNotifications = false;
+  const labelId = createUniqueId();
   let view = new EditorView({
     state: EditorState.create({
       doc: code(),
       extensions: [
-        EditorView.contentAttributes.of({ "aria-labelledby": "code-label" }),
+        EditorView.contentAttributes.of({ "aria-labelledby": labelId }),
         tabIndentation.of(getTabIndentationExtension()),
         keymap.of([{ key: "Ctrl-Enter", run: () => true }]),
         basicSetup,
@@ -93,6 +103,12 @@ export default function CodeMirrorEditor({
       avoidChangeNotifications = false;
     },
   });
+
+  setLabel(
+    <label id={labelId} onClick={() => view.focus()}>
+      {"Code: "}
+    </label>
+  );
   const submitCallback = () => setCode(getValue());
   form.addEventListener("submit", submitCallback);
   onCleanup(() => {
@@ -100,12 +116,5 @@ export default function CodeMirrorEditor({
     submitCallback();
     view.destroy();
   });
-  return (
-    <>
-      <label id="code-label" onClick={() => view.focus()}>
-        {"Code: "}
-      </label>
-      {view.dom}
-    </>
-  );
+  return view.dom;
 }

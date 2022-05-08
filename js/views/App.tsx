@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { createSignal, lazy, Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import WrapperOptions from "../models/WrapperOptions";
 import Editor from "./Editor";
 import LanguageSelector from "./LanguageSelector";
@@ -44,6 +44,7 @@ export default function App({
   const [codeView, setCodeView] = createSignal({ code: "" });
   const [standardInput, setStandardInput] = createSignal("");
   const [wrapperOptions, setWrapperOptions] = createSignal<WrapperOptions>();
+  const [label, setLabel] = createSignal<Element>();
   return (
     <form action="/" method="post" ref={form}>
       {markdown}
@@ -74,6 +75,7 @@ export default function App({
       </div>
       <div id="split">
         <div id="extrafieldsplit">
+          <div>{label}</div>
           <div id="textarea">
             <Editor
               code={code}
@@ -84,6 +86,7 @@ export default function App({
               currentLanguage={currentLanguage}
               form={form}
               setCodeView={setCodeView}
+              setLabel={setLabel}
             />
           </div>
           <StandardInput

@@ -14,7 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Accessor, createResource, createSignal, Setter } from "solid-js";
+import {
+  Accessor,
+  createResource,
+  createSignal,
+  JSXElement,
+  Setter,
+} from "solid-js";
 import CodeView from "../models/CodeView";
 import { getEditorTypeSignal } from "../options";
 import TextAreaEditor from "./TextAreaEditor";
@@ -25,12 +31,14 @@ export default function Editor({
   currentLanguage,
   form,
   setCodeView: setCodeView,
+  setLabel,
 }: {
   code: string;
   onInput(): void;
   currentLanguage: Accessor<string>;
   form: HTMLFormElement;
   setCodeView: Setter<CodeView>;
+  setLabel: Setter<JSXElement>;
 }) {
   const [editorType] = getEditorTypeSignal();
   const [editorConstructor] = createResource(editorType, async (editorType) => {
@@ -51,12 +59,14 @@ export default function Editor({
         currentLanguage,
         form,
         setCodeView,
+        setLabel,
       }) || (
         <TextAreaEditor
           code={code()}
           setCode={setCode}
           setCodeView={setCodeView}
           onInput={onInput}
+          setLabel={setLabel}
         />
       )}
     </>
