@@ -44,7 +44,7 @@ export default function Options() {
             }
             checked={JSON.parse(tabIndentation())}
           />
-          {" Indent with tab"}
+          {" Indent with tab when using CodeMirror"}
         </label>
       </p>
     </>
