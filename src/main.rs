@@ -30,7 +30,6 @@ use crate::routes::{
 };
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
-use rocket::fs::FileServer;
 use rocket_dyn_templates::tera::{self, Value};
 use rocket_dyn_templates::Template;
 use rocket_sync_db_pools::database;
@@ -57,7 +56,7 @@ fn css_stylesheet(_: &HashMap<String, Value>) -> Result<Value, tera::Error> {
 
 #[launch]
 async fn rocket() -> _ {
-    rocket::build()
+    let rocket = rocket::build()
         .attach(Template::custom(|engines| {
             engines.tera.register_function("js_path", js_path);
             engines
@@ -90,6 +89,8 @@ async fn rocket() -> _ {
                 display_paste,
                 raw_paste,
             ],
-        )
-        .mount("/assets", FileServer::from("dist/assets"))
+        );
+    #[cfg(not(debug_assertions))]
+    let rocket = rocket.mount("/assets", rocket::fs::FileServer::from("dist/assets"));
+    rocket
 }
