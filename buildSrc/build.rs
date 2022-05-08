@@ -33,7 +33,7 @@ fn main() -> serde_json::Result<()> {
 
         let Manifest {
             index: Index { file, css: [css] },
-        } = serde_json::from_str(include_str!("dist/manifest.json"))?;
+        } = serde_json::from_str(include_str!("../dist/manifest.json"))?;
         println!("cargo:rustc-env=ENTRY_FILE_PATH={}", file);
         println!("cargo:rustc-env=CSS_PATH={}", css);
     }
