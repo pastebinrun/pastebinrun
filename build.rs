@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2022 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,28 +14,28 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const cache = new Map();
+use serde::Deserialize;
+use std::env;
 
-async function fetchLanguage(identifier: string) {
-  const response = await fetch(`/api/v0/language/${identifier}`);
-  return await response.json();
+#[derive(Deserialize)]
+struct Manifest {
+    #[serde(rename = "js/index.ts")]
+    index: Index,
 }
 
-export default async function getLanguage(
-  identifier: string,
-  shouldRetry: () => boolean
-) {
-  if (cache.has(identifier)) {
-    return cache.get(identifier);
-  }
-  while (shouldRetry()) {
-    try {
-      const response = await fetchLanguage(identifier);
-      cache.set(identifier, response);
-      return response;
-    } catch (e) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+#[derive(Deserialize)]
+struct Index {
+    file: String,
+    css: [String; 1],
+}
+
+fn main() -> serde_json::Result<()> {
+    if env::var("PROFILE").as_deref() == Ok("release") {
+        let Manifest {
+            index: Index { file, css: [css] },
+        } = serde_json::from_str(include_str!("dist/manifest.json"))?;
+        println!("cargo:rustc-env=ENTRY_FILE_PATH={}", file);
+        println!("cargo:rustc-env=CSS_PATH={}", css);
     }
-  }
-  await new Promise(() => {});
+    Ok(())
 }

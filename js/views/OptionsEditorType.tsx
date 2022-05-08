@@ -14,21 +14,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { render } from "solid-js/web";
-import createEditor from "./create-editor";
-import createOptionsLink from "./create-options-link";
-import Options from "./views/Options";
-import "../static/style-v2.css";
+import { Signal } from "solid-js";
 
-createOptionsLink();
-
-const editor = document.getElementById("editor");
-if (editor) {
-  createEditor(editor);
-}
-
-const options = document.getElementById("options");
-if (options) {
-  options.textContent = "";
-  render(Options, options);
+export default function OptionsEditorType({
+  name,
+  identifier,
+  editorTypeSignal: [editor, setEditor],
+}: {
+  name: string;
+  identifier: string;
+  editorTypeSignal: Signal<string>;
+}) {
+  return (
+    <label>
+      <input
+        type="radio"
+        name="current-editor"
+        checked={identifier === editor()}
+        onChange={() => setEditor(identifier)}
+      />
+      {` ${name}`}
+    </label>
+  );
 }

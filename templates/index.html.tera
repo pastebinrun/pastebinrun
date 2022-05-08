@@ -1,28 +1,30 @@
 {% extends "base" %}
 {% block content %}
-<form method="post" action="/" id="editor">
-    {% block paste_header %}{% endblock %}
-    <div id="toolbar">
-        <select id=language name=language>
-            {% block languages %}
-                {% for language in languages %}
-                    <option value="{{ language.identifier }}">{{ language.name }}</option>
-                {% endfor %}
-            {% endblock languages %}
-        </select>
-        <span id="wrapper-buttons"></span>
-        {% block rawpaste %}{% endblock %}
-        <span id="right-buttons">
-            <button type=submit name=share value=share24>Share (delete after 24 hours)</button>
-            <button type=submit name=share value=share>Share</button>
-        </span>
-    </div>
-    <div id="split">
-        <div id="extrafieldsplit">
-            <div id="textarea"><textarea id=code name=code>
-{% block code %}{% endblock %}</textarea></div>
-            <div id="extrafields"></div>
+<div id="editor">
+    <form method="post" action="/">
+        {% block paste_header %}{% endblock %}
+        <div id="toolbar">
+            <select id=language name=language>
+                {% block languages %}
+                    {% for language in languages %}
+                        <option value="{{ language.identifier }}">{{ language.name }}</option>
+                    {% endfor %}
+                {% endblock languages %}
+            </select>
+            <span id="wrapper-buttons"></span>
+            {% block rawpaste %}{% endblock %}
+            <span id="right-buttons">
+                <button type=submit name=share value=share24>Share (delete after 24 hours)</button>
+                <button type=submit name=share value=share>Share</button>
+            </span>
         </div>
-    </div>
-</form>
+        <div id="split">
+            <div id="extrafieldsplit">
+                <div id="textarea"><textarea id=code name=code>
+{% block code %}{% endblock %}</textarea></div>
+                <div id="extrafields"></div>
+            </div>
+        </div>
+    </form>
+</div>
 {% endblock content %}

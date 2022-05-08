@@ -14,21 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { render } from "solid-js/web";
-import createEditor from "./create-editor";
-import createOptionsLink from "./create-options-link";
-import Options from "./views/Options";
-import "../static/style-v2.css";
+type CodeView = {
+  code: string;
+};
 
-createOptionsLink();
-
-const editor = document.getElementById("editor");
-if (editor) {
-  createEditor(editor);
-}
-
-const options = document.getElementById("options");
-if (options) {
-  options.textContent = "";
-  render(Options, options);
-}
+export default CodeView;

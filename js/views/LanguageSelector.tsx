@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2022 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,9 +14,30 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as Prism from "prismjs";
-import "prismjs/plugins/autoloader/prism-autoloader";
-import "prismjs/themes/prism.css";
+import { For, Setter } from "solid-js";
 
-Prism.plugins.autoloader.languages_path = "/static/js/";
-Prism.highlightAll();
+export default function LanguageSelector({
+  setCurrentLanguage,
+  languages,
+}: {
+  setCurrentLanguage: Setter<string>;
+  languages: HTMLSelectElement;
+}) {
+  return (
+    <select
+      id="language"
+      name="language"
+      onChange={(e) =>
+        setCurrentLanguage(e.currentTarget.selectedOptions[0].value)
+      }
+    >
+      <For each={[...languages.options]}>
+        {(option) => (
+          <option value={option.value} selected={option.selected}>
+            {option.textContent}
+          </option>
+        )}
+      </For>
+    </select>
+  );
+}

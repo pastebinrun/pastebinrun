@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2022 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,11 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-export default function addOptionsLink() {
-  const li = document.createElement("li");
-  const a = document.createElement("a");
-  a.textContent = "Options";
-  a.href = "/config";
-  li.append(a);
-  document.querySelector("#menu-buttons ul").append(li);
+import "./spinner.css";
+
+export default function Spinner() {
+  return <div class="spinner" />;
 }

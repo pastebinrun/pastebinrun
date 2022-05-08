@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2022 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,14 +14,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-export interface Wrapper {
+type Wrapper = {
   identifier: string;
   label: string;
   isAsm: boolean;
   isFormatter: boolean;
-}
+};
 
-export interface OutputWrapper {
-  isAsm?: boolean;
-  isFormatter?: boolean;
-}
+export default Wrapper;

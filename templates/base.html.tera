@@ -2,9 +2,9 @@
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>pastebin.run</title>
-<link rel=stylesheet href="/static/style-v2.css">
+{{ css_stylesheet() | safe }}
 <meta name=description content="{% block description %}Compile and share code in multiple programming languages{% endblock description %}">
-<script src="/{{ js_path() }}" defer></script>
+<script type=module src="{{ js_path() }}" defer></script>
 <header id=header>
     <div>
         <a href="/">

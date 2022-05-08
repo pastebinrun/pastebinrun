@@ -1,8 +1,15 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "node",
-    "target": "es2017",
-    "noImplicitAny": true
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": ["vite/client"],
+    "noEmit": true,
+    "isolatedModules": true
   }
 }

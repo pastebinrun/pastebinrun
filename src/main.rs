@@ -41,9 +41,17 @@ pub struct Db(PgConnection);
 
 fn js_path(_: &HashMap<String, Value>) -> Result<Value, tera::Error> {
     #[cfg(not(debug_assertions))]
-    let path = env!("ENTRY_FILE_PATH");
+    let path = concat!("/", env!("ENTRY_FILE_PATH"));
     #[cfg(debug_assertions)]
-    let path = std::fs::read_to_string("entry")?;
+    let path = "http://localhost:3000/js/index.ts";
+    Ok(path.into())
+}
+
+fn css_stylesheet(_: &HashMap<String, Value>) -> Result<Value, tera::Error> {
+    #[cfg(not(debug_assertions))]
+    let path = concat!("<link rel=stylesheet href='/", env!("CSS_PATH"), "'>");
+    #[cfg(debug_assertions)]
+    let path = "";
     Ok(path.into())
 }
 
@@ -52,6 +60,9 @@ async fn rocket() -> _ {
     rocket::build()
         .attach(Template::custom(|engines| {
             engines.tera.register_function("js_path", js_path);
+            engines
+                .tera
+                .register_function("css_stylesheet", css_stylesheet);
         }))
         .attach(Db::fairing())
         .attach(AdHoc::on_ignite("Migrations", |rocket| async {
@@ -80,5 +91,5 @@ async fn rocket() -> _ {
                 raw_paste,
             ],
         )
-        .mount("/static", FileServer::from("static"))
+        .mount("/assets", FileServer::from("dist/assets"))
 }

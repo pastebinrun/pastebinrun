@@ -1,13 +1,12 @@
-build:webpack:
+build:vite:
   stage: build
-  image: node:12.16
+  image: node:16
   script:
     - npm ci
-    - node_modules/.bin/webpack
+    - node_modules/.bin/vite build
   artifacts:
     paths:
-      - static
-      - entry
+      - dist
 
 build:release: &build
   stage: test
@@ -16,12 +15,12 @@ build:release: &build
     - &init rustc --version && cargo --version
     - cargo build --release --verbose
   needs:
-    - build:webpack
+    - build:vite
   artifacts:
     paths:
       - languages.json
       - migrations
-      - static
+      - dist
       - target/release/pastebinrun
 
 test:stable: &test
@@ -37,7 +36,7 @@ test:stable: &test
     - *init
     - DATABASE_URL=postgresql://user:password@postgres/db cargo test --verbose --features=database_tests
   needs:
-    - build:webpack
+    - build:vite
 
 test:clippy:
   <<: *test
