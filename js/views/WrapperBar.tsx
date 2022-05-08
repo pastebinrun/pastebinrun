@@ -111,7 +111,10 @@ export default function WrapperBar({
           {data().implementations.length && (
             <>
               {" "}
-              <input placeholder="Compiler options" ref={compilerOptions} />
+              <label>
+                {"Compiler options: "}
+                <input ref={compilerOptions} />
+              </label>
             </>
           )}
         </>
