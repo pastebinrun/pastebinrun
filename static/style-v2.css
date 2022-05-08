@@ -66,6 +66,11 @@ h6 {
 }
 #toolbar {
   padding: 6px 0;
+  text-align: left;
+}
+#toolbar .group {
+  float: left;
+  margin-right: 8px;
 }
 #split {
   display: flex;

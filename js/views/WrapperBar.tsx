@@ -70,28 +70,29 @@ export default function WrapperBar({
     <>
       {data.loading || (
         <>
-          <For
-            each={
-              data().implementations[currentImplementationIndex()]?.wrappers
-            }
-          >
-            {(wrapper, index) => (
-              <>
-                {" "}
-                <WrapperBarButton
-                  index={index()}
-                  runEvaluation={() => {
-                    runEvaluation(wrapper, compilerOptions.value);
-                  }}
-                >
-                  {wrapper.label}
-                </WrapperBarButton>
-              </>
-            )}
-          </For>
+          <div class="group">
+            <For
+              each={
+                data().implementations[currentImplementationIndex()]?.wrappers
+              }
+            >
+              {(wrapper, index) => (
+                <>
+                  {" "}
+                  <WrapperBarButton
+                    index={index()}
+                    runEvaluation={() => {
+                      runEvaluation(wrapper, compilerOptions.value);
+                    }}
+                  >
+                    {wrapper.label}
+                  </WrapperBarButton>
+                </>
+              )}
+            </For>
+          </div>
           {data().implementations.length > 1 && (
-            <>
-              {" "}
+            <div class="group">
               <label>
                 {"Implementation: "}
                 <select
@@ -106,16 +107,15 @@ export default function WrapperBar({
                   </For>
                 </select>
               </label>
-            </>
+            </div>
           )}
           {data().implementations.length && (
-            <>
-              {" "}
+            <div class="group">
               <label>
                 {"Compiler options: "}
                 <input ref={compilerOptions} />
               </label>
-            </>
+            </div>
           )}
         </>
       )}

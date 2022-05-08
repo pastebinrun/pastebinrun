@@ -24,23 +24,25 @@ export default function LanguageSelector({
   languages: HTMLSelectElement;
 }) {
   return (
-    <label>
-      {"Language: "}
-      <select
-        id="language"
-        name="language"
-        onChange={(e) =>
-          setCurrentLanguage(e.currentTarget.selectedOptions[0].value)
-        }
-      >
-        <For each={[...languages.options]}>
-          {(option) => (
-            <option value={option.value} selected={option.selected}>
-              {option.textContent}
-            </option>
-          )}
-        </For>
-      </select>
-    </label>
+    <div class="group">
+      <label>
+        {"Language: "}
+        <select
+          id="language"
+          name="language"
+          onChange={(e) =>
+            setCurrentLanguage(e.currentTarget.selectedOptions[0].value)
+          }
+        >
+          <For each={[...languages.options]}>
+            {(option) => (
+              <option value={option.value} selected={option.selected}>
+                {option.textContent}
+              </option>
+            )}
+          </For>
+        </select>
+      </label>
+    </div>
   );
 }
