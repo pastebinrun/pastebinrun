@@ -14,23 +14,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use serde::Deserialize;
-use std::env;
-
-#[derive(Deserialize)]
-struct Manifest {
-    #[serde(rename = "js/index.ts")]
-    index: Index,
-}
-
-#[derive(Deserialize)]
-struct Index {
-    file: String,
-    css: [String; 1],
-}
-
 fn main() -> serde_json::Result<()> {
-    if env::var("PROFILE").as_deref() == Ok("release") {
+    #[cfg(not(debug_assertions))]
+    {
+        use serde::Deserialize;
+
+        #[derive(Deserialize)]
+        struct Manifest {
+            #[serde(rename = "js/index.ts")]
+            index: Index,
+        }
+
+        #[derive(Deserialize)]
+        struct Index {
+            file: String,
+            css: [String; 1],
+        }
+
         let Manifest {
             index: Index { file, css: [css] },
         } = serde_json::from_str(include_str!("dist/manifest.json"))?;
