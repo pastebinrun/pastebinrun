@@ -33,7 +33,9 @@ impl<'a> FromParam<'a> for WithTxt {
 
     fn from_param(param: &str) -> Result<Self, &str> {
         if let Some(param) = param.strip_suffix(".txt") {
-            Ok(WithTxt(String::from_param(param)?))
+            Ok(WithTxt(
+                String::from_param(param).unwrap_or_else(|e| match e {}),
+            ))
         } else {
             Err(param)
         }
