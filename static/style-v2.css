@@ -1,13 +1,15 @@
-* {
-  box-sizing: border-box;
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
 }
 body {
+  box-sizing: border-box;
   margin: 0;
   height: 100vh;
   display: flex;
   flex-direction: column;
   line-height: 1.6;
-  color: black;
   text-align: justify;
   hyphens: auto;
   font-family: sans-serif;
@@ -15,17 +17,11 @@ body {
 }
 #header {
   background: #dd6;
-  color: white;
   box-shadow: 0 -5px 2px rgba(0, 0, 0, 0.1) inset;
-}
-#header div {
   padding: 0 1em;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 #header h1 {
-  margin: 0;
+  margin: 0.25em 0;
   color: #440;
   display: inline-block;
 }
@@ -35,20 +31,26 @@ body {
 #header nav {
   float: right;
 }
+#header ul {
+  margin: 0;
+  padding: 0;
+}
 #header li {
   display: inline;
-  border-left: 1px solid #440;
-  padding: 0 0.5em;
 }
-#header li:first-child {
-  border: none;
+#header li a {
+  display: inline-block;
+  line-height: 56px;
+  padding: 0 15px;
+}
+#header li a:hover {
+  background: rgba(0, 0, 0, 0.05);
 }
 main {
   display: flex;
   flex: 1;
   flex-direction: column;
   padding: 0 1em 1em;
-  position: relative;
 }
 #editor,
 form {
@@ -66,7 +68,6 @@ h6 {
 }
 #toolbar {
   padding: 6px 0;
-  text-align: left;
 }
 #toolbar .group {
   float: left;
@@ -75,7 +76,6 @@ h6 {
 #split {
   display: flex;
   flex: 1;
-  position: relative;
 }
 #extrafieldsplit {
   display: flex;
@@ -84,7 +84,6 @@ h6 {
 }
 #textarea {
   flex: 1;
-  position: relative;
 }
 textarea {
   width: 100%;

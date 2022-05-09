@@ -7,17 +7,15 @@
 <meta name=description content="{% block description %}Compile and share code in multiple programming languages{% endblock description %}">
 <script type=module src="{{ js_path() }}"></script>
 <header id=header>
-    <div>
-        <a href="/">
-            <h1>pastebin<small>.run</small></h1>
-        </a>
-        <nav id="menu-buttons">
-            <ul>
-                <li><a href="https://pastebin.run/api">API</a
-                ><li><a href="https://gitlab.com/pastebinrun/pastebinrun">Source code</a
-            ></ul>
-        </nav>
-    </div>
+    <a href="/">
+        <h1>pastebin<small>.run</small></h1>
+    </a>
+    <nav id="menu-buttons">
+        <ul>
+            <li><a href="https://pastebin.run/api">API</a
+            ><li><a href="https://gitlab.com/pastebinrun/pastebinrun">Source code</a
+        ></ul>
+    </nav>
 </header>
 <main>
 {% block content %}
