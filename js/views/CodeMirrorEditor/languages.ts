@@ -61,6 +61,9 @@ const languagesMap: { [name: string]: () => Promise<Extension> } = {
   async markdown() {
     return (await import("@codemirror/lang-markdown")).markdown();
   },
+  async nix() {
+    return (await import("@replit/codemirror-lang-nix")).nix();
+  },
   async perl() {
     return StreamLanguage.define(
       (await import("@codemirror/legacy-modes/mode/perl")).perl

@@ -233,6 +233,10 @@
     ]
   },
   {
+    "identifier": "nix",
+    "name": "Nix"
+  },
+  {
     "identifier": "perl",
     "name": "Perl",
     "helloworld": "use v5.12;\nuse warnings;\n\nsay \"Hello, world!\";",
