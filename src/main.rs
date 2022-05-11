@@ -30,6 +30,7 @@ use crate::routes::{
 };
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
+use rocket::http::Header;
 use rocket_dyn_templates::tera::{self, Value};
 use rocket_dyn_templates::Template;
 use rocket_sync_db_pools::database;
@@ -54,9 +55,39 @@ fn css_stylesheet(_: &HashMap<String, Value>) -> Result<Value, tera::Error> {
     Ok(path.into())
 }
 
+const CONTENT_SECURITY_POLICY: &str = if cfg!(debug_assertions) {
+    concat!(
+        "default-src 'none';",
+        "script-src 'self' localhost:3000;",
+        "style-src 'unsafe-inline';",
+        "img-src data: https:;",
+        "connect-src 'self' ws://localhost:3000;",
+        "sandbox allow-forms allow-scripts allow-same-origin;",
+        "form-action 'self';",
+        "frame-ancestors 'none';",
+        "base-uri 'none';",
+        "worker-src 'none';",
+        "manifest-src 'none'",
+    )
+} else {
+    concat!(
+        "default-src 'none';",
+        "script-src 'self';",
+        "style-src 'self' 'unsafe-inline';",
+        "img-src data: https:;",
+        "connect-src 'self';",
+        "sandbox allow-forms allow-scripts allow-same-origin;",
+        "form-action 'self';",
+        "frame-ancestors 'none';",
+        "base-uri 'none';",
+        "worker-src 'none';",
+        "manifest-src 'none'",
+    )
+};
+
 #[launch]
 async fn rocket() -> _ {
-    let rocket = rocket::build()
+    let mut rocket = rocket::build()
         .attach(Template::custom(|engines| {
             engines.tera.register_function("js_path", js_path);
             engines
@@ -76,6 +107,17 @@ async fn rocket() -> _ {
                 .expect("database to be migrated");
             rocket
         }))
+        .attach(AdHoc::on_response(
+            "Add Content-Security-Policy",
+            |_req, res| {
+                Box::pin(async {
+                    res.set_header(Header::new(
+                        "content-security-policy",
+                        CONTENT_SECURITY_POLICY,
+                    ));
+                })
+            },
+        ))
         .mount(
             "/",
             routes![
@@ -90,7 +132,8 @@ async fn rocket() -> _ {
                 raw_paste,
             ],
         );
-    #[cfg(not(debug_assertions))]
-    let rocket = rocket.mount("/assets", rocket::fs::FileServer::from("dist/assets"));
+    if cfg!(not(debug_assertions)) {
+        rocket = rocket.mount("/assets", rocket::fs::FileServer::from("dist/assets"));
+    }
     rocket
 }
