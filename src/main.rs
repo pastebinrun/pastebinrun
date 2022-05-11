@@ -31,6 +31,7 @@ use crate::routes::{
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
+use rocket::shield::{Policy, Referrer, Shield};
 use rocket_dyn_templates::tera::{self, Value};
 use rocket_dyn_templates::Template;
 use rocket_sync_db_pools::database;
@@ -55,35 +56,44 @@ fn css_stylesheet(_: &HashMap<String, Value>) -> Result<Value, tera::Error> {
     Ok(path.into())
 }
 
-const CONTENT_SECURITY_POLICY: &str = if cfg!(debug_assertions) {
-    concat!(
-        "default-src 'none';",
-        "script-src 'self' localhost:3000;",
-        "style-src 'unsafe-inline';",
-        "img-src data: https:;",
-        "connect-src 'self' ws://localhost:3000;",
-        "sandbox allow-forms allow-scripts allow-same-origin;",
-        "form-action 'self';",
-        "frame-ancestors 'none';",
-        "base-uri 'none';",
-        "worker-src 'none';",
-        "manifest-src 'none'",
-    )
-} else {
-    concat!(
-        "default-src 'none';",
-        "script-src 'self';",
-        "style-src 'self' 'unsafe-inline';",
-        "img-src data: https:;",
-        "connect-src 'self';",
-        "sandbox allow-forms allow-scripts allow-same-origin;",
-        "form-action 'self';",
-        "frame-ancestors 'none';",
-        "base-uri 'none';",
-        "worker-src 'none';",
-        "manifest-src 'none'",
-    )
-};
+#[derive(Default)]
+struct ContentSecurityPolicy;
+
+impl Policy for ContentSecurityPolicy {
+    const NAME: &'static str = "Content-Security-Policy";
+    fn header(&self) -> Header<'static> {
+        const CONTENT_SECURITY_POLICY: &str = if cfg!(debug_assertions) {
+            concat!(
+                "default-src 'none';",
+                "script-src 'self' localhost:3000;",
+                "style-src 'unsafe-inline';",
+                "img-src data: https:;",
+                "connect-src 'self' ws://localhost:3000;",
+                "sandbox allow-forms allow-scripts allow-same-origin;",
+                "form-action 'self';",
+                "frame-ancestors 'none';",
+                "base-uri 'none';",
+                "worker-src 'none';",
+                "manifest-src 'none'",
+            )
+        } else {
+            concat!(
+                "default-src 'none';",
+                "script-src 'self';",
+                "style-src 'self' 'unsafe-inline';",
+                "img-src data: https:;",
+                "connect-src 'self';",
+                "sandbox allow-forms allow-scripts allow-same-origin;",
+                "form-action 'self';",
+                "frame-ancestors 'none';",
+                "base-uri 'none';",
+                "worker-src 'none';",
+                "manifest-src 'none'",
+            )
+        };
+        Header::new(Self::NAME, CONTENT_SECURITY_POLICY)
+    }
+}
 
 #[launch]
 async fn rocket() -> _ {
@@ -107,17 +117,11 @@ async fn rocket() -> _ {
                 .expect("database to be migrated");
             rocket
         }))
-        .attach(AdHoc::on_response(
-            "Add Content-Security-Policy",
-            |_req, res| {
-                Box::pin(async {
-                    res.set_header(Header::new(
-                        "content-security-policy",
-                        CONTENT_SECURITY_POLICY,
-                    ));
-                })
-            },
-        ))
+        .attach(
+            Shield::default()
+                .enable(ContentSecurityPolicy)
+                .enable(Referrer::NoReferrer),
+        )
         .mount(
             "/",
             routes![
