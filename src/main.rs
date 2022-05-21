@@ -26,7 +26,7 @@ mod schema;
 
 use crate::routes::{
     api_insert_paste, api_language, api_languages, config, display_paste, index, insert_paste,
-    raw_paste, run,
+    metrics, raw_paste, run,
 };
 use diesel::prelude::*;
 use rocket::fairing::AdHoc;
@@ -134,6 +134,7 @@ async fn rocket() -> _ {
                 insert_paste,
                 display_paste,
                 raw_paste,
+                metrics,
             ],
         );
     if cfg!(not(debug_assertions)) {

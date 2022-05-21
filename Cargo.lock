@@ -797,6 +797,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
 name = "hkdf"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1491,6 +1497,7 @@ dependencies = [
  "itertools",
  "log",
  "once_cell",
+ "prometheus",
  "pulldown-cmark",
  "rand",
  "reqwest",
@@ -1685,6 +1692,35 @@ dependencies = [
  "syn",
  "version_check",
  "yansi",
+]
+
+[[package]]
+name = "procfs"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0941606b9934e2d98a3677759a971756eb821f75764d0e0d26946d08e74d9104"
+dependencies = [
+ "bitflags",
+ "byteorder",
+ "hex",
+ "lazy_static",
+ "libc",
+]
+
+[[package]]
+name = "prometheus"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cface98dfa6d645ea4c789839f176e4b072265d085bfcc48eaa8d137f58d3c39"
+dependencies = [
+ "cfg-if 1.0.0",
+ "fnv",
+ "lazy_static",
+ "libc",
+ "memchr",
+ "parking_lot 0.12.0",
+ "procfs",
+ "thiserror",
 ]
 
 [[package]]
@@ -2310,6 +2346,26 @@ dependencies = [
  "serde_json",
  "slug",
  "unic-segment",
+]
+
+[[package]]
+name = "thiserror"
+version = "1.0.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd829fe32373d27f76265620b5309d0340cb8550f523c1dda251d6298069069a"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0396bc89e626244658bef819e22d0cc459e795a5ebe878e6ec336d1674a8d79a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

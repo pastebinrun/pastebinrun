@@ -21,6 +21,7 @@ mod config_route;
 mod display_paste_route;
 mod index_route;
 mod insert_paste_route;
+mod metrics_route;
 mod raw_paste_route;
 mod run_route;
 
@@ -31,5 +32,6 @@ pub use config_route::*;
 pub use display_paste_route::*;
 pub use index_route::*;
 pub use insert_paste_route::*;
+pub use metrics_route::*;
 pub use raw_paste_route::*;
 pub use run_route::*;
