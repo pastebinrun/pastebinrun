@@ -18,7 +18,7 @@ use crate::models::paste::{self, ExtraPasteParameters, InsertionError};
 use crate::Db;
 use chrono::Duration;
 use chrono::Utc;
-use rocket::form::{self, Form, FromFormField, Strict, ValueField};
+use rocket::form::{self, Form, FromFormField, ValueField};
 use rocket::http::hyper::header::ACCESS_CONTROL_ALLOW_ORIGIN;
 use rocket::http::Header;
 use rocket::request::Request;
@@ -57,10 +57,7 @@ impl<'r> Responder<'r, 'static> for CorsString {
 }
 
 #[post("/api/v1/pastes", data = "<form>")]
-pub async fn api_insert_paste(
-    db: Db,
-    form: Form<Strict<PasteForm>>,
-) -> Result<CorsString, InsertionError> {
+pub async fn api_insert_paste(db: Db, form: Form<PasteForm>) -> Result<CorsString, InsertionError> {
     let identifier = db
         .run(move |conn| {
             paste::insert(
