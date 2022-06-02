@@ -28,7 +28,6 @@ export default function TextAreaEditor({
   code: string;
   setCode: Setter<string>;
   setCodeView: Setter<CodeView>;
-  setTextareaId: Setter<string>;
   setLabel: Setter<JSXElement>;
 }) {
   let id = createUniqueId();
@@ -48,7 +47,7 @@ export default function TextAreaEditor({
         onInput();
         setCode(e.currentTarget.value);
       }}
-      ref={textarea}
+      ref={textarea!}
       id={id}
     >
       {code}

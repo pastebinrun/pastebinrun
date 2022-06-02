@@ -35,7 +35,7 @@ export default function App({
   rawPasteElement: Element | null;
   code: string;
 }) {
-  let form;
+  let form: HTMLFormElement | undefined;
   const [isPaste, setIsPaste] = createSignal(true);
   const [currentLanguage, setCurrentLanguage] = createSignal(
     languages.selectedOptions[0]?.value
@@ -84,7 +84,7 @@ export default function App({
                 setWrapperOptions();
               }}
               currentLanguage={currentLanguage}
-              form={form}
+              form={form!}
               setCodeView={setCodeView}
               setLabel={setLabel}
             />
