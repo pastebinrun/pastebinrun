@@ -17,7 +17,8 @@ jobs:
         with:
           node-version: 16
       - run: npm ci
-      - run: node_modules/.bin/vite build
+      - run: npx tsc --noEmit
+      - run: npx vite build
 
   test:
     name: Test

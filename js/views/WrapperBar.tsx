@@ -73,7 +73,7 @@ export default function WrapperBar({
           <div class="group">
             <For
               each={
-                data().implementations[currentImplementationIndex()]?.wrappers
+                data()!.implementations[currentImplementationIndex()]?.wrappers
               }
             >
               {(wrapper, index) => (
@@ -91,7 +91,7 @@ export default function WrapperBar({
               )}
             </For>
           </div>
-          {data().implementations.length > 1 && (
+          {data()!.implementations.length > 1 && (
             <div class="group">
               <label>
                 {"Implementation: "}
@@ -100,7 +100,7 @@ export default function WrapperBar({
                     setCurrentImplementationIndex(+e.currentTarget.value)
                   }
                 >
-                  <For each={data().implementations}>
+                  <For each={data()!.implementations}>
                     {({ label }, index) => (
                       <option value={index()}>{label}</option>
                     )}
@@ -109,11 +109,11 @@ export default function WrapperBar({
               </label>
             </div>
           )}
-          {data().implementations.length && (
+          {data()!.implementations.length && (
             <div class="group">
               <label>
                 {"Compiler options: "}
-                <input ref={compilerOptions} />
+                <input ref={compilerOptions!} />
               </label>
             </div>
           )}
