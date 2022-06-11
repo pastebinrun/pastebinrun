@@ -59,7 +59,7 @@ const languagesMap: { [name: string]: () => Promise<Extension> } = {
     });
   },
   async markdown() {
-    return (await import("@codemirror/lang-markdown")).markdown();
+    return (await import("./markdown")).default;
   },
   async nix() {
     return (await import("@replit/codemirror-lang-nix")).nix();
