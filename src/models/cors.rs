@@ -1,5 +1,5 @@
 // pastebin.run
-// Copyright (C) 2020 Konrad Borowski
+// Copyright (C) 2022 Konrad Borowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,8 +14,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-mod cors;
-pub mod language;
-pub mod paste;
+use rocket::http::hyper::header::ACCESS_CONTROL_ALLOW_ORIGIN;
+use rocket::http::Header;
+use rocket::request::Request;
+use rocket::response::{self, Responder, Response};
 
-pub use cors::Cors;
+pub struct Cors<R>(pub R);
+
+impl<'r, 'o, R> Responder<'r, 'o> for Cors<R>
+where
+    'o: 'r,
+    R: Responder<'r, 'o>,
+{
+    fn respond_to(self, r: &'r Request<'_>) -> response::Result<'o> {
+        Response::build()
+            .merge(self.0.respond_to(r)?)
+            .header(Header::new(ACCESS_CONTROL_ALLOW_ORIGIN.as_str(), "*"))
+            .ok()
+    }
+}

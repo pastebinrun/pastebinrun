@@ -15,14 +15,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::models::paste::{self, ExtraPasteParameters, InsertionError};
+use crate::models::Cors;
 use crate::Db;
 use chrono::Duration;
 use chrono::Utc;
 use rocket::form::{self, Form, FromFormField, ValueField};
-use rocket::http::hyper::header::ACCESS_CONTROL_ALLOW_ORIGIN;
-use rocket::http::Header;
-use rocket::request::Request;
-use rocket::response::{self, Responder, Response};
 use std::error::Error;
 
 #[derive(FromForm)]
@@ -45,19 +42,11 @@ impl<'r> FromFormField<'r> for Expiration {
     }
 }
 
-pub struct CorsString(String);
-
-impl<'r> Responder<'r, 'static> for CorsString {
-    fn respond_to(self, r: &Request<'_>) -> response::Result<'static> {
-        Response::build()
-            .merge(self.0.respond_to(r)?)
-            .header(Header::new(ACCESS_CONTROL_ALLOW_ORIGIN.as_str(), "*"))
-            .ok()
-    }
-}
-
 #[post("/api/v1/pastes", data = "<form>")]
-pub async fn api_insert_paste(db: Db, form: Form<PasteForm>) -> Result<CorsString, InsertionError> {
+pub async fn api_insert_paste(
+    db: Db,
+    form: Form<PasteForm>,
+) -> Result<Cors<String>, InsertionError> {
     let identifier = db
         .run(move |conn| {
             paste::insert(
@@ -73,5 +62,5 @@ pub async fn api_insert_paste(db: Db, form: Form<PasteForm>) -> Result<CorsStrin
             )
         })
         .await?;
-    Ok(CorsString(identifier))
+    Ok(Cors(identifier))
 }

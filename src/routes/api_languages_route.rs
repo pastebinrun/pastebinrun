@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::models::Cors;
 use crate::schema::languages;
 use crate::Db;
 use diesel::prelude::*;
@@ -28,7 +29,9 @@ pub struct Language {
 }
 
 #[get("/api/v1/languages")]
-pub async fn api_languages(db: Db) -> Result<Json<Vec<Language>>, Debug<diesel::result::Error>> {
+pub async fn api_languages(
+    db: Db,
+) -> Result<Cors<Json<Vec<Language>>>, Debug<diesel::result::Error>> {
     let languages = db
         .run(|conn| {
             languages::table
@@ -36,5 +39,26 @@ pub async fn api_languages(db: Db) -> Result<Json<Vec<Language>>, Debug<diesel::
                 .load(conn)
         })
         .await?;
-    Ok(Json(languages))
+    Ok(Cors(Json(languages)))
+}
+
+#[cfg(all(test, feature = "database_tests"))]
+mod test {
+    use rocket::http::hyper::header::ACCESS_CONTROL_ALLOW_ORIGIN;
+    use rocket::http::Status;
+    use rocket::local::blocking::Client;
+    use rocket::uri;
+
+    #[test]
+    fn test_cors() {
+        let rocket = Client::untracked(crate::rocket()).unwrap();
+        let response = rocket.get(uri!(super::api_languages)).dispatch();
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(
+            response
+                .headers()
+                .get_one(ACCESS_CONTROL_ALLOW_ORIGIN.as_str()),
+            Some("*"),
+        );
+    }
 }

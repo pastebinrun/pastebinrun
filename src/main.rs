@@ -96,7 +96,7 @@ impl Policy for ContentSecurityPolicy {
 }
 
 #[launch]
-async fn rocket() -> _ {
+fn rocket() -> _ {
     let mut rocket = rocket::build()
         .attach(Template::custom(|engines| {
             engines.tera.register_function("js_path", js_path);
