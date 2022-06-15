@@ -13,7 +13,7 @@
     "@codemirror/lang-php": "^0.20.0",
     "@codemirror/lang-python": "^0.20.0",
     "@codemirror/lang-rust": "^0.20.0",
-    "@codemirror/lang-sql": "^0.20.4",
+    "@codemirror/lang-sql": "^6.0.0",
     "@codemirror/language": "^0.20.2",
     "@codemirror/language-data": "^0.20.0",
     "@codemirror/legacy-modes": "^0.20.0",
