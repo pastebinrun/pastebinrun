@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { EditorView, EditorState, basicSetup } from "@codemirror/basic-setup";
+import { EditorView, basicSetup } from "codemirror";
 import { indentWithTab } from "@codemirror/commands";
 import { indentUnit } from "@codemirror/language";
 import { Compartment } from "@codemirror/state";
@@ -60,23 +60,21 @@ export default function CodeMirrorEditor({
   let avoidChangeNotifications = false;
   const labelId = createUniqueId();
   let view = new EditorView({
-    state: EditorState.create({
-      doc: code(),
-      extensions: [
-        EditorView.contentAttributes.of({ "aria-labelledby": labelId }),
-        tabIndentation.of(getTabIndentationExtension()),
-        keymap.of([{ key: "Ctrl-Enter", run: () => true }]),
-        basicSetup,
-        EditorView.updateListener.of((v) => {
-          if (v.docChanged && !avoidChangeNotifications) {
-            onInput();
-          }
-        }),
-        EditorView.lineWrapping,
-        indentUnit.of(" ".repeat(4)),
-        language.of([]),
-      ],
-    }),
+    doc: code(),
+    extensions: [
+      EditorView.contentAttributes.of({ "aria-labelledby": labelId }),
+      tabIndentation.of(getTabIndentationExtension()),
+      keymap.of([{ key: "Ctrl-Enter", run: () => true }]),
+      basicSetup,
+      EditorView.updateListener.of((v) => {
+        if (v.docChanged && !avoidChangeNotifications) {
+          onInput();
+        }
+      }),
+      EditorView.lineWrapping,
+      indentUnit.of(" ".repeat(4)),
+      language.of([]),
+    ],
   });
   createEffect(() => {
     view.dispatch({
