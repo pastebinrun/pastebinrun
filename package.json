@@ -20,7 +20,7 @@
     "@replit/codemirror-lang-nix": "^6.0.0",
     "@types/babel__core": "^7.1.19",
     "@types/node": "^18.0.0",
-    "codemirror": "^6.0.0",
+    "codemirror": "^6.0.1",
     "prettier": "^2.7.1",
     "solid-js": "^1.4.5",
     "typescript": "4.7.4",
