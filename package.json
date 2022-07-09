@@ -22,7 +22,7 @@
     "@types/node": "^18.0.3",
     "codemirror": "^6.0.1",
     "prettier": "^2.7.1",
-    "solid-js": "^1.4.6",
+    "solid-js": "^1.4.7",
     "typescript": "4.7.4",
     "vite": "^2.9.14",
     "vite-plugin-solid": "^2.2.6"
