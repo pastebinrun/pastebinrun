@@ -16,7 +16,7 @@
     "@codemirror/language": "^6.2.0",
     "@codemirror/language-data": "^6.1.0",
     "@codemirror/legacy-modes": "^6.1.0",
-    "@codemirror/view": "^6.0.2",
+    "@codemirror/view": "^6.0.3",
     "@replit/codemirror-lang-nix": "^6.0.0",
     "@types/babel__core": "^7.1.19",
     "@types/node": "^18.0.3",
