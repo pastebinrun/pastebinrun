@@ -46,7 +46,7 @@ export default function App({
   const [wrapperOptions, setWrapperOptions] = createSignal<WrapperOptions>();
   const [label, setLabel] = createSignal<Element>();
   return (
-    <form action="/" method="post" ref={form}>
+    <form action="/" method="post" ref={(e) => (form = e)}>
       {markdown}
       <Show when={isPaste()}>{autoDelete}</Show>
       <div id="toolbar">
