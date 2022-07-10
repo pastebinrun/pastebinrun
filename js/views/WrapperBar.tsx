@@ -113,7 +113,7 @@ export default function WrapperBar({
             <div class="group">
               <label>
                 {"Compiler options: "}
-                <input ref={compilerOptions!} />
+                <input ref={(e) => (compilerOptions = e)} />
               </label>
             </div>
           )}

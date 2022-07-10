@@ -47,7 +47,7 @@ export default function TextAreaEditor({
         onInput();
         setCode(e.currentTarget.value);
       }}
-      ref={textarea!}
+      ref={(e) => (textarea = e)}
       id={id}
     >
       {code}
