@@ -53,6 +53,17 @@ jobs:
         env:
           ROCKET_DATABASES: '{ main = { url = "postgresql://postgres:postgres@localhost" } }'
 
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm ci
+      - run: npx eslint .
+
   prettier:
     name: Prettier
     runs-on: ubuntu-latest

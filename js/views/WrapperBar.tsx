@@ -21,6 +21,7 @@ import {
   createSignal,
   For,
   Setter,
+  Show,
 } from "solid-js";
 import CodeView from "../models/CodeView";
 import Wrapper from "../models/Wrapper";
@@ -52,7 +53,7 @@ export default function WrapperBar({
   const [data] = createResource(currentLanguage, fetchLanguage);
   const [currentImplementationIndex, setCurrentImplementationIndex] =
     createSignal(0);
-  let previousHelloWorld: string = "";
+  let previousHelloWorld = "";
   createEffect(() => {
     const loadedData = data();
     if (loadedData) {
@@ -67,13 +68,13 @@ export default function WrapperBar({
   });
   let compilerOptions: HTMLInputElement;
   return (
-    <>
-      {data.loading || (
+    <Show when={data()}>
+      {(data) => (
         <>
           <div class="group">
             <For
               each={
-                data()!.implementations[currentImplementationIndex()]?.wrappers
+                data.implementations[currentImplementationIndex()]?.wrappers
               }
             >
               {(wrapper, index) => (
@@ -91,7 +92,7 @@ export default function WrapperBar({
               )}
             </For>
           </div>
-          {data()!.implementations.length > 1 && (
+          <Show when={data.implementations.length > 1}>
             <div class="group">
               <label>
                 {"Implementation: "}
@@ -100,7 +101,7 @@ export default function WrapperBar({
                     setCurrentImplementationIndex(+e.currentTarget.value)
                   }
                 >
-                  <For each={data()!.implementations}>
+                  <For each={data.implementations}>
                     {({ label }, index) => (
                       <option value={index()}>{label}</option>
                     )}
@@ -108,17 +109,17 @@ export default function WrapperBar({
                 </select>
               </label>
             </div>
-          )}
-          {data()!.implementations.length && (
+          </Show>
+          <Show when={data.implementations.length}>
             <div class="group">
               <label>
                 {"Compiler options: "}
                 <input ref={(e) => (compilerOptions = e)} />
               </label>
             </div>
-          )}
+          </Show>
         </>
       )}
-    </>
+    </Show>
   );
 }

@@ -84,7 +84,7 @@ export default function App({
                 setWrapperOptions();
               }}
               currentLanguage={currentLanguage}
-              form={form!}
+              form={form as HTMLFormElement}
               setCodeView={setCodeView}
               setLabel={setLabel}
             />
@@ -95,12 +95,14 @@ export default function App({
           />
         </div>
         <Show when={wrapperOptions()}>
-          <Output
-            codeView={codeView()}
-            stdin={standardInput()}
-            wrapperOptions={wrapperOptions()!}
-            setWrapperOptions={setWrapperOptions}
-          />
+          {(wrapperOptions) => (
+            <Output
+              codeView={codeView()}
+              stdin={standardInput()}
+              wrapperOptions={wrapperOptions}
+              setWrapperOptions={setWrapperOptions}
+            />
+          )}
         </Show>
       </div>
     </form>

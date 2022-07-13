@@ -20,5 +20,5 @@ export default function createOptionsLink() {
   a.textContent = "Options";
   a.href = "/config";
   li.append(a);
-  document.querySelector("#menu-buttons ul")!.append(li);
+  (document.querySelector("#menu-buttons ul") as Element).append(li);
 }

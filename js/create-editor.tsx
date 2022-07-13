@@ -18,11 +18,11 @@ import { render } from "solid-js/web";
 import App from "./views/App";
 
 export default function createEditor(editor: Element) {
-  const markdown = editor.querySelector("#markdown");
-  const languages = editor.querySelector("select")!;
-  const autoDelete = editor.querySelector(".autodelete-text");
-  const rawPasteElement = editor.querySelector(".rawpaste-text");
-  const code = editor.querySelector("textarea")!.value;
+  const markdown = editor.querySelector("#markdown") as Element;
+  const languages = editor.querySelector("select") as HTMLSelectElement;
+  const autoDelete = editor.querySelector(".autodelete-text") as Element;
+  const rawPasteElement = editor.querySelector(".rawpaste-text") as Element;
+  const code = (editor.querySelector("textarea") as HTMLTextAreaElement).value;
   editor.textContent = "";
   render(
     () => (
