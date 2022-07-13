@@ -59,7 +59,7 @@ export default function CodeMirrorEditor({
   const language = new Compartment();
   let avoidChangeNotifications = false;
   const labelId = createUniqueId();
-  let view = new EditorView({
+  const view = new EditorView({
     doc: code(),
     extensions: [
       EditorView.contentAttributes.of({ "aria-labelledby": labelId }),

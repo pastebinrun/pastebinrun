@@ -30,7 +30,7 @@ export default function TextAreaEditor({
   setCodeView: Setter<CodeView>;
   setLabel: Setter<JSXElement>;
 }) {
-  let id = createUniqueId();
+  const id = createUniqueId();
   let textarea: HTMLTextAreaElement;
   setCodeView({
     get code() {
