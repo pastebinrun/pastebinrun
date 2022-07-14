@@ -5,8 +5,6 @@ export default defineConfig({
   plugins: [solidPlugin()],
   build: {
     manifest: true,
-    target: "esnext",
-    polyfillDynamicImport: false,
     rollupOptions: {
       input: "js/index.ts",
     },

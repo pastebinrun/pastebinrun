@@ -44,7 +44,7 @@ fn js_path(_: &HashMap<String, Value>) -> Result<Value, tera::Error> {
     #[cfg(not(debug_assertions))]
     let path = concat!("/", env!("ENTRY_FILE_PATH"));
     #[cfg(debug_assertions)]
-    let path = "http://localhost:3000/js/index.ts";
+    let path = "http://localhost:5173/js/index.ts";
     Ok(path.into())
 }
 
@@ -65,10 +65,10 @@ impl Policy for ContentSecurityPolicy {
         const CONTENT_SECURITY_POLICY: &str = if cfg!(debug_assertions) {
             concat!(
                 "default-src 'none';",
-                "script-src 'self' localhost:3000;",
+                "script-src 'self' localhost:5173;",
                 "style-src 'unsafe-inline';",
                 "img-src data: https:;",
-                "connect-src 'self' ws://localhost:3000;",
+                "connect-src 'self' ws://localhost:5173;",
                 "sandbox allow-forms allow-scripts allow-same-origin;",
                 "form-action 'self';",
                 "frame-ancestors 'none';",
