@@ -14,31 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-/// <reference types="vitest" />
-/// <reference types="vite/client" />
+import matchers from "@testing-library/jest-dom/matchers";
+import { expect } from "vitest";
 
-import { defineConfig } from "vite";
-import solidPlugin from "vite-plugin-solid";
-
-export default defineConfig({
-  test: {
-    environment: "jsdom",
-    transformMode: {
-      web: [/.[jt]sx?/],
-    },
-    deps: {
-      inline: ["solid-js", "solid-testing-library"],
-    },
-    setupFiles: ["__tests__/setup.js"],
-  },
-  plugins: [solidPlugin()],
-  resolve: {
-    conditions: ["development", "browser"],
-  },
-  build: {
-    manifest: true,
-    rollupOptions: {
-      input: "js/index.ts",
-    },
-  },
-});
+expect.extend(matchers);
