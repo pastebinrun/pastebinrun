@@ -5,7 +5,7 @@
   "scripts": {
     "test": "vitest"
   },
-  "devDependencies": {
+  "dependencies": {
     "@codemirror/commands": "^6.0.1",
     "@codemirror/lang-cpp": "^6.0.1",
     "@codemirror/lang-html": "^6.1.0",
@@ -21,14 +21,16 @@
     "@codemirror/legacy-modes": "^6.1.0",
     "@codemirror/view": "^6.0.3",
     "@replit/codemirror-lang-nix": "^6.0.0",
+    "codemirror": "^6.0.1",
+    "solid-js": "^1.4.7"
+  },
+  "devDependencies": {
     "@testing-library/jest-dom": "^5.16.4",
     "@types/babel__core": "^7.1.19",
     "@typescript-eslint/eslint-plugin": "^5.30.6",
-    "codemirror": "^6.0.1",
     "eslint": "^8.19.0",
     "jsdom": "^20.0.0",
     "prettier": "^2.7.1",
-    "solid-js": "^1.4.7",
     "solid-testing-library": "^0.3.0",
     "typescript": "4.7.4",
     "vite": "^3.0.0",
