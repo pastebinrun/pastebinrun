@@ -14,31 +14,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-/// <reference types="vitest" />
-/// <reference types="vite/client" />
+import { createSignal } from "solid-js";
+import { render, screen } from "solid-testing-library";
+import { expect, test } from "vitest";
+import StandardInput from "../js/views/StandardInput";
 
-import { defineConfig } from "vite";
-import solidPlugin from "vite-plugin-solid";
-
-export default defineConfig({
-  test: {
-    environment: "jsdom",
-    transformMode: {
-      web: [/.[jt]sx?/],
-    },
-    deps: {
-      inline: ["solid-js", "solid-testing-library"],
-    },
-    setupFiles: ["__tests__/setup.js"],
-  },
-  plugins: [solidPlugin()],
-  resolve: {
-    conditions: ["development", "browser"],
-  },
-  build: {
-    manifest: true,
-    rollupOptions: {
-      input: "js/index.ts",
-    },
-  },
+test("StandardInput can become visible", async () => {
+  const [visible, setVisible] = createSignal(false);
+  const [, setStandardInput] = createSignal("");
+  render(() => (
+    <StandardInput visible={visible} setStandardInput={setStandardInput} />
+  ));
+  expect(screen.queryByRole("textbox")).toBeNull();
+  setVisible(true);
+  expect(screen.getByRole("textbox")).toBeEmptyDOMElement();
 });
