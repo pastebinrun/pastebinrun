@@ -8,7 +8,7 @@ build = "buildSrc/build.rs"
 
 [dependencies]
 ammonia = "3.2.1"
-chrono = "0.4.21"
+chrono = "0.4.22"
 diesel = { version = "1.4.6", features = ["chrono"] }
 diesel_migrations = "1.4.0"
 itertools = "0.10.1"
