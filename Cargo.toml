@@ -7,7 +7,7 @@ license = "AGPL-3.0-or-later"
 build = "buildSrc/build.rs"
 
 [dependencies]
-ammonia = "3.1.1"
+ammonia = "3.2.1"
 chrono = "0.4.21"
 diesel = { version = "1.4.6", features = ["chrono"] }
 diesel_migrations = "1.4.0"
