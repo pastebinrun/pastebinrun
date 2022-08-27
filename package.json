@@ -22,7 +22,7 @@
     "@codemirror/view": "^6.2.1",
     "@replit/codemirror-lang-nix": "^6.0.0",
     "codemirror": "^6.0.1",
-    "solid-js": "^1.4.8"
+    "solid-js": "^1.5.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
