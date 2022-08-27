@@ -28,7 +28,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@types/babel__core": "^7.1.19",
     "@typescript-eslint/eslint-plugin": "^5.34.0",
-    "eslint": "^8.22.0",
+    "eslint": "^8.23.0",
     "jsdom": "^20.0.0",
     "prettier": "^2.7.1",
     "solid-testing-library": "^0.3.0",
