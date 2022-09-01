@@ -19,7 +19,7 @@
     "@codemirror/language": "^6.2.1",
     "@codemirror/language-data": "^6.1.0",
     "@codemirror/legacy-modes": "^6.1.0",
-    "@codemirror/view": "^6.2.1",
+    "@codemirror/view": "^6.2.2",
     "@replit/codemirror-lang-nix": "^6.0.0",
     "codemirror": "^6.0.1",
     "solid-js": "^1.4.8"
