@@ -94,7 +94,7 @@ export default function App({
             setStandardInput={setStandardInput}
           />
         </div>
-        <Show when={wrapperOptions()}>
+        <Show when={wrapperOptions()} keyed>
           {(wrapperOptions) => (
             <Output
               codeView={codeView()}
