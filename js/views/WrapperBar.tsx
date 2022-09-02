@@ -68,7 +68,7 @@ export default function WrapperBar({
   });
   let compilerOptions: HTMLInputElement;
   return (
-    <Show when={data()}>
+    <Show when={data()} keyed>
       {(data) => (
         <>
           <div class="group">
