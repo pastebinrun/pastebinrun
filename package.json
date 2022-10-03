@@ -29,7 +29,7 @@
     "@types/babel__core": "^7.1.19",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "eslint": "^8.24.0",
-    "jsdom": "^20.0.0",
+    "jsdom": "^20.0.1",
     "prettier": "^2.7.1",
     "solid-testing-library": "^0.3.0",
     "typescript": "4.8.4",
