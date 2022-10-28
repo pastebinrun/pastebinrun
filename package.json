@@ -16,7 +16,7 @@
     "@codemirror/lang-python": "^6.0.4",
     "@codemirror/lang-rust": "^6.0.1",
     "@codemirror/lang-sql": "^6.3.2",
-    "@codemirror/language": "^6.2.1",
+    "@codemirror/language": "^6.3.0",
     "@codemirror/language-data": "^6.1.0",
     "@codemirror/legacy-modes": "^6.2.0",
     "@codemirror/view": "^6.4.0",
