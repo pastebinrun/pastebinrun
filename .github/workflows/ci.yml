@@ -37,6 +37,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+    continue-on-error: ${{ matrix.toolchain == 'nightly' }}
     strategy:
       matrix:
         toolchain:
