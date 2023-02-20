@@ -27,7 +27,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@types/babel__core": "^7.20.0",
-    "@typescript-eslint/eslint-plugin": "^5.52.0",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
     "eslint": "^8.34.0",
     "jsdom": "^21.1.0",
     "prettier": "^2.8.4",
