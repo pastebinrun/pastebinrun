@@ -6,7 +6,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@codemirror/commands": "^6.2.1",
+    "@codemirror/commands": "^6.2.2",
     "@codemirror/lang-cpp": "^6.0.2",
     "@codemirror/lang-html": "^6.4.2",
     "@codemirror/lang-java": "^6.0.1",
