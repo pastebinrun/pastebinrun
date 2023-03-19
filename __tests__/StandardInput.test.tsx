@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { createSignal } from "solid-js";
-import { render, screen } from "solid-testing-library";
+import { render, screen } from "@solidjs/testing-library";
 import { expect, test } from "vitest";
 import StandardInput from "../js/views/StandardInput";
 
