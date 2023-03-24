@@ -15,8 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #[macro_use]
-extern crate diesel;
-#[macro_use]
 extern crate rocket;
 
 mod migration;
@@ -29,6 +27,7 @@ use crate::routes::{
     metrics, raw_paste, run,
 };
 use diesel::prelude::*;
+use diesel_migrations::{FileBasedMigrations, MigrationHarness};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
 use rocket::shield::{Policy, Referrer, Shield};
@@ -110,7 +109,7 @@ fn rocket() -> _ {
                 .await
                 .expect("a database")
                 .run(|conn| {
-                    diesel_migrations::run_pending_migrations(conn)?;
+                    conn.run_pending_migrations(FileBasedMigrations::find_migrations_directory()?)?;
                     migration::run(conn)
                 })
                 .await
