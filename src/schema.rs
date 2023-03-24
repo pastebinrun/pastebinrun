@@ -1,4 +1,6 @@
-table! {
+// @generated automatically by Diesel CLI.
+
+diesel::table! {
     implementation_wrappers (implementation_wrapper_id) {
         implementation_wrapper_id -> Int4,
         implementation_id -> Int4,
@@ -11,7 +13,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     implementations (implementation_id) {
         implementation_id -> Int4,
         language_id -> Int4,
@@ -21,7 +23,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     languages (language_id) {
         language_id -> Int4,
         priority -> Int4,
@@ -31,7 +33,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     pastes (paste_id) {
         paste_id -> Int4,
         identifier -> Text,
@@ -45,8 +47,13 @@ table! {
     }
 }
 
-joinable!(implementation_wrappers -> implementations (implementation_id));
-joinable!(implementations -> languages (language_id));
-joinable!(pastes -> languages (language_id));
+diesel::joinable!(implementation_wrappers -> implementations (implementation_id));
+diesel::joinable!(implementations -> languages (language_id));
+diesel::joinable!(pastes -> languages (language_id));
 
-allow_tables_to_appear_in_same_query!(implementation_wrappers, implementations, languages, pastes,);
+diesel::allow_tables_to_appear_in_same_query!(
+    implementation_wrappers,
+    implementations,
+    languages,
+    pastes,
+);

@@ -43,7 +43,7 @@ struct Implementation {
 }
 
 #[derive(Associations, Identifiable, Queryable)]
-#[belongs_to(Implementation)]
+#[diesel(belongs_to(Implementation))]
 struct ImplementationWrapper {
     id: i32,
     implementation_id: i32,
@@ -78,7 +78,7 @@ pub async fn api_language(
             .get_result(conn)
             .optional()?;
         Ok(if let Some(language) = language {
-            let implementations = implementations::table
+            let implementations: Vec<Implementation> = implementations::table
                 .select((implementations::implementation_id, implementations::label))
                 .filter(implementations::language_id.eq(language.id))
                 .order(implementations::ordering)

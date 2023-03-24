@@ -43,7 +43,7 @@ pub struct Paste {
 }
 
 impl Paste {
-    pub fn delete_old(connection: &PgConnection) -> Result<(), diesel::result::Error> {
+    pub fn delete_old(connection: &mut PgConnection) -> Result<(), diesel::result::Error> {
         let pastes = diesel::delete(pastes::table)
             .filter(pastes::delete_at.lt(Utc::now()))
             .execute(connection)?;
@@ -57,7 +57,7 @@ impl Paste {
 const CHARACTERS: &[u8] = b"23456789bcdfghjkmnpqrstvwxz-";
 
 #[derive(Insertable)]
-#[table_name = "pastes"]
+#[diesel(table_name = pastes)]
 struct InsertPaste<'a> {
     identifier: &'a str,
     delete_at: Option<DateTime<Utc>>,
@@ -96,7 +96,7 @@ impl<'r> Responder<'r, 'static> for InsertionError {
 }
 
 pub fn insert(
-    connection: &PgConnection,
+    connection: &mut PgConnection,
     delete_at: Option<DateTime<Utc>>,
     language: &str,
     paste: &str,

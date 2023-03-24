@@ -26,7 +26,7 @@ pub struct Language {
 }
 
 impl Language {
-    pub fn fetch(connection: &PgConnection) -> Result<Vec<Language>, diesel::result::Error> {
+    pub fn fetch(connection: &mut PgConnection) -> Result<Vec<Language>, diesel::result::Error> {
         languages
             .select((language_id, identifier, name))
             .order((priority.asc(), name.asc()))

@@ -58,7 +58,7 @@ struct Wrapper {
     is_formatter: bool,
 }
 
-pub fn run(connection: &PgConnection) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub fn run(connection: &mut PgConnection) -> Result<(), Box<dyn Error + Send + Sync>> {
     let languages: Vec<JsonLanguage> = serde_json::from_slice(&fs::read("languages.json")?)?;
     for JsonLanguage {
         identifier: languages_identifier,
