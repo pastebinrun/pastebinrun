@@ -27,6 +27,6 @@ struct Index {
 
 #[get("/")]
 pub async fn index(db: Db) -> Result<Template, Debug<diesel::result::Error>> {
-    let languages = db.run(|conn| Language::fetch(conn)).await?;
+    let languages = db.run(Language::fetch).await?;
     Ok(Template::render("index", &Index { languages }))
 }
