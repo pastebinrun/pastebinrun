@@ -26,35 +26,31 @@ use rocket::response::status::NotFound;
 use rocket::response::{self, Debug, Responder, Response};
 use std::fmt;
 
-pub struct WithTxt(String);
+pub struct WithTxt<'a>(&'a str);
 
-impl<'a> FromParam<'a> for WithTxt {
+impl<'a> FromParam<'a> for WithTxt<'a> {
     type Error = &'a str;
 
-    fn from_param(param: &str) -> Result<Self, &str> {
-        if let Some(param) = param.strip_suffix(".txt") {
-            Ok(WithTxt(
-                String::from_param(param).unwrap_or_else(|e| match e {}),
-            ))
-        } else {
-            Err(param)
-        }
+    fn from_param(param: &'a str) -> Result<Self, &str> {
+        param
+            .strip_suffix(".txt")
+            .map_or(Err(param), |param| Ok(WithTxt(param)))
     }
 }
 
-impl UriDisplay<Path> for WithTxt {
+impl UriDisplay<Path> for WithTxt<'_> {
     fn fmt(&self, f: &mut Formatter<Path>) -> fmt::Result {
         self.0.fmt(f)?;
         f.write_raw(".txt")
     }
 }
 
-impl_from_uri_param_identity!([Path] WithTxt);
+impl_from_uri_param_identity!([Path] ('a) WithTxt<'a>);
 
-impl FromUriParam<Path, String> for WithTxt {
-    type Target = WithTxt;
+impl<'a> FromUriParam<Path, &'a str> for WithTxt<'a> {
+    type Target = WithTxt<'a>;
 
-    fn from_uri_param(param: String) -> WithTxt {
+    fn from_uri_param(param: &'a str) -> WithTxt<'a> {
         WithTxt(param)
     }
 }
@@ -83,14 +79,15 @@ impl<'r> Responder<'r, 'static> for RawPasteResponse {
 #[get("/<identifier>")]
 pub async fn raw_paste(
     db: Db,
-    identifier: WithTxt,
+    identifier: WithTxt<'_>,
 ) -> Result<RawPasteResponse, Debug<diesel::result::Error>> {
+    let identifier = identifier.0.to_string();
     Ok(db
         .run(move |conn| {
             Paste::delete_old(conn)?;
             pastes::table
                 .select(pastes::paste)
-                .filter(pastes::identifier.eq(&identifier.0))
+                .filter(pastes::identifier.eq(identifier))
                 .get_result(conn)
                 .optional()
         })

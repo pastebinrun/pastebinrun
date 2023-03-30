@@ -64,7 +64,7 @@ pub async fn display_paste(
                     languages,
                     description,
                     paste: ExternPaste::from_paste(paste),
-                    raw_paste_url: uri!(super::raw_paste(identifier)),
+                    raw_paste_url: uri!(super::raw_paste(identifier.as_str())),
                 },
             )))
         } else {
