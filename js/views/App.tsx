@@ -75,7 +75,7 @@ export default function App({
       </div>
       <div id="split">
         <div id="extrafieldsplit">
-          <div>{label}</div>
+          <div>{label()}</div>
           <div id="textarea">
             <Editor
               code={code}
