@@ -32,7 +32,7 @@
     "jsdom": "^22.0.0",
     "prettier": "^2.8.8",
     "typescript": "5.0.4",
-    "vite": "^4.3.8",
+    "vite": "^4.3.9",
     "vite-plugin-solid": "^2.7.0",
     "vitest": "0.31.0"
   }
