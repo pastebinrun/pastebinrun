@@ -10,6 +10,6 @@ export default markdown({
       async load() {
         return (await import("@replit/codemirror-lang-nix")).nix();
       },
-    })
+    }),
   ),
 });

@@ -105,7 +105,7 @@ export default function CodeMirrorEditor({
   setLabel(
     <label id={labelId} onClick={() => view.focus()}>
       {"Code: "}
-    </label>
+    </label>,
   );
   const submitCallback = () => setCode(getValue());
   form.addEventListener("submit", submitCallback);

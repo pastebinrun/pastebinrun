@@ -26,17 +26,17 @@ const languagesMap: { [name: string]: () => Promise<Extension> } = {
   },
   async csharp() {
     return StreamLanguage.define(
-      (await import("@codemirror/legacy-modes/mode/clike")).csharp
+      (await import("@codemirror/legacy-modes/mode/clike")).csharp,
     );
   },
   async go() {
     return StreamLanguage.define(
-      (await import("@codemirror/legacy-modes/mode/go")).go
+      (await import("@codemirror/legacy-modes/mode/go")).go,
     );
   },
   async haskell() {
     return StreamLanguage.define(
-      (await import("@codemirror/legacy-modes/mode/haskell")).haskell
+      (await import("@codemirror/legacy-modes/mode/haskell")).haskell,
     );
   },
   async html() {
@@ -50,7 +50,7 @@ const languagesMap: { [name: string]: () => Promise<Extension> } = {
   },
   async jinja2() {
     return StreamLanguage.define(
-      (await import("@codemirror/legacy-modes/mode/jinja2")).jinja2
+      (await import("@codemirror/legacy-modes/mode/jinja2")).jinja2,
     );
   },
   async jsx() {
@@ -66,7 +66,7 @@ const languagesMap: { [name: string]: () => Promise<Extension> } = {
   },
   async perl() {
     return StreamLanguage.define(
-      (await import("@codemirror/legacy-modes/mode/perl")).perl
+      (await import("@codemirror/legacy-modes/mode/perl")).perl,
     );
   },
   async php() {
@@ -84,7 +84,7 @@ const languagesMap: { [name: string]: () => Promise<Extension> } = {
   },
   async sh() {
     return StreamLanguage.define(
-      (await import("@codemirror/legacy-modes/mode/shell")).shell
+      (await import("@codemirror/legacy-modes/mode/shell")).shell,
     );
   },
   async sql() {
