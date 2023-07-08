@@ -18,7 +18,7 @@ import { createEffect, createSignal, onCleanup, Signal } from "solid-js";
 
 export function createLocalStorageState(
   name: string,
-  defaultValue: string
+  defaultValue: string,
 ): Signal<string> {
   const [state, setState] = createSignal(localStorage[name] || defaultValue);
   createEffect(() => {

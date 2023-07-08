@@ -34,6 +34,6 @@ export default function createEditor(editor: Element) {
         code={code}
       />
     ),
-    editor
+    editor,
   );
 }

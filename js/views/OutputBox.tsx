@@ -24,7 +24,7 @@ function parseOutput(wrapper: Wrapper, output: string) {
       each={("O" + output)
         .split("\x7F")
         .filter(
-          (x) => x.length > 1 && (!wrapper.isFormatter || !x.startsWith("O"))
+          (x) => x.length > 1 && (!wrapper.isFormatter || !x.startsWith("O")),
         )}
       fallback={<i>(no output)</i>}
     >
@@ -45,7 +45,7 @@ function parseOutput(wrapper: Wrapper, output: string) {
 function runAsmFilter(output: string) {
   return output.replace(
     /(?:\t\.(?:text|file|section|globl|p2align|type|cfi_.*|size|section)\b|.Lfunc_end).*\n?/g,
-    ""
+    "",
   );
 }
 
@@ -83,7 +83,7 @@ export default function OutputBox({
           wrapper,
           wrapper.isAsm && filterAsmDirectives()
             ? runAsmFilter(output.output)
-            : output.output
+            : output.output,
         )}
       </pre>
     </>

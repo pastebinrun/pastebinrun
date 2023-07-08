@@ -54,7 +54,7 @@ export default function Output(props: {
     if (props.wrapperOptions.wrapper.isFormatter && output()?.status === 0) {
       props.codeView.code = output().output.replace(
         /\x7F(?:E[^\x7F]*|O)?/g,
-        ""
+        "",
       );
       if (!output().output.includes("\x7F")) {
         props.setWrapperOptions();

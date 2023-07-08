@@ -38,7 +38,7 @@ export default function App({
   let form: HTMLFormElement | undefined;
   const [isPaste, setIsPaste] = createSignal(true);
   const [currentLanguage, setCurrentLanguage] = createSignal(
-    languages.selectedOptions[0]?.value
+    languages.selectedOptions[0]?.value,
   );
   const [standardInputVisible, setStandardInputVisible] = createSignal(false);
   const [codeView, setCodeView] = createSignal({ code: "" });
