@@ -30,7 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "eslint": "^8.46.0",
     "jsdom": "^22.1.0",
-    "prettier": "^3.0.0",
+    "prettier": "^3.0.1",
     "typescript": "5.1.6",
     "vite": "^4.4.7",
     "vite-plugin-solid": "^2.7.0",
