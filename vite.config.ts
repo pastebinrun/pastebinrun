@@ -25,9 +25,6 @@ export default defineConfig({
     environment: "jsdom",
   },
   plugins: [solidPlugin()],
-  resolve: {
-    conditions: ["development", "browser"],
-  },
   build: {
     manifest: true,
     rollupOptions: {
