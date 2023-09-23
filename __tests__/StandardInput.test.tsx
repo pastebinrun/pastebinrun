@@ -16,6 +16,7 @@
 
 import { createSignal } from "solid-js";
 import { render, screen } from "@solidjs/testing-library";
+import "@testing-library/jest-dom/vitest";
 import { expect, test } from "vitest";
 import StandardInput from "../js/views/StandardInput";
 
