@@ -47,7 +47,7 @@ export default function CodeMirrorEditor({
   currentLanguage: Accessor<string>;
   form: HTMLFormElement;
   setCodeView: Setter<CodeView>;
-  setLabel: Setter<JSXElement>;
+  setLabel: (e: JSXElement) => void;
 }) {
   const [tabIndentationConfiguration] = getTabIndentationSignal();
   function getTabIndentationExtension() {
