@@ -23,13 +23,6 @@ import solidPlugin from "vite-plugin-solid";
 export default defineConfig({
   test: {
     environment: "jsdom",
-    transformMode: {
-      web: [/.[jt]sx?/],
-    },
-    deps: {
-      inline: ["solid-js", "@solidjs/testing-library"],
-    },
-    setupFiles: ["__tests__/setup.js"],
   },
   plugins: [solidPlugin()],
   resolve: {
