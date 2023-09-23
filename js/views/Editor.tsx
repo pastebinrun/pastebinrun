@@ -38,7 +38,7 @@ export default function Editor({
   currentLanguage: Accessor<string>;
   form: HTMLFormElement;
   setCodeView: Setter<CodeView>;
-  setLabel: Setter<JSXElement>;
+  setLabel: (e: JSXElement) => void;
 }) {
   const [editorType] = getEditorTypeSignal();
   const [editorConstructor] = createResource(editorType, async (editorType) => {
