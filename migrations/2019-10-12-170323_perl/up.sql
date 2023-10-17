@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 Konrad Borowski <konrad@borowski.pw>
+--
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 INSERT INTO implementations (language_id, identifier, label)
 SELECT language_id, 'perl', 'perl'
     FROM languages

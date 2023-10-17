@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 Konrad Borowski <konrad@borowski.pw>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 use prometheus::TextEncoder;
 use rocket::request::Request;
 use rocket::response::{self, Debug, Responder, Response};

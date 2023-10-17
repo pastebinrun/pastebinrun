@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 Konrad Borowski <konrad@borowski.pw>
+--
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 CREATE TABLE paste_revisions (
     paste_revision_id serial PRIMARY KEY,
     created_at timestamp with time zone NOT NULL DEFAULT now(),

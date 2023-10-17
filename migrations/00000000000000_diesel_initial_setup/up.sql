@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 Konrad Borowski <konrad@borowski.pw>
+--
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 -- This file was automatically created by Diesel to setup helper functions
 -- and other internal bookkeeping. This file is safe to edit, any future
 -- changes will be added to existing projects as new migrations.

@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 Konrad Borowski <konrad@borowski.pw>
+--
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 INSERT INTO wrappers (language_id, label, code, ordering)
     SELECT language_id, 'Run', 'mv code code.rs && rustc code.rs && ./code', 1
         FROM languages
