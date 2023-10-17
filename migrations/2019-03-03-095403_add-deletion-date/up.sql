@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 Konrad Borowski <konrad@borowski.pw>
+--
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 ALTER TABLE paste_revisions
     DROP CONSTRAINT paste_revisions_paste_id_fkey,
     ADD CONSTRAINT paste_revisions_paste_id_fkey

@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 Konrad Borowski <konrad@borowski.pw>
+--
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 CREATE TABLE wrappers (
     wrapper_id serial PRIMARY KEY,
     language_id int NOT NULL REFERENCES languages,
